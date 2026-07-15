@@ -98,8 +98,8 @@ core facts and dimensions
 | Unique applicants | 1,810 | 1,620 | -190 |
 | Confirmed applicants | 214 | 283 | +69 |
 | Confirmed rate | 11.82% | 17.47% | +5.65 pts |
-| Social mentions sample + YouTube API + manual Facebook sample | 798 | 1,123 | +325 |
-| Social engagement sample + YouTube API + manual Facebook sample | 890,303 | 1,134,715 | +244,412 |
+| Displayed social mentions, real sources only | 41 | 41 | 0 |
+| Displayed social engagement, real sources only | 259,431 | 113,465 | -145,966 |
 
 ---
 
@@ -107,7 +107,8 @@ core facts and dimensions
 
 - Admissions data comes from user-provided Excel files.
 - Personal data is not exported into processed CSV, Neon warehouse tables or the web dashboard.
-- YouTube data has been fetched from the real YouTube Data API; other social rows are currently synthetic sample data for demonstration only.
+- The dashboard displays only real/collected social sources: YouTube Data API and a small manual Facebook public-search sample.
+- Older synthetic social rows may still exist as development fixtures, but they are not used in the dashboard metrics.
 - Facebook Page collection is implemented through the official Graph API and requires a Page ID plus Page access token.
 - Public mentions from people or pages should come from an authorized social listening export and be normalized before loading.
 - Website analytics support has been added for GA4 aggregate reports; it requires a GA4 property ID and service account access before real data can be fetched.

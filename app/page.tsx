@@ -250,31 +250,25 @@ const majorTypeSummary = [
 const socialOverview: SocialOverview[] = [
   {
     year: 2568,
-    mentions: 798,
-    engagement: 890303,
-    engagementPerMention: 1115.67,
-    sentimentScore: 0.5852,
+    mentions: 41,
+    engagement: 259431,
+    engagementPerMention: 6327.59,
+    sentimentScore: 0,
   },
   {
     year: 2569,
-    mentions: 1123,
-    engagement: 1134715,
-    engagementPerMention: 1010.43,
-    sentimentScore: 0.6687,
-    mentionChange: 325,
-    engagementChange: 244412,
+    mentions: 41,
+    engagement: 113465,
+    engagementPerMention: 2767.44,
+    sentimentScore: 0,
+    mentionChange: 0,
+    engagementChange: -145966,
   },
 ];
 
 const platformSummary: PlatformSummary[] = [
-  { platform: "Facebook", mentions: 313, engagement: 159885 },
-  { platform: "TikTok", mentions: 270, engagement: 544330 },
-  { platform: "YouTube sample", mentions: 205, engagement: 197290 },
-  { platform: "Website", mentions: 90, engagement: 32578 },
-  { platform: "Pantip", mentions: 84, engagement: 33527 },
-  { platform: "X", mentions: 74, engagement: 28392 },
-  { platform: "News", mentions: 46, engagement: 25248 },
-  { platform: "YouTube API", mentions: 39, engagement: 113443 },
+  { platform: "YouTube API", mentions: 79, engagement: 372815 },
+  { platform: "Facebook public search", mentions: 3, engagement: 81 },
 ];
 
 const warehouseLayers: WarehouseLayer[] = [
@@ -421,14 +415,14 @@ export default function Home() {
         <article className="kpi-card social-kpi">
           <span className="kpi-label">Social mentions 2569</span>
           <strong>{formatNumber(latestSocial.mentions)}</strong>
-          <span className="positive">
+          <span className={changeClass(latestSocial.mentionChange)}>
             {formatSigned(latestSocial.mentionChange)} vs 2568
           </span>
         </article>
         <article className="kpi-card social-kpi">
           <span className="kpi-label">Social engagement 2569</span>
           <strong>{formatNumber(latestSocial.engagement)}</strong>
-          <span className="positive">
+          <span className={changeClass(latestSocial.engagementChange)}>
             {formatSigned(latestSocial.engagementChange)} vs 2568
           </span>
         </article>
@@ -576,7 +570,7 @@ export default function Home() {
               <p className="section-kicker">Social impact</p>
               <h2>Social Media vs Admissions</h2>
             </div>
-            <span className="pill">sample data</span>
+            <span className="pill">real sources only</span>
           </div>
           <div className="impact-grid">
             {socialOverview.map((item) => (
@@ -595,8 +589,8 @@ export default function Home() {
             ))}
           </div>
           <p className="panel-note">
-            ใน warehouse ล่าสุด mentions เพิ่มขึ้น 325 และ engagement เพิ่มขึ้น 244,412
-            พร้อมกับ confirmed applicants ที่เพิ่มขึ้น 69 คน แม้ unique applicants ลดลง
+            ส่วนนี้ตัด synthetic/sample platform ออกทั้งหมด เหลือเฉพาะ YouTube API และ
+            Facebook public-search sample ที่เก็บจากหน้าผลค้นหาจริง
           </p>
         </article>
 
@@ -606,6 +600,7 @@ export default function Home() {
               <p className="section-kicker">Platform mix</p>
               <h2>ช่องทางที่สร้างกระแส</h2>
             </div>
+            <span className="pill">verified</span>
           </div>
           <div className="platform-list">
             {platformSummary.map((platform) => (
@@ -721,12 +716,12 @@ export default function Home() {
               <dd>0 columns</dd>
             </div>
             <div>
-              <dt>Social rows</dt>
-              <dd>62</dd>
+              <dt>Displayed social rows</dt>
+              <dd>34</dd>
             </div>
             <div>
-              <dt>Platforms</dt>
-              <dd>8</dd>
+              <dt>Displayed platforms</dt>
+              <dd>2</dd>
             </div>
             <div>
               <dt>Catalog rows</dt>
@@ -740,7 +735,7 @@ export default function Home() {
           <p>
             ข้อมูลส่วนบุคคลถูกใช้เฉพาะตอนนับ unique applicants แล้วไม่ถูกส่งออกมาใน
             processed CSV หรือ dashboard นี้ ส่วน YouTube API เป็นข้อมูลจริงจากวิดีโอสาธารณะ
-            และ Facebook public mentions ล่าสุดเป็น manual public-search sample สำหรับ validate pipeline
+            และ Facebook public mentions เป็นข้อมูลที่เก็บจาก public search จริงแบบ manual sample
           </p>
         </article>
       </section>

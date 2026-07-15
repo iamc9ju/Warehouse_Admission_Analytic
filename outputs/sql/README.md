@@ -106,3 +106,5 @@ admissions_dw
 |---:|---:|---:|---:|---:|
 | 2568 | 2,711 | 1,810 | 214 | 11.82% |
 | 2569 | 2,379 | 1,620 | 283 | 17.47% |
+
+หมายเหตุ: `fact_social_media_monthly_summary` ยังมี historical development fixture rows อยู่บางส่วน แต่ dashboard ใช้เฉพาะ real/collected sources ได้แก่ YouTube API และ manual Facebook public-search sample เท่านั้น
