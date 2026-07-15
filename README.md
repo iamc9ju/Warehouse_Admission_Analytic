@@ -63,8 +63,8 @@ synthetic monthly social media CSV
 | Unique applicants | 1,810 | 1,620 | -190 |
 | Confirmed applicants | 214 | 283 | +69 |
 | Confirmed rate | 11.82% | 17.47% | +5.65 pts |
-| Social mentions sample | 757 | 1,082 | +325 |
-| Social engagement sample | 630,872 | 1,021,250 | +390,378 |
+| Social mentions sample + YouTube API | 797 | 1,121 | +324 |
+| Social engagement sample + YouTube API | 890,244 | 1,134,693 | +244,449 |
 
 ---
 
@@ -72,7 +72,7 @@ synthetic monthly social media CSV
 
 - Admissions data comes from user-provided Excel files.
 - Personal data is not exported into processed CSV, Neon warehouse tables or the web dashboard.
-- Social media data is currently synthetic sample data for demonstration only.
+- YouTube data has been fetched from the real YouTube Data API; other social rows are currently synthetic sample data for demonstration only.
 - Because there are only two academic years in the current dataset, social media correlation should be presented as a capability demo, not causal proof.
 
 ---
@@ -103,4 +103,3 @@ DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/e
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/load_social_media_to_neon.cjs
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/export_round3_analytics_report.cjs
 ```
-

@@ -1,0 +1,33 @@
+# ADR 0003: Collect Real Social Signals Through Official or Public APIs
+
+## Status
+
+Accepted
+
+## Context
+
+โปรเจคต้องการวิเคราะห์ Social Media Impact แต่ platform แต่ละตัวมีข้อจำกัดต่างกัน เช่น YouTube ต้องใช้ API key, Facebook/TikTok/X ต้องมี permission หรือ paid/research access และ scraping อาจละเมิด terms of service
+
+## Decision
+
+เริ่มจากช่องทางที่ทำได้ปลอดภัยและตรวจสอบได้:
+
+- YouTube Data API สำหรับวิดีโอและ engagement metrics
+- GDELT DOC API สำหรับข่าว/เว็บไซต์ที่กล่าวถึง keyword
+
+ยังไม่ดึง Facebook, TikTok, X หรือ Pantip แบบ scraping จนกว่าจะมีสิทธิ์หรือ API ที่อนุญาตชัดเจน
+
+## Consequences
+
+ข้อดี:
+
+- ลดความเสี่ยงด้าน policy และ privacy
+- มี source ที่อธิบายและทำซ้ำได้
+- เข้ากับ warehouse schema เดิม
+
+ข้อจำกัด:
+
+- YouTube ต้องใช้ API key
+- GDELT เป็น news/web coverage ไม่ใช่ social engagement เต็มรูปแบบ
+- sentiment ยังเป็นค่า neutral default จนกว่าจะเพิ่มโมเดลวิเคราะห์ภาษาไทย
+

@@ -225,30 +225,31 @@ const majorTypeSummary = [
 const socialOverview: SocialOverview[] = [
   {
     year: 2568,
-    mentions: 757,
-    engagement: 630872,
-    engagementPerMention: 833.38,
-    sentimentScore: 0.6169,
+    mentions: 797,
+    engagement: 890244,
+    engagementPerMention: 1116.99,
+    sentimentScore: 0.5859,
   },
   {
     year: 2569,
-    mentions: 1082,
-    engagement: 1021250,
-    engagementPerMention: 943.85,
-    sentimentScore: 0.6941,
-    mentionChange: 325,
-    engagementChange: 390378,
+    mentions: 1121,
+    engagement: 1134693,
+    engagementPerMention: 1012.21,
+    sentimentScore: 0.6699,
+    mentionChange: 324,
+    engagementChange: 244449,
   },
 ];
 
 const platformSummary: PlatformSummary[] = [
-  { platform: "TikTok", mentions: 270, engagement: 542330 },
-  { platform: "YouTube", mentions: 205, engagement: 197290 },
-  { platform: "Facebook", mentions: 313, engagement: 154645 },
-  { platform: "Pantip", mentions: 84, engagement: 32795 },
-  { platform: "Website", mentions: 90, engagement: 32678 },
-  { platform: "X", mentions: 126, engagement: 31892 },
-  { platform: "News", mentions: 80, engagement: 30864 },
+  { platform: "Facebook", mentions: 313, engagement: 159885 },
+  { platform: "TikTok", mentions: 270, engagement: 544330 },
+  { platform: "YouTube sample", mentions: 205, engagement: 197290 },
+  { platform: "Website", mentions: 90, engagement: 32578 },
+  { platform: "Pantip", mentions: 84, engagement: 33527 },
+  { platform: "X", mentions: 74, engagement: 28392 },
+  { platform: "News", mentions: 46, engagement: 25248 },
+  { platform: "YouTube API", mentions: 39, engagement: 113443 },
 ];
 
 const maxApplicants = Math.max(...majorPerformance.map((major) => major.applicants));
@@ -420,7 +421,7 @@ export default function Home() {
             ))}
           </div>
           <p className="panel-note">
-            ในชุดข้อมูลสาธิต mentions เพิ่มขึ้น 325 และ engagement เพิ่มขึ้น 390,378
+            ใน warehouse ล่าสุด mentions เพิ่มขึ้น 324 และ engagement เพิ่มขึ้น 244,449
             พร้อมกับ confirmed applicants ที่เพิ่มขึ้น 69 คน แม้ unique applicants ลดลง
           </p>
         </article>
@@ -556,8 +557,8 @@ export default function Home() {
           </dl>
           <p>
             ข้อมูลส่วนบุคคลถูกใช้เฉพาะตอนนับ unique applicants แล้วไม่ถูกส่งออกมาใน
-            processed CSV หรือ dashboard นี้ ส่วน Social Media เป็น sample data
-            สำหรับสาธิต correlation capability
+            processed CSV หรือ dashboard นี้ ส่วน YouTube API เป็นข้อมูลจริงจากวิดีโอสาธารณะ
+            และ platform อื่นยังเป็น sample data สำหรับสาธิต correlation capability
           </p>
         </article>
       </section>

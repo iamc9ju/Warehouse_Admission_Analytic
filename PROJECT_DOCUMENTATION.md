@@ -82,6 +82,25 @@ Excel Admissions Data
 - `outputs/reports/social_media_impact_report.md`
   - summarizes social media movement and admissions relationship
 
+### Real Social Data Collection
+
+- `outputs/etl/fetch_gdelt_news_mentions.cjs`
+  - ดึงข้อมูลข่าว/เว็บจริงผ่าน GDELT DOC API โดยไม่ต้องใช้ API key
+
+- `outputs/etl/fetch_youtube_mentions.cjs`
+  - ดึงข้อมูลวิดีโอจริงผ่าน YouTube Data API
+  - ต้องใช้ `YOUTUBE_API_KEY`
+
+- `outputs/real_data/`
+  - เก็บ CSV/JSON ที่ดึงจากแหล่งข้อมูลจริง
+
+Current fetch status:
+
+- GDELT collector implemented but current network/API session returned `429` rate limit
+- YouTube collector implemented and successfully fetched public YouTube Data API results after `YOUTUBE_API_KEY` was provided
+- YouTube output: 79 raw videos and 31 monthly aggregate rows
+- See `outputs/real_data/FETCH_STATUS.md`
+
 ---
 
 ## Database Schema
