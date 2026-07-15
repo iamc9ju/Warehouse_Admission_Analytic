@@ -29,6 +29,17 @@ type StatusDistribution = {
   share: number;
 };
 
+type RoundPerformance = {
+  year: number;
+  code: string;
+  name: string;
+  choices: number;
+  applicants: number;
+  confirmed: number;
+  rate: number;
+  sourceFiles: number;
+};
+
 type SocialOverview = {
   year: number;
   mentions: number;
@@ -73,35 +84,71 @@ type LineageStep = {
 const years: YearOverview[] = [
   {
     year: 2568,
-    applicationChoices: 2711,
-    uniqueApplicants: 1810,
-    confirmed: 214,
-    confirmedRate: 11.82,
-    avgScore: 38.9932,
+    applicationChoices: 4853,
+    uniqueApplicants: 3597,
+    confirmed: 528,
+    confirmedRate: 14.68,
+    avgScore: 21.7825,
   },
   {
     year: 2569,
-    applicationChoices: 2379,
-    uniqueApplicants: 1620,
-    confirmed: 283,
-    confirmedRate: 17.47,
-    avgScore: 36.7647,
-    applicantsChange: -190,
-    confirmedChange: 69,
+    applicationChoices: 4579,
+    uniqueApplicants: 3443,
+    confirmed: 545,
+    confirmedRate: 15.83,
+    avgScore: 19.101,
+    applicantsChange: -154,
+    confirmedChange: 17,
   },
 ];
 
 const majorPerformance: MajorPerformance[] = [
   {
     year: 2569,
+    code: "E38",
+    name: "วิศวกรรมโยธา-โครงสร้างพื้นฐาน",
+    type: "ภาคปกติ",
+    applicants: 825,
+    confirmed: 63,
+    rate: 7.64,
+    avgScore: 8.9477,
+    applicantChange: -2,
+    confirmedChange: 3,
+  },
+  {
+    year: 2569,
     code: "E24",
     name: "วิศวกรรมอุตสาหการ-โลจิสติกส์",
     type: "ภาคปกติ",
-    applicants: 400,
-    confirmed: 22,
-    rate: 5.5,
-    avgScore: 35.9961,
-    applicantChange: 139,
+    applicants: 684,
+    confirmed: 62,
+    rate: 9.06,
+    avgScore: 11.9987,
+    applicantChange: 157,
+    confirmedChange: 0,
+  },
+  {
+    year: 2569,
+    code: "E29",
+    name: "วิศวกรรมคอมพิวเตอร์",
+    type: "ภาคปกติ",
+    applicants: 680,
+    confirmed: 67,
+    rate: 9.85,
+    avgScore: 13.3404,
+    applicantChange: -61,
+    confirmedChange: 4,
+  },
+  {
+    year: 2569,
+    code: "E04",
+    name: "วิศวกรรมโยธา-ชลประทาน",
+    type: "ภาคปกติ",
+    applicants: 602,
+    confirmed: 62,
+    rate: 10.3,
+    avgScore: 9.4494,
+    applicantChange: -148,
     confirmedChange: 2,
   },
   {
@@ -109,142 +156,115 @@ const majorPerformance: MajorPerformance[] = [
     code: "E03",
     name: "วิศวกรรมเครื่องกล",
     type: "ภาคปกติ",
-    applicants: 357,
-    confirmed: 34,
-    rate: 9.52,
-    avgScore: 35.5185,
-    applicantChange: -1,
-    confirmedChange: 9,
-  },
-  {
-    year: 2569,
-    code: "E29",
-    name: "วิศวกรรมคอมพิวเตอร์",
-    type: "ภาคปกติ",
-    applicants: 333,
-    confirmed: 48,
-    rate: 14.41,
-    avgScore: 40.0213,
-    applicantChange: -51,
-    confirmedChange: 20,
+    applicants: 543,
+    confirmed: 51,
+    rate: 9.39,
+    avgScore: 11.8395,
+    applicantChange: 26,
+    confirmedChange: 3,
   },
   {
     year: 2569,
     code: "E38",
-    name: "วิศวกรรมโยธา-โครงสร้างพื้นฐาน",
-    type: "ภาคปกติ",
-    applicants: 331,
-    confirmed: 37,
-    rate: 11.18,
-    avgScore: 35.7908,
-    applicantChange: 23,
-    confirmedChange: 18,
-  },
-  {
-    year: 2569,
-    code: "E04",
-    name: "วิศวกรรมโยธา-ชลประทาน",
-    type: "ภาคปกติ",
-    applicants: 243,
-    confirmed: 19,
-    rate: 7.82,
-    avgScore: 47.2472,
-    applicantChange: -136,
-    confirmedChange: -1,
-  },
-  {
-    year: 2569,
-    code: "E38",
-    name: "วิศวกรรมโยธา-โครงสร้างพื้นฐาน",
+    name: "วิศวกรรมโยธา-โครงสร้างพื้นฐาน (ภาคพิเศษ)",
     type: "ภาคพิเศษ",
-    applicants: 219,
-    confirmed: 22,
-    rate: 10.05,
-    avgScore: 34.1846,
+    applicants: 343,
+    confirmed: 52,
+    rate: 15.16,
+    avgScore: 8.5462,
     applicantChange: 8,
     confirmedChange: 0,
-  },
-  {
-    year: 2569,
-    code: "E03",
-    name: "วิศวกรรมเครื่องกล",
-    type: "ภาคพิเศษ",
-    applicants: 214,
-    confirmed: 25,
-    rate: 11.68,
-    avgScore: 33.1081,
-    applicantChange: -12,
-    confirmedChange: 3,
   },
   {
     year: 2569,
     code: "E36",
     name: "วิศวกรรมอาหาร",
     type: "ภาคปกติ",
-    applicants: 174,
-    confirmed: 31,
-    rate: 17.82,
-    avgScore: 33.6946,
-    applicantChange: -30,
-    confirmedChange: 8,
+    applicants: 294,
+    confirmed: 59,
+    rate: 20.07,
+    avgScore: 11.2315,
+    applicantChange: -19,
+    confirmedChange: 2,
+  },
+  {
+    year: 2569,
+    code: "E03",
+    name: "วิศวกรรมเครื่องกล (ภาคพิเศษ)",
+    type: "ภาคพิเศษ",
+    applicants: 286,
+    confirmed: 34,
+    rate: 11.89,
+    avgScore: 11.036,
+    applicantChange: -7,
+    confirmedChange: -1,
   },
   {
     year: 2569,
     code: "E37",
     name: "วิศวกรรมเครื่องกล-เกษตร",
     type: "ภาคปกติ",
-    applicants: 65,
-    confirmed: 28,
-    rate: 43.08,
-    avgScore: 30.2993,
-    applicantChange: -241,
-    confirmedChange: 5,
+    applicants: 214,
+    confirmed: 59,
+    rate: 27.57,
+    avgScore: 7.5748,
+    applicantChange: -197,
+    confirmedChange: 3,
   },
   {
     year: 2569,
     code: "E39",
     name: "วิศวกรรมนวัตกรรมเพื่อการเกษตรและอุตสาหกรรม",
     type: "ภาคปกติ",
-    applicants: 43,
-    confirmed: 17,
-    rate: 39.53,
-    avgScore: 30.836,
+    applicants: 108,
+    confirmed: 36,
+    rate: 33.33,
+    avgScore: 7.709,
     applicantChange: -31,
-    confirmedChange: 5,
+    confirmedChange: 1,
   },
 ];
 
 const statusDistribution: StatusDistribution[] = [
-  {
-    year: 2569,
-    label: "ผ่านการคัดเลือกในลำดับที่ดีกว่า",
-    choices: 1191,
-    share: 50.06,
-  },
-  { year: 2569, label: "ไม่ผ่านการคัดเลือก", choices: 870, share: 36.57 },
-  { year: 2569, label: "ยืนยันสิทธิ์", choices: 283, share: 11.9 },
-  { year: 2569, label: "สละสิทธิ์", choices: 26, share: 1.09 },
-  { year: 2569, label: "ไม่ใช้สิทธิ์", choices: 5, share: 0.21 },
-  { year: 2569, label: "ไม่เข้าระบบมาดำเนินการใดๆ", choices: 3, share: 0.13 },
+  { year: 2569, label: "ไม่ผ่านการคัดเลือก", choices: 2552, share: 55.73 },
+  { year: 2569, label: "ผ่านการคัดเลือกในลำดับที่ดีกว่า", choices: 1191, share: 26.01 },
+  { year: 2569, label: "ยืนยันสิทธิ์", choices: 545, share: 11.9 },
+  { year: 2569, label: "ยืนยันที่อื่นแล้ว", choices: 210, share: 4.59 },
+  { year: 2569, label: "ไม่ใช้สิทธิ์", choices: 30, share: 0.66 },
+  { year: 2569, label: "สละสิทธิ์", choices: 26, share: 0.57 },
+  { year: 2569, label: "ไม่เข้าระบบมาดำเนินการใดๆ", choices: 18, share: 0.39 },
+  { year: 2569, label: "สละสิทธิ์ในรอบ 2", choices: 6, share: 0.13 },
+  { year: 2569, label: "ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2", choices: 1, share: 0.02 },
 ];
 
 const majorTypeSummary = [
   {
     year: 2569,
     type: "ภาคปกติ",
-    applicants: 1946,
-    confirmed: 236,
-    rate: 12.13,
-    avgScore: 36.1755,
+    applicants: 3950,
+    confirmed: 459,
+    rate: 11.62,
+    avgScore: 9.9794,
   },
   {
     year: 2569,
     type: "ภาคพิเศษ",
-    applicants: 433,
-    confirmed: 47,
-    rate: 10.85,
-    avgScore: 33.6464,
+    applicants: 629,
+    confirmed: 86,
+    rate: 13.67,
+    avgScore: 9.6132,
   },
+];
+
+const roundPerformance: RoundPerformance[] = [
+  { year: 2568, code: "TCAS1", name: "Portfolio", choices: 1385, applicants: 1320, confirmed: 191, rate: 14.47, sourceFiles: 2 },
+  { year: 2568, code: "TCAS2", name: "Quota", choices: 519, applicants: 518, confirmed: 112, rate: 21.62, sourceFiles: 2 },
+  { year: 2568, code: "TCAS3", name: "Admission", choices: 2711, applicants: 1810, confirmed: 214, rate: 11.82, sourceFiles: 1 },
+  { year: 2568, code: "TCAS4", name: "Direct Admission", choices: 238, applicants: 238, confirmed: 11, rate: 4.62, sourceFiles: 1 },
+  { year: 2569, code: "TCAS1", name: "Portfolio", choices: 1391, applicants: 1324, confirmed: 163, rate: 12.31, sourceFiles: 1 },
+  { year: 2569, code: "TCAS2", name: "Quota", choices: 614, applicants: 614, confirmed: 90, rate: 14.66, sourceFiles: 2 },
+  { year: 2569, code: "TCAS3", name: "Admission", choices: 2379, applicants: 1620, confirmed: 283, rate: 17.47, sourceFiles: 1 },
+  { year: 2569, code: "TCAS4", name: "Direct Admission", choices: 195, applicants: 195, confirmed: 9, rate: 4.62, sourceFiles: 1 },
 ];
 
 const socialOverview: SocialOverview[] = [
@@ -305,22 +325,27 @@ const warehouseLayers: WarehouseLayer[] = [
 ];
 
 const warehouseMetrics: WarehouseMetric[] = [
-  { label: "Fact tables", value: "4", detail: "Admissions, status, social, website" },
+  { label: "Fact tables", value: "7", detail: "Admissions year/round/major/status, social, website, quality" },
   { label: "Dimensions", value: "8", detail: "Round, faculty, major, status, platform, keyword, sentiment, web channel" },
-  { label: "Presentation marts", value: "3", detail: "Executive, major conversion, channel effectiveness" },
+  { label: "Presentation marts", value: "4", detail: "TCAS year, TCAS round, major conversion, channel effectiveness" },
   { label: "Governance objects", value: "3", detail: "Catalog, lineage, refresh run log" },
 ];
 
 const dataMarts: DataMart[] = [
   {
-    name: "mart_admissions_executive_summary",
+    name: "mart_tcas_year_summary",
     grain: "academic year",
-    useCase: "ผู้บริหารดู applicants, confirmed, social และ quality ในหน้าเดียว",
+    useCase: "ผู้บริหารดู applicants, choices, confirmed และ conversion ครบทุก TCAS round",
   },
   {
-    name: "mart_major_conversion",
-    grain: "academic year + major",
-    useCase: "จัดอันดับ demand และ conversion ของแต่ละสาขา",
+    name: "mart_tcas_round_summary",
+    grain: "academic year + TCAS round",
+    useCase: "เปรียบเทียบ performance ของ Portfolio, Quota, Admission และ Direct Admission",
+  },
+  {
+    name: "mart_major_round_conversion",
+    grain: "academic year + TCAS round + major",
+    useCase: "จัดอันดับ demand และ conversion ของแต่ละสาขาแยกตามรอบรับสมัคร",
   },
   {
     name: "mart_channel_effectiveness",
@@ -370,10 +395,11 @@ export default function Home() {
       <section className="dashboard-header" aria-labelledby="dashboard-title">
         <div>
           <p className="eyebrow">Engineering Admissions Analytics</p>
-          <h1 id="dashboard-title">TCAS รอบ 3 Admissions Dashboard</h1>
+          <h1 id="dashboard-title">TCAS Admissions Data Warehouse</h1>
           <p className="header-copy">
-            ภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน จาก Excel ปี 2568 และ
-            2569 ผ่าน ETL เข้า Neon PostgreSQL และสรุปผลเป็น analytics views
+            ภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน ครบ TCAS รอบ 1-4
+            ปี 2568 และ 2569 ผ่าน ETL เข้า Neon PostgreSQL, dimensional facts,
+            governed marts และ dashboard
           </p>
         </div>
         <div className="header-status" aria-label="Data pipeline status">
@@ -410,7 +436,7 @@ export default function Home() {
         <article className="kpi-card">
           <span className="kpi-label">Application choices 2569</span>
           <strong>{formatNumber(latest.applicationChoices)}</strong>
-          <span className="negative">-332 vs 2568</span>
+          <span className="negative">-274 vs 2568</span>
         </article>
         <article className="kpi-card social-kpi">
           <span className="kpi-label">Social mentions 2569</span>
@@ -515,9 +541,9 @@ export default function Home() {
           <div className="panel-heading">
             <div>
               <p className="section-kicker">Year comparison</p>
-              <h2>ภาพรวมปี 2568 เทียบ 2569</h2>
+              <h2>ภาพรวมทุก TCAS rounds ปี 2568 เทียบ 2569</h2>
             </div>
-            <span className="pill">TCAS3</span>
+            <span className="subtle-label">fact_admission_year_overview</span>
           </div>
           <div className="year-bars">
             {years.map((year) => (
@@ -539,8 +565,8 @@ export default function Home() {
             ))}
           </div>
           <p className="panel-note">
-            ผู้สมัครไม่ซ้ำลดลง 190 คน แต่ผู้ยืนยันสิทธิ์เพิ่มขึ้น 69 คน ทำให้
-            confirmed rate ดีขึ้นอย่างชัดเจน
+            ปี 2569 มีผู้สมัครไม่ซ้ำข้ามทุก round ลดลง 154 คน แต่ผู้ยืนยันสิทธิ์
+            เพิ่มขึ้น 17 คน เมื่อเทียบกับปี 2568
           </p>
         </article>
 
@@ -561,6 +587,46 @@ export default function Home() {
             ))}
           </div>
         </article>
+      </section>
+
+      <section className="panel">
+        <div className="panel-heading">
+          <div>
+            <p className="section-kicker">Round grain fact</p>
+            <h2>TCAS รอบ 1-4 ที่โหลดเข้า warehouse</h2>
+          </div>
+          <span className="subtle-label">fact_admission_round_overview</span>
+        </div>
+        <div className="round-list">
+          {roundPerformance.map((round) => (
+            <article className="round-row" key={`${round.year}-${round.code}`}>
+              <div>
+                <strong>{round.code}</strong>
+                <span>{round.year} · {round.name}</span>
+              </div>
+              <div className="metric-stack">
+                <span>{formatNumber(round.choices)}</span>
+                <small>choices</small>
+              </div>
+              <div className="metric-stack">
+                <span>{formatNumber(round.applicants)}</span>
+                <small>unique applicants</small>
+              </div>
+              <div className="metric-stack">
+                <span>{formatNumber(round.confirmed)}</span>
+                <small>confirmed</small>
+              </div>
+              <div className="metric-stack rate">
+                <span>{round.rate.toFixed(2)}%</span>
+                <small>rate</small>
+              </div>
+              <div className="metric-stack">
+                <span>{round.sourceFiles}</span>
+                <small>files</small>
+              </div>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="content-grid social-grid">
@@ -589,8 +655,8 @@ export default function Home() {
             ))}
           </div>
           <p className="panel-note">
-            ส่วนนี้ตัด synthetic/sample platform ออกทั้งหมด เหลือเฉพาะ YouTube API และ
-            Facebook public-search sample ที่เก็บจากหน้าผลค้นหาจริง
+            ส่วนนี้แสดงเฉพาะ YouTube API และ Facebook public search
+            ที่มีหลักฐานไฟล์ต้นทางใน outputs/real_data
           </p>
         </article>
 
@@ -623,7 +689,7 @@ export default function Home() {
         <div className="panel-heading">
           <div>
             <p className="section-kicker">Major ranking</p>
-            <h2>Top majors ปี 2569</h2>
+            <h2>Top majors ปี 2569 จากทุก TCAS rounds</h2>
           </div>
           <span className="subtle-label">sorted by unique applicants</span>
         </div>
@@ -672,7 +738,7 @@ export default function Home() {
           <div className="panel-heading">
             <div>
               <p className="section-kicker">Status distribution</p>
-              <h2>สถานะ TCAS ปี 2569</h2>
+              <h2>สถานะ TCAS ปี 2569 ทุก round</h2>
             </div>
           </div>
           <div className="status-list">
@@ -701,7 +767,7 @@ export default function Home() {
           <dl className="quality-list">
             <div>
               <dt>Source rows</dt>
-              <dd>5,090</dd>
+              <dd>9,432</dd>
             </div>
             <div>
               <dt>Missing score</dt>
@@ -734,8 +800,8 @@ export default function Home() {
           </dl>
           <p>
             ข้อมูลส่วนบุคคลถูกใช้เฉพาะตอนนับ unique applicants แล้วไม่ถูกส่งออกมาใน
-            processed CSV หรือ dashboard นี้ ส่วน YouTube API เป็นข้อมูลจริงจากวิดีโอสาธารณะ
-            และ Facebook public mentions เป็นข้อมูลที่เก็บจาก public search จริงแบบ manual sample
+            processed CSV หรือ dashboard นี้ ตอนนี้ admissions warehouse โหลดครบ 11 Excel source files
+            ครอบคลุม TCAS รอบ 1-4 ของปี 2568 และ 2569
           </p>
         </article>
       </section>

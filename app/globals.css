@@ -441,6 +441,39 @@ h2 {
   gap: 8px;
 }
 
+.round-list {
+  display: grid;
+  gap: 8px;
+}
+
+.round-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.8fr) repeat(5, minmax(86px, 0.4fr));
+  gap: 12px;
+  align-items: center;
+  min-height: 68px;
+  padding: 12px;
+  border: 1px solid #e4e7e1;
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.round-row > div:first-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.round-row strong {
+  color: var(--ink);
+}
+
+.round-row > div:first-child span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .ranking-row {
   display: grid;
   grid-template-columns: 44px minmax(220px, 1.2fr) 86px minmax(120px, 0.7fr) 82px 76px 72px;
@@ -683,6 +716,10 @@ h2 {
     grid-template-columns: 36px minmax(0, 1fr) 86px 76px;
   }
 
+  .round-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .mini-bars,
   .metric-stack.rate,
   .change-badge {
@@ -716,6 +753,10 @@ h2 {
 
   .ranking-row {
     grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .round-row {
+    grid-template-columns: 1fr 1fr;
   }
 
   .ranking-row .metric-stack {

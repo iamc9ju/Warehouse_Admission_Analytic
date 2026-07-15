@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TCAS Round 3 Admissions Dashboard",
+  title: "TCAS Admissions Data Warehouse",
   description:
-    "Admissions analytics dashboard for Engineering, Kasetsart University Kamphaeng Saen Campus.",
+    "Dashboard over the admissions data warehouse for TCAS rounds 1-4, Engineering, Kasetsart University Kamphaeng Saen Campus.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

@@ -1,0 +1,12 @@
+﻿academic_year,tcas_round_code,tcas_round_name,project_id,fac_id,fac_name,application_choices,unique_applicants,confirmed_unique_applicants,unique_majors,avg_score,min_score,max_score,avg_priority,applicant_rows,selected_rows,excluded_second_processing_rows,selected_in_better_choice_rows,confirmed_elsewhere_rows,confirmed_rows,surrendered_rows,round2_surrendered_rows,rejected_rows,no_action_rows,not_used_rows
+2568,TCAS1,Portfolio,A0200,E,วิศวกรรมศาสตร์ กำแพงแสน,2,2,0,1,0.0,0.0,0.0,0.0,0,0,0,0,0,0,0,0,2,0,0
+2568,TCAS1,Portfolio,A1000,E,วิศวกรรมศาสตร์ กำแพงแสน,1383,1318,191,8,0.0,0.0,0.0,0.0,0,0,0,0,170,191,1,8,986,22,5
+2568,TCAS2,Quota,B1100,E,วิศวกรรมศาสตร์ กำแพงแสน,2,2,1,2,0.0,0.0,0.0,0.0,0,0,0,0,0,1,0,0,1,0,0
+2568,TCAS2,Quota,B2500,E,วิศวกรรมศาสตร์ กำแพงแสน,517,517,111,8,0.0,0.0,0.0,0.0,0,0,0,0,17,111,1,0,371,8,9
+2568,TCAS3,Admission,C28xx,E,วิศวกรรมศาสตร์ กำแพงแสน,2711,1810,214,8,38.9932,15.461,67.894,4.9908,400,0,1,1097,0,214,22,0,971,4,2
+2568,TCAS4,Direct Admission,D3100,E,วิศวกรรมศาสตร์ กำแพงแสน,238,238,11,2,0.0,0.0,0.0,0.0,0,1,0,0,4,11,0,0,220,0,2
+2569,TCAS1,Portfolio,A1000,E,วิศวกรรมศาสตร์ กำแพงแสน,1391,1324,163,8,0.0,0.0,0.0,0.0,0,0,0,0,187,163,0,6,1012,9,14
+2569,TCAS2,Quota,B1100,E,วิศวกรรมศาสตร์ กำแพงแสน,2,2,0,1,0.0,0.0,0.0,0.0,0,0,0,0,0,0,0,0,2,0,0
+2569,TCAS2,Quota,B2500,E,วิศวกรรมศาสตร์ กำแพงแสน,612,612,90,8,0.0,0.0,0.0,0.0,0,0,0,0,18,90,0,0,488,5,11
+2569,TCAS3,Admission,C2800,E,วิศวกรรมศาสตร์ กำแพงแสน,2379,1620,283,8,36.7647,20.2528,76.0864,5.1236,0,0,1,1191,0,283,26,0,870,3,5
+2569,TCAS4,Direct Admission,D3100,E,วิศวกรรมศาสตร์ กำแพงแสน,195,195,9,4,0.0,0.0,0.0,0.0,0,0,0,0,5,9,0,0,180,1,0

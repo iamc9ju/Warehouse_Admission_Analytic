@@ -1,6 +1,6 @@
-# Social Media Impact Analytics for Engineering Admissions
+# Admissions Data Warehouse for Engineering Admissions
 
-Data Warehouse และ Web Dashboard สำหรับวิเคราะห์ข้อมูลรับสมัคร TCAS รอบ 3 ของคณะวิศวกรรมศาสตร์ กำแพงแสน พร้อม social media demonstration layer สำหรับแสดงแนวทางวิเคราะห์ความสัมพันธ์ระหว่างกระแสออนไลน์กับ admissions outcome
+Data Warehouse และ Web Dashboard สำหรับวิเคราะห์ข้อมูลรับสมัคร TCAS รอบ 1-4 ของคณะวิศวกรรมศาสตร์ กำแพงแสน ปี 2568 และ 2569 พร้อม governed marts, lineage, quality checks และ social/website analytics layer ที่แสดงเฉพาะข้อมูลจริงหรือข้อมูลที่เก็บจริง
 
 Production dashboard:
 
@@ -19,19 +19,19 @@ Excel files
   -> ETL aggregate script
   -> processed CSV
   -> Neon PostgreSQL schema admissions_dw
-  -> analytics views
+  -> dimensional facts, analytics views and marts
   -> markdown report
   -> web dashboard
 ```
 
-### Social media demonstration pipeline
+### Social media data pipeline
 
 ```text
-synthetic monthly social media CSV
+YouTube API / Facebook public search / authorized social listening export
   -> Neon PostgreSQL social tables
   -> platform / sentiment / keyword views
   -> admissions correlation view
-  -> dashboard social impact section
+  -> dashboard social impact section with real-source rows only
 ```
 
 ### Public mention pipeline
@@ -73,13 +73,16 @@ core facts and dimensions
 | `app/page.tsx` | Web dashboard content and data |
 | `app/globals.css` | Dashboard layout and styling |
 | `outputs/etl/aggregate_round3_admissions.py` | Aggregate Excel admissions files |
+| `outputs/etl/aggregate_admissions_all_rounds.py` | Aggregate TCAS round 1-4 Excel files without exporting PII |
 | `outputs/etl/load_round3_to_neon.cjs` | Load admissions aggregate data to Neon |
-| `outputs/etl/load_social_media_to_neon.cjs` | Load synthetic social media data to Neon |
+| `outputs/etl/load_admissions_all_rounds_to_neon.cjs` | Load all-round admissions facts, status distribution and source quality to Neon |
+| `outputs/etl/load_social_media_to_neon.cjs` | Load real-source social media aggregates to Neon |
 | `outputs/etl/fetch_facebook_page_insights.cjs` | Fetch authorized Facebook Page posts and Page Insights metrics |
 | `outputs/etl/normalize_social_listening_export.cjs` | Normalize social listening public mention exports into warehouse-ready monthly CSV |
 | `outputs/etl/fetch_ga4_website_analytics.cjs` | Fetch aggregate website analytics from GA4 Data API |
 | `outputs/etl/load_website_analytics_to_neon.cjs` | Load GA4 website analytics CSV to Neon |
 | `outputs/sql/admissions_round3_warehouse.sql` | Admissions warehouse schema |
+| `outputs/sql/admissions_all_rounds_warehouse.sql` | All-round admissions facts, source quality and TCAS1-4 mart views |
 | `outputs/sql/social_media_warehouse.sql` | Social media warehouse schema and views |
 | `outputs/sql/website_analytics_warehouse.sql` | Website analytics schema and admissions correlation views |
 | `outputs/sql/warehouse_governance_marts.sql` | Dataset catalog, lineage, refresh log, quality scorecard and presentation marts |
@@ -94,10 +97,10 @@ core facts and dimensions
 
 | Metric | 2568 | 2569 | Change |
 |---|---:|---:|---:|
-| Application choices | 2,711 | 2,379 | -332 |
-| Unique applicants | 1,810 | 1,620 | -190 |
-| Confirmed applicants | 214 | 283 | +69 |
-| Confirmed rate | 11.82% | 17.47% | +5.65 pts |
+| Application choices, TCAS1-4 | 4,853 | 4,579 | -274 |
+| Unique applicants, cross-round | 3,597 | 3,443 | -154 |
+| Confirmed applicants, TCAS1-4 | 528 | 545 | +17 |
+| Confirmed rate, cross-round | 14.68% | 15.83% | +1.15 pts |
 | Displayed social mentions, real sources only | 41 | 41 | 0 |
 | Displayed social engagement, real sources only | 259,431 | 113,465 | -145,966 |
 
@@ -107,8 +110,7 @@ core facts and dimensions
 
 - Admissions data comes from user-provided Excel files.
 - Personal data is not exported into processed CSV, Neon warehouse tables or the web dashboard.
-- The dashboard displays only real/collected social sources: YouTube Data API and a small manual Facebook public-search sample.
-- Older synthetic social rows may still exist as development fixtures, but they are not used in the dashboard metrics.
+- The dashboard displays only real/collected social sources: YouTube Data API and a small manual Facebook public-search capture.
 - Facebook Page collection is implemented through the official Graph API and requires a Page ID plus Page access token.
 - Public mentions from people or pages should come from an authorized social listening export and be normalized before loading.
 - Website analytics support has been added for GA4 aggregate reports; it requires a GA4 property ID and service account access before real data can be fetched.
@@ -138,7 +140,9 @@ Do not commit database credentials.
 
 ```bash
 python3 outputs/etl/aggregate_round3_admissions.py
+python3 outputs/etl/aggregate_admissions_all_rounds.py
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/load_round3_to_neon.cjs
+DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/load_admissions_all_rounds_to_neon.cjs
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/load_social_media_to_neon.cjs
 FACEBOOK_PAGE_ID="..." FACEBOOK_PAGE_ACCESS_TOKEN="..." node outputs/etl/fetch_facebook_page_insights.cjs
 DATABASE_URL="postgresql://..." SOCIAL_MEDIA_CSV="outputs/real_data/facebook_page_mentions_monthly.csv" NODE_PATH="/path/to/node_modules" node outputs/etl/load_social_media_to_neon.cjs

@@ -1,0 +1,12 @@
+﻿academic_year,tcas_round_code,tcas_round_name,source_file,source_rows,unique_applicants,duplicate_applicant_rows,missing_score_rows,missing_priority_rows,missing_major_rows,pii_columns_removed
+2568,TCAS1,Portfolio,รอบ 1 ปี68(1).xlsx,1383,1318,65,0,0,0,"citizen_id, email, first_name_th, last_name_th, telephone, title"
+2568,TCAS1,Portfolio,รอบ 1 ปี68.xlsx,2,2,0,0,0,0,"citizen_id, email, first_name_th, last_name_th, telephone, title"
+2568,TCAS2,Quota,รอบ 2 ปี68(2).xlsx,517,517,0,0,0,0,"citizen_id, email, first_name_th, last_name_th, telephone, title"
+2568,TCAS2,Quota,รอบ 2 ปี68.xlsx,2,2,0,0,0,0,"citizen_id, email, first_name_th, last_name_th, telephone, title"
+2568,TCAS3,Admission,รอบ 3 ปี 68.xlsx,2711,1810,901,0,0,0,"citizen_id, email, first_name_th, last_name_th, telephone, title"
+2568,TCAS4,Direct Admission,รอบ 4 ปี68.xlsx,238,238,0,0,0,0,"citizen_id, email, first_name_th, last_name_th, telephone, title"
+2569,TCAS1,Portfolio,รอบ1 ปี69.xlsx,1391,1324,67,0,0,0,"citizen_id, email, first_name_th, last_name_th, telephone, title"
+2569,TCAS2,Quota,รอบ 2 ปี69(2).xlsx,2,2,0,0,0,0,"citizen_id, email, first_name_th, last_name_th, telephone, title"
+2569,TCAS2,Quota,รอบ 2 ปี69.xlsx,612,612,0,0,0,0,"citizen_id, email, first_name_th, last_name_th, telephone, title"
+2569,TCAS3,Admission,รอบ 3 ปี 69.xlsx,2379,1620,759,0,0,0,"citizen_id, email, first_name_th, last_name_th, telephone, title"
+2569,TCAS4,Direct Admission,รอบ 4 ปี69.xlsx,195,195,0,0,0,0,"citizen_id, email, first_name_th, last_name_th, telephone, title"

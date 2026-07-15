@@ -87,6 +87,36 @@ VALUES
         'PII-free aggregate staging files produced from Excel before loading to Neon.'
     ),
     (
+        'fact_admission_year_overview',
+        'core',
+        'One row per academic year across all TCAS rounds with true cross-round unique applicants',
+        'Neon PostgreSQL',
+        'Manual per admissions cycle',
+        'Admissions analytics project',
+        'internal',
+        'Year-level admissions fact created from raw in-memory applicant identifiers before PII is removed from outputs.'
+    ),
+    (
+        'fact_admission_round_overview',
+        'core',
+        'One row per academic year and TCAS round',
+        'Neon PostgreSQL',
+        'Manual per admissions cycle',
+        'Admissions analytics project',
+        'internal',
+        'Round-grain admissions fact for comparing TCAS1 Portfolio, TCAS2 Quota, TCAS3 Admission and TCAS4 Direct Admission.'
+    ),
+    (
+        'admission_round_source_data_quality',
+        'governance',
+        'One row per source workbook file',
+        'outputs/etl/aggregate_admissions_all_rounds.py',
+        'Manual per admissions cycle',
+        'Admissions analytics project',
+        'internal',
+        'Source-file data quality metadata including row counts, missing fields and PII removed from exports.'
+    ),
+    (
         'fact_admission_round_year_summary',
         'core',
         'One row per academic year, TCAS round, project and faculty',
@@ -127,6 +157,26 @@ VALUES
         'Aggregate website analytics fact table for admissions website traffic and engagement.'
     ),
     (
+        'mart_tcas_year_summary',
+        'mart',
+        'One row per academic year across all TCAS rounds',
+        'admissions_dw core facts',
+        'After all-round fact refresh',
+        'Admissions analytics project',
+        'internal',
+        'Dashboard-ready year comparison mart using true cross-round unique applicant counts.'
+    ),
+    (
+        'mart_tcas_round_summary',
+        'mart',
+        'One row per academic year and TCAS round',
+        'admissions_dw core facts',
+        'After all-round fact refresh',
+        'Admissions analytics project',
+        'internal',
+        'Dashboard-ready round comparison mart for TCAS1-4.'
+    ),
+    (
         'mart_admissions_executive_summary',
         'mart',
         'One row per academic year for executive dashboard KPIs',
@@ -165,6 +215,34 @@ INSERT INTO admissions_dw.dw_lineage_edge (
     notes
 )
 VALUES
+    (
+        'source_all_round_excel',
+        'processed_round_all_round_csv',
+        'aggregate_admissions_all_rounds.py',
+        'aggregate',
+        'Aggregates all supplied TCAS round workbooks while using raw applicant identifiers only in memory.'
+    ),
+    (
+        'processed_round_all_round_csv',
+        'fact_admission_year_overview',
+        'load_admissions_all_rounds_to_neon.cjs',
+        'load',
+        'Loads true year-level aggregate metrics across TCAS rounds.'
+    ),
+    (
+        'processed_round_all_round_csv',
+        'fact_admission_round_overview',
+        'load_admissions_all_rounds_to_neon.cjs',
+        'load',
+        'Loads round-level aggregate metrics for TCAS1-4.'
+    ),
+    (
+        'processed_round_all_round_csv',
+        'admission_round_source_data_quality',
+        'load_admissions_all_rounds_to_neon.cjs',
+        'load',
+        'Loads source-file quality metadata for all supplied Excel files.'
+    ),
     (
         'source_round3_excel',
         'processed_round3_csv',
@@ -254,6 +332,18 @@ SELECT
 FROM admissions_dw.dim_major
 UNION ALL
 SELECT
+    'fact_admission_year_overview',
+    'fact',
+    COUNT(*)::BIGINT
+FROM admissions_dw.fact_admission_year_overview
+UNION ALL
+SELECT
+    'fact_admission_round_overview',
+    'fact',
+    COUNT(*)::BIGINT
+FROM admissions_dw.fact_admission_round_overview
+UNION ALL
+SELECT
     'fact_admission_round_year_summary',
     'fact',
     COUNT(*)::BIGINT
@@ -282,6 +372,12 @@ SELECT
     'fact',
     COUNT(*)::BIGINT
 FROM admissions_dw.fact_website_analytics_monthly
+UNION ALL
+SELECT
+    'admission_round_source_data_quality',
+    'quality',
+    COUNT(*)::BIGINT
+FROM admissions_dw.admission_round_source_data_quality
 UNION ALL
 SELECT
     'admission_round_data_quality',
