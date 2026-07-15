@@ -127,7 +127,7 @@ h2 {
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px;
   margin: 12px 0;
 }
@@ -147,6 +147,10 @@ h2 {
   flex-direction: column;
   justify-content: space-between;
   padding: 18px;
+}
+
+.social-kpi {
+  background: linear-gradient(180deg, #ffffff, #f0f8f7);
 }
 
 .kpi-card strong {
@@ -351,6 +355,92 @@ h2 {
   align-items: start;
 }
 
+.social-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.8fr);
+}
+
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.impact-card {
+  display: grid;
+  gap: 9px;
+  border: 1px solid #dbe5df;
+  border-radius: 8px;
+  background: var(--panel-soft);
+  padding: 16px;
+}
+
+.impact-card span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 740;
+}
+
+.impact-card strong {
+  color: var(--ink);
+  font-size: 36px;
+  line-height: 1;
+}
+
+.impact-card small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.impact-meter,
+.platform-bar {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dde7e2;
+}
+
+.impact-meter span,
+.platform-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--teal), var(--blue));
+}
+
+.platform-list {
+  display: grid;
+  gap: 10px;
+}
+
+.platform-row {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.7fr) minmax(120px, 1fr) 56px;
+  gap: 12px;
+  align-items: center;
+}
+
+.platform-row div:first-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.platform-row strong {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.platform-row span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.platform-row b {
+  color: var(--ink);
+  font-size: 13px;
+  text-align: right;
+}
+
 .status-list {
   display: grid;
   gap: 12px;
@@ -453,7 +543,8 @@ h2 {
   }
 
   .year-row,
-  .status-row {
+  .status-row,
+  .platform-row {
     grid-template-columns: 1fr;
   }
 
@@ -472,6 +563,10 @@ h2 {
   }
 
   .quality-list {
+    grid-template-columns: 1fr;
+  }
+
+  .impact-grid {
     grid-template-columns: 1fr;
   }
 }

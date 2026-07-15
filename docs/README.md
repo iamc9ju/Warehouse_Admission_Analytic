@@ -1,0 +1,11 @@
+# Documentation Index
+
+เอกสารหลักของโปรเจค:
+
+- `../PROJECT_DOCUMENTATION.md` - ภาพรวม end-to-end, data privacy, limitations และวิธีรัน
+- `../outputs/sql/README.md` - รายละเอียด warehouse schema และ Neon load result
+- `../outputs/processed/README.md` - รายละเอียด processed admissions data
+- `../outputs/AI_OPERATING_GUIDE_ADAPTED.md` - กฎสำหรับ AI agents
+
+เอกสารนี้ใช้เป็น entry point สำหรับผู้ตรวจงานหรือผู้พัฒนาต่อ
+

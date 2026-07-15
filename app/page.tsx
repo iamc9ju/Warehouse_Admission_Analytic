@@ -29,6 +29,22 @@ type StatusDistribution = {
   share: number;
 };
 
+type SocialOverview = {
+  year: number;
+  mentions: number;
+  engagement: number;
+  engagementPerMention: number;
+  sentimentScore: number;
+  mentionChange?: number;
+  engagementChange?: number;
+};
+
+type PlatformSummary = {
+  platform: string;
+  mentions: number;
+  engagement: number;
+};
+
 const years: YearOverview[] = [
   {
     year: 2568,
@@ -206,8 +222,38 @@ const majorTypeSummary = [
   },
 ];
 
+const socialOverview: SocialOverview[] = [
+  {
+    year: 2568,
+    mentions: 757,
+    engagement: 630872,
+    engagementPerMention: 833.38,
+    sentimentScore: 0.6169,
+  },
+  {
+    year: 2569,
+    mentions: 1082,
+    engagement: 1021250,
+    engagementPerMention: 943.85,
+    sentimentScore: 0.6941,
+    mentionChange: 325,
+    engagementChange: 390378,
+  },
+];
+
+const platformSummary: PlatformSummary[] = [
+  { platform: "TikTok", mentions: 270, engagement: 542330 },
+  { platform: "YouTube", mentions: 205, engagement: 197290 },
+  { platform: "Facebook", mentions: 313, engagement: 154645 },
+  { platform: "Pantip", mentions: 84, engagement: 32795 },
+  { platform: "Website", mentions: 90, engagement: 32678 },
+  { platform: "X", mentions: 126, engagement: 31892 },
+  { platform: "News", mentions: 80, engagement: 30864 },
+];
+
 const maxApplicants = Math.max(...majorPerformance.map((major) => major.applicants));
 const maxConfirmed = Math.max(...majorPerformance.map((major) => major.confirmed));
+const maxPlatformMentions = Math.max(...platformSummary.map((platform) => platform.mentions));
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
@@ -231,6 +277,7 @@ function changeClass(value?: number) {
 export default function Home() {
   const latest = years[1];
   const previous = years[0];
+  const latestSocial = socialOverview[1];
 
   return (
     <main className="dashboard-shell">
@@ -277,6 +324,20 @@ export default function Home() {
           <span className="kpi-label">Application choices 2569</span>
           <strong>{formatNumber(latest.applicationChoices)}</strong>
           <span className="negative">-332 vs 2568</span>
+        </article>
+        <article className="kpi-card social-kpi">
+          <span className="kpi-label">Social mentions 2569</span>
+          <strong>{formatNumber(latestSocial.mentions)}</strong>
+          <span className="positive">
+            {formatSigned(latestSocial.mentionChange)} vs 2568
+          </span>
+        </article>
+        <article className="kpi-card social-kpi">
+          <span className="kpi-label">Social engagement 2569</span>
+          <strong>{formatNumber(latestSocial.engagement)}</strong>
+          <span className="positive">
+            {formatSigned(latestSocial.engagementChange)} vs 2568
+          </span>
         </article>
       </section>
 
@@ -327,6 +388,61 @@ export default function Home() {
                 <span>{item.type}</span>
                 <strong>{formatNumber(item.applicants)}</strong>
                 <small>{item.rate.toFixed(2)}% confirmed rate</small>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="content-grid social-grid">
+        <article className="panel">
+          <div className="panel-heading">
+            <div>
+              <p className="section-kicker">Social impact</p>
+              <h2>Social Media vs Admissions</h2>
+            </div>
+            <span className="pill">sample data</span>
+          </div>
+          <div className="impact-grid">
+            {socialOverview.map((item) => (
+              <div className="impact-card" key={item.year}>
+                <span>{item.year}</span>
+                <strong>{formatNumber(item.mentions)}</strong>
+                <small>mentions · {formatNumber(item.engagement)} engagement</small>
+                <div className="impact-meter">
+                  <span
+                    style={{
+                      width: `${(item.mentions / latestSocial.mentions) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="panel-note">
+            ในชุดข้อมูลสาธิต mentions เพิ่มขึ้น 325 และ engagement เพิ่มขึ้น 390,378
+            พร้อมกับ confirmed applicants ที่เพิ่มขึ้น 69 คน แม้ unique applicants ลดลง
+          </p>
+        </article>
+
+        <article className="panel">
+          <div className="panel-heading">
+            <div>
+              <p className="section-kicker">Platform mix</p>
+              <h2>ช่องทางที่สร้างกระแส</h2>
+            </div>
+          </div>
+          <div className="platform-list">
+            {platformSummary.map((platform) => (
+              <div className="platform-row" key={platform.platform}>
+                <div>
+                  <strong>{platform.platform}</strong>
+                  <span>{formatNumber(platform.engagement)} engagement</span>
+                </div>
+                <div className="platform-bar">
+                  <span style={{ width: `${(platform.mentions / maxPlatformMentions) * 100}%` }} />
+                </div>
+                <b>{formatNumber(platform.mentions)}</b>
               </div>
             ))}
           </div>
@@ -429,10 +545,19 @@ export default function Home() {
               <dt>PII exported</dt>
               <dd>0 columns</dd>
             </div>
+            <div>
+              <dt>Social rows</dt>
+              <dd>28</dd>
+            </div>
+            <div>
+              <dt>Platforms</dt>
+              <dd>7</dd>
+            </div>
           </dl>
           <p>
             ข้อมูลส่วนบุคคลถูกใช้เฉพาะตอนนับ unique applicants แล้วไม่ถูกส่งออกมาใน
-            processed CSV หรือ dashboard นี้
+            processed CSV หรือ dashboard นี้ ส่วน Social Media เป็น sample data
+            สำหรับสาธิต correlation capability
           </p>
         </article>
       </section>
