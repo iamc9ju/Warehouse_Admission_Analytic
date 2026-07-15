@@ -1,0 +1,29 @@
+academic_year,calendar_month,platform_name,keyword_group,keyword_text,major_id,major_name,sentiment_label,mention_count,like_count,comment_count,share_count,view_count
+2568,2024-12,Facebook,brand,วิศวะเกษตรกำแพงแสน,ALL,All Engineering,Positive,82,2450,318,402,38500
+2568,2024-12,TikTok,brand,KU KPS Engineering,ALL,All Engineering,Positive,74,5320,420,610,118000
+2568,2025-01,YouTube,admissions,TCAS วิศวะเกษตร,ALL,All Engineering,Neutral,64,1840,260,190,54000
+2568,2025-01,Pantip,review,รีวิววิศวะเกษตร,ALL,All Engineering,Neutral,41,420,188,32,15600
+2568,2025-02,Facebook,department,Computer Engineering KPS,E29,วิศวกรรมคอมพิวเตอร์,Positive,58,1760,205,260,28400
+2568,2025-02,Facebook,department,Mechanical Engineering KPS,E03,วิศวกรรมเครื่องกล,Neutral,46,1180,144,170,21100
+2568,2025-03,TikTok,brand,วิศวกรรมศาสตร์ กำแพงแสน,ALL,All Engineering,Positive,96,7110,530,820,156000
+2568,2025-03,X,admissions,เข้าวิศวะเกษตร,ALL,All Engineering,Neutral,52,760,210,185,19700
+2568,2025-04,News,brand,วิศวะ KU,ALL,All Engineering,Positive,34,510,72,96,18400
+2568,2025-04,Website,department,Civil Engineering KPS,E38,วิศวกรรมโยธา-โครงสร้างพื้นฐาน,Positive,28,380,44,58,9600
+2568,2025-05,YouTube,admissions,สอบเข้าวิศวะเกษตร,ALL,All Engineering,Positive,88,3380,410,295,82000
+2568,2025-05,Facebook,department,Electrical Engineering KPS,EE,วิศวกรรมไฟฟ้า,Neutral,39,980,118,126,16800
+2568,2025-06,Pantip,review,ค่าใช้จ่ายวิศวะเกษตร,ALL,All Engineering,Negative,24,210,145,18,8400
+2568,2025-06,Website,department,Industrial Engineering KPS,E24,วิศวกรรมอุตสาหการ-โลจิสติกส์,Positive,31,430,52,64,11200
+2569,2025-12,Facebook,brand,วิศวะเกษตรกำแพงแสน,ALL,All Engineering,Positive,112,3920,486,690,54800
+2569,2025-12,TikTok,brand,KU KPS Engineering,ALL,All Engineering,Positive,128,10450,790,1190,236000
+2569,2026-01,YouTube,admissions,TCAS วิศวะเกษตร,ALL,All Engineering,Neutral,84,2760,340,270,76000
+2569,2026-01,Pantip,review,รีวิววิศวะเกษตร,ALL,All Engineering,Positive,55,690,236,51,22400
+2569,2026-02,Facebook,department,Computer Engineering KPS,E29,วิศวกรรมคอมพิวเตอร์,Positive,86,2880,322,430,41200
+2569,2026-02,Facebook,department,Mechanical Engineering KPS,E03,วิศวกรรมเครื่องกล,Neutral,63,1610,188,235,28600
+2569,2026-03,TikTok,brand,วิศวกรรมศาสตร์ กำแพงแสน,ALL,All Engineering,Positive,142,12680,880,1340,281000
+2569,2026-03,X,admissions,เข้าวิศวะเกษตร,ALL,All Engineering,Neutral,74,1040,292,260,26800
+2569,2026-04,News,brand,วิศวะ KU,ALL,All Engineering,Positive,46,720,88,140,24300
+2569,2026-04,Website,department,Civil Engineering KPS,E38,วิศวกรรมโยธา-โครงสร้างพื้นฐาน,Positive,42,610,66,94,14100
+2569,2026-05,YouTube,admissions,สอบเข้าวิศวะเกษตร,ALL,All Engineering,Positive,121,4920,590,410,112000
+2569,2026-05,Facebook,department,Electrical Engineering KPS,EE,วิศวกรรมไฟฟ้า,Neutral,52,1390,150,184,22800
+2569,2026-06,Pantip,review,ค่าใช้จ่ายวิศวะเกษตร,ALL,All Engineering,Negative,29,260,168,22,9700
+2569,2026-06,Website,department,Industrial Engineering KPS,E24,วิศวกรรมอุตสาหการ-โลจิสติกส์,Positive,48,720,78,110,16800

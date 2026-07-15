@@ -1,0 +1,4 @@
+date,platform,text,keyword,sentiment,likes,comments,shares,views,url,author
+2025-01-10,Facebook,"อยากสอบเข้าวิศวะเกษตร ต้องเตรียมตัวยังไงบ้าง","สอบเข้าวิศวะเกษตร",Neutral,12,4,2,0,https://facebook.com/example-post-1,public-user
+2025-04-22,Facebook,"รีวิววิศวะเกษตรกำแพงแสน บรรยากาศดีมาก","วิศวะเกษตรกำแพงแสน",Positive,35,8,6,0,https://facebook.com/example-post-2,public-page
+2026-06-04,Facebook,"TCAS วิศวะเกษตร รอบนี้น่าสนใจ","TCAS วิศวะเกษตร",Positive,18,3,5,0,https://facebook.com/example-post-3,public-user

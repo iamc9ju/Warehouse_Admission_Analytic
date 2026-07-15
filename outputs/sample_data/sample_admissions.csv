@@ -1,0 +1,25 @@
+admission_date,academic_year,tcas_round_code,tcas_round_name,round_order,department_code,department_name_th,department_name_en,province_name_th,province_name_en,region_name,applicants,interview_passed,confirmed,enrolled
+2025-01-15,2025,TCAS1,Portfolio,1,CPE,วิศวกรรมคอมพิวเตอร์,Computer Engineering,นครปฐม,Nakhon Pathom,Central,92,70,55,48
+2025-01-15,2025,TCAS1,Portfolio,1,ME,วิศวกรรมเครื่องกล,Mechanical Engineering,กาญจนบุรี,Kanchanaburi,Western,61,45,34,30
+2025-01-15,2025,TCAS1,Portfolio,1,EE,วิศวกรรมไฟฟ้า,Electrical Engineering,สุพรรณบุรี,Suphan Buri,Central,58,41,32,28
+2025-03-20,2025,TCAS2,Quota,2,CPE,วิศวกรรมคอมพิวเตอร์,Computer Engineering,ราชบุรี,Ratchaburi,Western,118,82,63,56
+2025-03-20,2025,TCAS2,Quota,2,CE,วิศวกรรมโยธา,Civil Engineering,นครปฐม,Nakhon Pathom,Central,76,52,40,35
+2025-03-20,2025,TCAS2,Quota,2,IE,วิศวกรรมอุตสาหการ,Industrial Engineering,สมุทรสาคร,Samut Sakhon,Central,64,47,36,31
+2025-05-10,2025,TCAS3,Admission,3,CPE,วิศวกรรมคอมพิวเตอร์,Computer Engineering,กรุงเทพมหานคร,Bangkok,Central,186,128,91,78
+2025-05-10,2025,TCAS3,Admission,3,ME,วิศวกรรมเครื่องกล,Mechanical Engineering,นครปฐม,Nakhon Pathom,Central,132,88,66,57
+2025-05-10,2025,TCAS3,Admission,3,EE,วิศวกรรมไฟฟ้า,Electrical Engineering,ราชบุรี,Ratchaburi,Western,124,84,60,52
+2025-06-18,2025,TCAS4,Direct Admission,4,CE,วิศวกรรมโยธา,Civil Engineering,เพชรบุรี,Phetchaburi,Western,54,36,25,21
+2025-06-18,2025,TCAS4,Direct Admission,4,IE,วิศวกรรมอุตสาหการ,Industrial Engineering,นครปฐม,Nakhon Pathom,Central,48,34,24,20
+2025-06-18,2025,TCAS4,Direct Admission,4,EE,วิศวกรรมไฟฟ้า,Electrical Engineering,กาญจนบุรี,Kanchanaburi,Western,50,35,26,22
+2026-01-15,2026,TCAS1,Portfolio,1,CPE,วิศวกรรมคอมพิวเตอร์,Computer Engineering,นครปฐม,Nakhon Pathom,Central,108,83,65,58
+2026-01-15,2026,TCAS1,Portfolio,1,ME,วิศวกรรมเครื่องกล,Mechanical Engineering,กาญจนบุรี,Kanchanaburi,Western,68,51,39,34
+2026-01-15,2026,TCAS1,Portfolio,1,EE,วิศวกรรมไฟฟ้า,Electrical Engineering,สุพรรณบุรี,Suphan Buri,Central,65,49,38,33
+2026-03-20,2026,TCAS2,Quota,2,CPE,วิศวกรรมคอมพิวเตอร์,Computer Engineering,ราชบุรี,Ratchaburi,Western,136,96,72,64
+2026-03-20,2026,TCAS2,Quota,2,CE,วิศวกรรมโยธา,Civil Engineering,นครปฐม,Nakhon Pathom,Central,82,61,45,39
+2026-03-20,2026,TCAS2,Quota,2,IE,วิศวกรรมอุตสาหการ,Industrial Engineering,สมุทรสาคร,Samut Sakhon,Central,71,53,41,36
+2026-05-10,2026,TCAS3,Admission,3,CPE,วิศวกรรมคอมพิวเตอร์,Computer Engineering,กรุงเทพมหานคร,Bangkok,Central,214,151,109,94
+2026-05-10,2026,TCAS3,Admission,3,ME,วิศวกรรมเครื่องกล,Mechanical Engineering,นครปฐม,Nakhon Pathom,Central,146,101,75,66
+2026-05-10,2026,TCAS3,Admission,3,EE,วิศวกรรมไฟฟ้า,Electrical Engineering,ราชบุรี,Ratchaburi,Western,139,96,72,62
+2026-06-18,2026,TCAS4,Direct Admission,4,CE,วิศวกรรมโยธา,Civil Engineering,เพชรบุรี,Phetchaburi,Western,61,43,31,27
+2026-06-18,2026,TCAS4,Direct Admission,4,IE,วิศวกรรมอุตสาหการ,Industrial Engineering,นครปฐม,Nakhon Pathom,Central,57,42,31,26
+2026-06-18,2026,TCAS4,Direct Admission,4,EE,วิศวกรรมไฟฟ้า,Electrical Engineering,กาญจนบุรี,Kanchanaburi,Western,59,43,32,28

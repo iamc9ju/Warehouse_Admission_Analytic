@@ -1,0 +1,3 @@
+﻿academic_year,source_rows,unique_applicants,duplicate_applicant_rows,missing_score_rows,missing_priority_rows,missing_major_rows,pii_columns_removed
+2568,2711,1810,901,0,0,0,"citizen_id, email, first_name_th, last_name_th, telephone, title"
+2569,2379,1620,759,0,0,0,"citizen_id, email, first_name_th, last_name_th, telephone, title"

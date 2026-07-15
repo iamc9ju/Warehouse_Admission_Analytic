@@ -14,8 +14,10 @@ Accepted
 
 - YouTube Data API สำหรับวิดีโอและ engagement metrics
 - GDELT DOC API สำหรับข่าว/เว็บไซต์ที่กล่าวถึง keyword
+- Facebook Page API สำหรับโพสต์และ Page-owned engagement/insights เมื่อเจ้าของเพจให้สิทธิ์
+- Social listening CSV export สำหรับ public mentions จากบุคคลอื่นหรือเพจอื่นที่พูดถึง keyword
 
-ยังไม่ดึง Facebook, TikTok, X หรือ Pantip แบบ scraping จนกว่าจะมีสิทธิ์หรือ API ที่อนุญาตชัดเจน
+ยังไม่ดึง TikTok, X หรือ Pantip แบบ scraping จนกว่าจะมีสิทธิ์หรือ API ที่อนุญาตชัดเจน
 
 ## Consequences
 
@@ -28,6 +30,7 @@ Accepted
 ข้อจำกัด:
 
 - YouTube ต้องใช้ API key
+- Facebook ต้องใช้ Page access token และ permission ที่เหมาะสม
+- Public mentions จาก Facebook ต้องใช้ social listening export หรือ provider ที่มีสิทธิ์เข้าถึงข้อมูลตาม policy
 - GDELT เป็น news/web coverage ไม่ใช่ social engagement เต็มรูปแบบ
 - sentiment ยังเป็นค่า neutral default จนกว่าจะเพิ่มโมเดลวิเคราะห์ภาษาไทย
-

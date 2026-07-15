@@ -1,0 +1,71 @@
+[
+  {
+    "dateRange": {
+      "academic_year": 9999,
+      "startDate": "2020-01-01",
+      "endDate": "2026-07-15"
+    },
+    "pages": [
+      {
+        "dimensionHeaders": [
+          {
+            "name": "yearMonth"
+          },
+          {
+            "name": "sessionPrimaryChannelGroup"
+          },
+          {
+            "name": "landingPage"
+          }
+        ],
+        "metricHeaders": [
+          {
+            "name": "sessions",
+            "type": "TYPE_INTEGER"
+          },
+          {
+            "name": "activeUsers",
+            "type": "TYPE_INTEGER"
+          },
+          {
+            "name": "totalUsers",
+            "type": "TYPE_INTEGER"
+          },
+          {
+            "name": "newUsers",
+            "type": "TYPE_INTEGER"
+          },
+          {
+            "name": "screenPageViews",
+            "type": "TYPE_INTEGER"
+          },
+          {
+            "name": "engagedSessions",
+            "type": "TYPE_INTEGER"
+          },
+          {
+            "name": "engagementRate",
+            "type": "TYPE_FLOAT"
+          },
+          {
+            "name": "eventCount",
+            "type": "TYPE_INTEGER"
+          },
+          {
+            "name": "keyEvents",
+            "type": "TYPE_FLOAT"
+          },
+          {
+            "name": "userEngagementDuration",
+            "type": "TYPE_SECONDS"
+          }
+        ],
+        "metadata": {
+          "currencyCode": "USD",
+          "timeZone": "Etc/GMT-7"
+        },
+        "kind": "analyticsData#runReport"
+      }
+    ]
+  }
+]

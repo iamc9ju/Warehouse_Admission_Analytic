@@ -1,0 +1,4 @@
+academic_year,calendar_month,platform_name,keyword_group,keyword_text,major_id,major_name,sentiment_label,mention_count,like_count,comment_count,share_count,view_count
+2568,2025-01,Facebook,admissions,สอบเข้าวิศวะเกษตร,ALL,All Engineering,Neutral,1,12,4,2,0
+2568,2025-04,Facebook,brand,วิศวะเกษตรกำแพงแสน,ALL,All Engineering,Positive,1,35,8,6,0
+2569,2026-06,Facebook,admissions,TCAS วิศวะเกษตร,ALL,All Engineering,Positive,1,18,3,5,0

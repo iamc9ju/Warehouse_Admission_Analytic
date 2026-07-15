@@ -34,6 +34,15 @@ synthetic monthly social media CSV
   -> dashboard social impact section
 ```
 
+### Public mention pipeline
+
+```text
+social listening CSV export
+  -> normalized monthly public mention CSV
+  -> Neon PostgreSQL social tables
+  -> platform / keyword / sentiment analytics
+```
+
 ### Website analytics pipeline
 
 ```text
@@ -56,6 +65,8 @@ GA4 Data API
 | `outputs/etl/aggregate_round3_admissions.py` | Aggregate Excel admissions files |
 | `outputs/etl/load_round3_to_neon.cjs` | Load admissions aggregate data to Neon |
 | `outputs/etl/load_social_media_to_neon.cjs` | Load synthetic social media data to Neon |
+| `outputs/etl/fetch_facebook_page_insights.cjs` | Fetch authorized Facebook Page posts and Page Insights metrics |
+| `outputs/etl/normalize_social_listening_export.cjs` | Normalize social listening public mention exports into warehouse-ready monthly CSV |
 | `outputs/etl/fetch_ga4_website_analytics.cjs` | Fetch aggregate website analytics from GA4 Data API |
 | `outputs/etl/load_website_analytics_to_neon.cjs` | Load GA4 website analytics CSV to Neon |
 | `outputs/sql/admissions_round3_warehouse.sql` | Admissions warehouse schema |
@@ -85,6 +96,8 @@ GA4 Data API
 - Admissions data comes from user-provided Excel files.
 - Personal data is not exported into processed CSV, Neon warehouse tables or the web dashboard.
 - YouTube data has been fetched from the real YouTube Data API; other social rows are currently synthetic sample data for demonstration only.
+- Facebook Page collection is implemented through the official Graph API and requires a Page ID plus Page access token.
+- Public mentions from people or pages should come from an authorized social listening export and be normalized before loading.
 - Website analytics support has been added for GA4 aggregate reports; it requires a GA4 property ID and service account access before real data can be fetched.
 - Because there are only two academic years in the current dataset, social media correlation should be presented as a capability demo, not causal proof.
 
@@ -114,6 +127,10 @@ Do not commit database credentials.
 python3 outputs/etl/aggregate_round3_admissions.py
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/load_round3_to_neon.cjs
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/load_social_media_to_neon.cjs
+FACEBOOK_PAGE_ID="..." FACEBOOK_PAGE_ACCESS_TOKEN="..." node outputs/etl/fetch_facebook_page_insights.cjs
+DATABASE_URL="postgresql://..." SOCIAL_MEDIA_CSV="outputs/real_data/facebook_page_mentions_monthly.csv" NODE_PATH="/path/to/node_modules" node outputs/etl/load_social_media_to_neon.cjs
+SOCIAL_LISTENING_EXPORT_CSV="outputs/sample_data/social_listening_export_template.csv" node outputs/etl/normalize_social_listening_export.cjs
+DATABASE_URL="postgresql://..." SOCIAL_MEDIA_CSV="outputs/real_data/social_listening_mentions_monthly.csv" NODE_PATH="/path/to/node_modules" node outputs/etl/load_social_media_to_neon.cjs
 GA4_PROPERTY_ID="..." GA4_SERVICE_ACCOUNT_FILE="/secure/path/service-account.json" node outputs/etl/fetch_ga4_website_analytics.cjs
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/load_website_analytics_to_neon.cjs
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/export_round3_analytics_report.cjs
