@@ -52,6 +52,16 @@ GA4 Data API
   -> admissions correlation views
 ```
 
+### Governed warehouse and mart layer
+
+```text
+core facts and dimensions
+  -> dataset catalog + lineage + refresh log
+  -> data quality scorecard
+  -> presentation marts
+  -> dashboard warehouse architecture section
+```
+
 ---
 
 ## Key Files
@@ -72,6 +82,8 @@ GA4 Data API
 | `outputs/sql/admissions_round3_warehouse.sql` | Admissions warehouse schema |
 | `outputs/sql/social_media_warehouse.sql` | Social media warehouse schema and views |
 | `outputs/sql/website_analytics_warehouse.sql` | Website analytics schema and admissions correlation views |
+| `outputs/sql/warehouse_governance_marts.sql` | Dataset catalog, lineage, refresh log, quality scorecard and presentation marts |
+| `outputs/etl/apply_warehouse_governance_marts.cjs` | Idempotently apply base schemas plus governed mart layer to Neon |
 | `outputs/reports/` | Generated markdown analytics reports |
 
 `outputs/` is ignored by git because it contains generated artifacts and local deliverables.
@@ -86,8 +98,8 @@ GA4 Data API
 | Unique applicants | 1,810 | 1,620 | -190 |
 | Confirmed applicants | 214 | 283 | +69 |
 | Confirmed rate | 11.82% | 17.47% | +5.65 pts |
-| Social mentions sample + YouTube API | 797 | 1,121 | +324 |
-| Social engagement sample + YouTube API | 890,244 | 1,134,693 | +244,449 |
+| Social mentions sample + YouTube API + manual Facebook sample | 798 | 1,123 | +325 |
+| Social engagement sample + YouTube API + manual Facebook sample | 890,303 | 1,134,715 | +244,412 |
 
 ---
 
@@ -133,5 +145,6 @@ SOCIAL_LISTENING_EXPORT_CSV="outputs/sample_data/social_listening_export_templat
 DATABASE_URL="postgresql://..." SOCIAL_MEDIA_CSV="outputs/real_data/social_listening_mentions_monthly.csv" NODE_PATH="/path/to/node_modules" node outputs/etl/load_social_media_to_neon.cjs
 GA4_PROPERTY_ID="..." GA4_SERVICE_ACCOUNT_FILE="/secure/path/service-account.json" node outputs/etl/fetch_ga4_website_analytics.cjs
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/load_website_analytics_to_neon.cjs
+DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/apply_warehouse_governance_marts.cjs
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/export_round3_analytics_report.cjs
 ```

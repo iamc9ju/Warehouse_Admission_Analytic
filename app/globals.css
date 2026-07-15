@@ -105,7 +105,7 @@ h2 {
 
 .header-status {
   display: grid;
-  grid-template-columns: repeat(4, max-content);
+  grid-template-columns: repeat(5, max-content);
   gap: 8px;
   align-items: center;
   justify-content: end;
@@ -174,6 +174,13 @@ h2 {
 .content-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.55fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.warehouse-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(340px, 0.6fr);
   gap: 12px;
   margin-top: 12px;
 }
@@ -282,6 +289,151 @@ h2 {
   color: var(--ink);
   font-size: 34px;
   line-height: 1;
+}
+
+.layer-flow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.layer-card,
+.warehouse-metric,
+.mart-row,
+.lineage-step {
+  border: 1px solid #dfe6df;
+  border-radius: 8px;
+  background: #fbfcf8;
+}
+
+.layer-card {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px;
+}
+
+.layer-card div {
+  display: grid;
+  gap: 6px;
+}
+
+.layer-card strong,
+.warehouse-metric strong,
+.mart-row code,
+.lineage-step strong {
+  color: var(--ink);
+}
+
+.layer-card span {
+  width: fit-content;
+  border-radius: 999px;
+  background: #e7f1ef;
+  color: var(--teal-dark);
+  font-size: 11px;
+  font-weight: 780;
+  line-height: 1;
+  padding: 6px 8px;
+}
+
+.layer-card p {
+  color: #3f4b48;
+  font-size: 14px;
+  font-weight: 720;
+  line-height: 1.45;
+}
+
+.layer-card small,
+.warehouse-metric small,
+.mart-row span,
+.mart-row p,
+.lineage-step small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.warehouse-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.warehouse-metric {
+  min-height: 132px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 14px;
+}
+
+.warehouse-metric span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 740;
+  text-transform: uppercase;
+}
+
+.warehouse-metric strong {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.mart-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.55fr);
+}
+
+.mart-list,
+.lineage-list {
+  display: grid;
+  gap: 10px;
+}
+
+.mart-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) 150px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+}
+
+.mart-row code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.mart-row span {
+  font-weight: 760;
+}
+
+.lineage-step {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+}
+
+.lineage-step > span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #ffffff;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.lineage-step div {
+  display: grid;
+  gap: 2px;
 }
 
 .ranking-list {
@@ -506,7 +658,8 @@ h2 {
 
 @media (max-width: 1100px) {
   .dashboard-header,
-  .content-grid {
+  .content-grid,
+  .warehouse-section {
     grid-template-columns: 1fr;
   }
 
@@ -516,6 +669,14 @@ h2 {
 
   .kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .layer-flow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mart-row {
+    grid-template-columns: 1fr;
   }
 
   .ranking-row {
@@ -568,5 +729,15 @@ h2 {
 
   .impact-grid {
     grid-template-columns: 1fr;
+  }
+
+  .layer-flow,
+  .warehouse-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .layer-card {
+    min-height: 0;
+    gap: 14px;
   }
 }

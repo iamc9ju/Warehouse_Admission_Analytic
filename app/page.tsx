@@ -45,6 +45,31 @@ type PlatformSummary = {
   engagement: number;
 };
 
+type WarehouseLayer = {
+  layer: string;
+  purpose: string;
+  objects: string;
+  status: string;
+};
+
+type WarehouseMetric = {
+  label: string;
+  value: string;
+  detail: string;
+};
+
+type DataMart = {
+  name: string;
+  grain: string;
+  useCase: string;
+};
+
+type LineageStep = {
+  step: string;
+  title: string;
+  detail: string;
+};
+
 const years: YearOverview[] = [
   {
     year: 2568,
@@ -225,19 +250,19 @@ const majorTypeSummary = [
 const socialOverview: SocialOverview[] = [
   {
     year: 2568,
-    mentions: 797,
-    engagement: 890244,
-    engagementPerMention: 1116.99,
-    sentimentScore: 0.5859,
+    mentions: 798,
+    engagement: 890303,
+    engagementPerMention: 1115.67,
+    sentimentScore: 0.5852,
   },
   {
     year: 2569,
-    mentions: 1121,
-    engagement: 1134693,
-    engagementPerMention: 1012.21,
-    sentimentScore: 0.6699,
-    mentionChange: 324,
-    engagementChange: 244449,
+    mentions: 1123,
+    engagement: 1134715,
+    engagementPerMention: 1010.43,
+    sentimentScore: 0.6687,
+    mentionChange: 325,
+    engagementChange: 244412,
   },
 ];
 
@@ -250,6 +275,72 @@ const platformSummary: PlatformSummary[] = [
   { platform: "X", mentions: 74, engagement: 28392 },
   { platform: "News", mentions: 46, engagement: 25248 },
   { platform: "YouTube API", mentions: 39, engagement: 113443 },
+];
+
+const warehouseLayers: WarehouseLayer[] = [
+  {
+    layer: "Source",
+    purpose: "เก็บหลักฐานต้นทาง",
+    objects: "Excel, YouTube API, GA4 API, manual Facebook search",
+    status: "controlled",
+  },
+  {
+    layer: "Staging",
+    purpose: "แปลงเป็น aggregate ที่ไม่มี PII",
+    objects: "processed CSV, real_data CSV/JSON",
+    status: "repeatable",
+  },
+  {
+    layer: "Core",
+    purpose: "star schema สำหรับ query ซ้ำได้",
+    objects: "dimensions + admissions/social/website facts",
+    status: "loaded",
+  },
+  {
+    layer: "Mart",
+    purpose: "presentation-ready BI layer",
+    objects: "executive, major conversion, channel effectiveness marts",
+    status: "published",
+  },
+  {
+    layer: "Governance",
+    purpose: "metadata, lineage, refresh และ quality",
+    objects: "dataset catalog, lineage edges, refresh runs",
+    status: "auditable",
+  },
+];
+
+const warehouseMetrics: WarehouseMetric[] = [
+  { label: "Fact tables", value: "4", detail: "Admissions, status, social, website" },
+  { label: "Dimensions", value: "8", detail: "Round, faculty, major, status, platform, keyword, sentiment, web channel" },
+  { label: "Presentation marts", value: "3", detail: "Executive, major conversion, channel effectiveness" },
+  { label: "Governance objects", value: "3", detail: "Catalog, lineage, refresh run log" },
+];
+
+const dataMarts: DataMart[] = [
+  {
+    name: "mart_admissions_executive_summary",
+    grain: "academic year",
+    useCase: "ผู้บริหารดู applicants, confirmed, social และ quality ในหน้าเดียว",
+  },
+  {
+    name: "mart_major_conversion",
+    grain: "academic year + major",
+    useCase: "จัดอันดับ demand และ conversion ของแต่ละสาขา",
+  },
+  {
+    name: "mart_channel_effectiveness",
+    grain: "academic year + channel",
+    useCase: "เปรียบเทียบ social platform กับ website channel",
+  },
+];
+
+const lineageSteps: LineageStep[] = [
+  { step: "01", title: "Extract", detail: "Excel/API/manual public search" },
+  { step: "02", title: "Clean", detail: "PII removed, aggregates created" },
+  { step: "03", title: "Load", detail: "idempotent upsert into Neon" },
+  { step: "04", title: "Model", detail: "star schema dimensions and facts" },
+  { step: "05", title: "Publish", detail: "marts, quality views and dashboard" },
 ];
 
 const maxApplicants = Math.max(...majorPerformance.map((major) => major.applicants));
@@ -292,9 +383,10 @@ export default function Home() {
           </p>
         </div>
         <div className="header-status" aria-label="Data pipeline status">
-          <span>Excel</span>
-          <span>ETL</span>
-          <span>Neon</span>
+          <span>Source</span>
+          <span>Staging</span>
+          <span>Core DW</span>
+          <span>Marts</span>
           <span>Dashboard</span>
         </div>
       </section>
@@ -339,6 +431,88 @@ export default function Home() {
           <span className="positive">
             {formatSigned(latestSocial.engagementChange)} vs 2568
           </span>
+        </article>
+      </section>
+
+      <section className="warehouse-section" aria-label="Data warehouse architecture">
+        <article className="panel warehouse-map">
+          <div className="panel-heading">
+            <div>
+              <p className="section-kicker">Data warehouse architecture</p>
+              <h2>Layered warehouse model</h2>
+            </div>
+            <span className="pill">governed DW</span>
+          </div>
+          <div className="layer-flow">
+            {warehouseLayers.map((layer) => (
+              <div className="layer-card" key={layer.layer}>
+                <div>
+                  <strong>{layer.layer}</strong>
+                  <span>{layer.status}</span>
+                </div>
+                <p>{layer.purpose}</p>
+                <small>{layer.objects}</small>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="panel">
+          <div className="panel-heading">
+            <div>
+              <p className="section-kicker">Warehouse inventory</p>
+              <h2>Objects พร้อมสำหรับ BI</h2>
+            </div>
+          </div>
+          <div className="warehouse-metrics">
+            {warehouseMetrics.map((metric) => (
+              <div className="warehouse-metric" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="content-grid mart-grid">
+        <article className="panel">
+          <div className="panel-heading">
+            <div>
+              <p className="section-kicker">Presentation marts</p>
+              <h2>SQL marts สำหรับ Dashboard</h2>
+            </div>
+          </div>
+          <div className="mart-list">
+            {dataMarts.map((mart) => (
+              <div className="mart-row" key={mart.name}>
+                <code>{mart.name}</code>
+                <span>{mart.grain}</span>
+                <p>{mart.useCase}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="panel">
+          <div className="panel-heading">
+            <div>
+              <p className="section-kicker">Lineage</p>
+              <h2>ตรวจสอบเส้นทางข้อมูล</h2>
+            </div>
+          </div>
+          <div className="lineage-list">
+            {lineageSteps.map((item) => (
+              <div className="lineage-step" key={item.step}>
+                <span>{item.step}</span>
+                <div>
+                  <strong>{item.title}</strong>
+                  <small>{item.detail}</small>
+                </div>
+              </div>
+            ))}
+          </div>
         </article>
       </section>
 
@@ -421,7 +595,7 @@ export default function Home() {
             ))}
           </div>
           <p className="panel-note">
-            ใน warehouse ล่าสุด mentions เพิ่มขึ้น 324 และ engagement เพิ่มขึ้น 244,449
+            ใน warehouse ล่าสุด mentions เพิ่มขึ้น 325 และ engagement เพิ่มขึ้น 244,412
             พร้อมกับ confirmed applicants ที่เพิ่มขึ้น 69 คน แม้ unique applicants ลดลง
           </p>
         </article>
@@ -548,17 +722,25 @@ export default function Home() {
             </div>
             <div>
               <dt>Social rows</dt>
-              <dd>28</dd>
+              <dd>62</dd>
             </div>
             <div>
               <dt>Platforms</dt>
-              <dd>7</dd>
+              <dd>8</dd>
+            </div>
+            <div>
+              <dt>Catalog rows</dt>
+              <dd>8</dd>
+            </div>
+            <div>
+              <dt>Lineage edges</dt>
+              <dd>8</dd>
             </div>
           </dl>
           <p>
             ข้อมูลส่วนบุคคลถูกใช้เฉพาะตอนนับ unique applicants แล้วไม่ถูกส่งออกมาใน
             processed CSV หรือ dashboard นี้ ส่วน YouTube API เป็นข้อมูลจริงจากวิดีโอสาธารณะ
-            และ platform อื่นยังเป็น sample data สำหรับสาธิต correlation capability
+            และ Facebook public mentions ล่าสุดเป็น manual public-search sample สำหรับ validate pipeline
           </p>
         </article>
       </section>

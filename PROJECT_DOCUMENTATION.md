@@ -11,7 +11,8 @@ Excel Admissions Data
   -> ETL / Aggregate Processing
   -> Processed CSV
   -> Neon PostgreSQL
-  -> Analytics Views
+  -> Core Facts / Dimensions
+  -> Governance Metadata / Data Marts
   -> Markdown Report
   -> Web Dashboard
 ```
@@ -45,6 +46,13 @@ Excel Admissions Data
 - `outputs/sql/admissions_round3_warehouse.sql`
   - สร้าง schema `admissions_dw`
   - สร้าง dimension tables, fact tables และ analytics views
+
+- `outputs/sql/warehouse_governance_marts.sql`
+  - สร้าง dataset catalog, lineage edges, refresh run log
+  - สร้าง quality scorecard และ presentation marts สำหรับ dashboard
+
+- `outputs/etl/apply_warehouse_governance_marts.cjs`
+  - apply base schema และ governed mart layer แบบ idempotent
 
 - `outputs/etl/load_round3_to_neon.cjs`
   - โหลด processed CSV เข้า Neon PostgreSQL
@@ -149,6 +157,9 @@ Base tables:
 - `fact_admission_round_major_summary`
 - `fact_admission_round_status_summary`
 - `admission_round_data_quality`
+- `dw_dataset_catalog`
+- `dw_lineage_edge`
+- `dw_refresh_run`
 
 Views:
 
@@ -160,6 +171,13 @@ Views:
 - `vw_website_analytics_channel_summary`
 - `vw_website_analytics_landing_page_summary`
 - `vw_website_admissions_year_correlation`
+- `vw_dw_dataset_inventory`
+- `vw_dw_lineage_overview`
+- `vw_dw_table_row_counts`
+- `vw_dw_quality_scorecard`
+- `mart_admissions_executive_summary`
+- `mart_major_conversion`
+- `mart_channel_effectiveness`
 
 ---
 
@@ -171,6 +189,16 @@ Views:
 | Unique applicants | 1,810 | 1,620 | -190 |
 | Confirmed applicants | 214 | 283 | +69 |
 | Confirmed rate | 11.82% | 17.47% | +5.65 pts |
+
+Warehouse governance objects currently applied to Neon:
+
+| Object | Rows |
+|---|---:|
+| `dw_dataset_catalog` | 8 |
+| `dw_lineage_edge` | 8 |
+| `mart_admissions_executive_summary` | 2 |
+| `mart_major_conversion` | 20 |
+| `mart_channel_effectiveness` | 16 |
 
 Important interpretation:
 
@@ -318,6 +346,14 @@ DATABASE_URL="postgresql://..." \
 WEBSITE_ANALYTICS_CSV="outputs/real_data/ga4_website_monthly.csv" \
 NODE_PATH="/path/to/node_modules" \
 node outputs/etl/load_website_analytics_to_neon.cjs
+```
+
+### 10. Apply governed warehouse marts
+
+```bash
+DATABASE_URL="postgresql://..." \
+NODE_PATH="/path/to/node_modules" \
+node outputs/etl/apply_warehouse_governance_marts.cjs
 ```
 
 Do not commit `DATABASE_URL`, GA4 service account JSON or database credentials.

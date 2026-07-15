@@ -32,6 +32,13 @@ Views:
 - `admissions_dw.vw_website_analytics_channel_summary`
 - `admissions_dw.vw_website_analytics_landing_page_summary`
 - `admissions_dw.vw_website_admissions_year_correlation`
+- `admissions_dw.vw_dw_dataset_inventory`
+- `admissions_dw.vw_dw_lineage_overview`
+- `admissions_dw.vw_dw_table_row_counts`
+- `admissions_dw.vw_dw_quality_scorecard`
+- `admissions_dw.mart_admissions_executive_summary`
+- `admissions_dw.mart_major_conversion`
+- `admissions_dw.mart_channel_effectiveness`
 
 ---
 
@@ -50,6 +57,14 @@ DATABASE_URL="postgresql://..." \
 WEBSITE_ANALYTICS_CSV="outputs/real_data/ga4_website_monthly.csv" \
 NODE_PATH="/path/to/node_modules" \
 node outputs/etl/load_website_analytics_to_neon.cjs
+```
+
+Apply governed warehouse metadata and marts:
+
+```bash
+DATABASE_URL="postgresql://..." \
+NODE_PATH="/path/to/node_modules" \
+node outputs/etl/apply_warehouse_governance_marts.cjs
 ```
 
 หมายเหตุ:
@@ -78,7 +93,12 @@ admissions_dw
 | `fact_admission_round_major_summary` | 20 |
 | `fact_admission_round_status_summary` | 15 |
 | `admission_round_data_quality` | 2 |
-| `fact_social_media_monthly_summary` | 28 |
+| `fact_social_media_monthly_summary` | 62 |
+| `dw_dataset_catalog` | 8 |
+| `dw_lineage_edge` | 8 |
+| `mart_admissions_executive_summary` | 2 |
+| `mart_major_conversion` | 20 |
+| `mart_channel_effectiveness` | 16 |
 
 ภาพรวมรายปี:
 
