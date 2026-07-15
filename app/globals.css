@@ -19,7 +19,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-anuphan);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -37,7 +37,7 @@ body {
     linear-gradient(180deg, rgba(15, 118, 110, 0.08), rgba(247, 245, 239, 0) 360px),
     var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-anuphan), Arial, Helvetica, sans-serif;
 }
 
 button,

@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Anuphan, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
 const gaMeasurementId = "G-TGXFBGM0EW";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const anuphan = Anuphan({
+  variable: "--font-anuphan",
+  subsets: ["latin", "thai"],
 });
 
 const geistMono = Geist_Mono({
@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="th">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${anuphan.variable} ${geistMono.variable} antialiased`}
       >
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
