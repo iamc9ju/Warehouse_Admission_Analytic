@@ -34,6 +34,15 @@ synthetic monthly social media CSV
   -> dashboard social impact section
 ```
 
+### Website analytics pipeline
+
+```text
+GA4 Data API
+  -> real monthly website analytics CSV
+  -> Neon PostgreSQL website analytics tables
+  -> admissions correlation views
+```
+
 ---
 
 ## Key Files
@@ -47,8 +56,11 @@ synthetic monthly social media CSV
 | `outputs/etl/aggregate_round3_admissions.py` | Aggregate Excel admissions files |
 | `outputs/etl/load_round3_to_neon.cjs` | Load admissions aggregate data to Neon |
 | `outputs/etl/load_social_media_to_neon.cjs` | Load synthetic social media data to Neon |
+| `outputs/etl/fetch_ga4_website_analytics.cjs` | Fetch aggregate website analytics from GA4 Data API |
+| `outputs/etl/load_website_analytics_to_neon.cjs` | Load GA4 website analytics CSV to Neon |
 | `outputs/sql/admissions_round3_warehouse.sql` | Admissions warehouse schema |
 | `outputs/sql/social_media_warehouse.sql` | Social media warehouse schema and views |
+| `outputs/sql/website_analytics_warehouse.sql` | Website analytics schema and admissions correlation views |
 | `outputs/reports/` | Generated markdown analytics reports |
 
 `outputs/` is ignored by git because it contains generated artifacts and local deliverables.
@@ -73,6 +85,7 @@ synthetic monthly social media CSV
 - Admissions data comes from user-provided Excel files.
 - Personal data is not exported into processed CSV, Neon warehouse tables or the web dashboard.
 - YouTube data has been fetched from the real YouTube Data API; other social rows are currently synthetic sample data for demonstration only.
+- Website analytics support has been added for GA4 aggregate reports; it requires a GA4 property ID and service account access before real data can be fetched.
 - Because there are only two academic years in the current dataset, social media correlation should be presented as a capability demo, not causal proof.
 
 ---
@@ -101,5 +114,7 @@ Do not commit database credentials.
 python3 outputs/etl/aggregate_round3_admissions.py
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/load_round3_to_neon.cjs
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/load_social_media_to_neon.cjs
+GA4_PROPERTY_ID="..." GA4_SERVICE_ACCOUNT_FILE="/secure/path/service-account.json" node outputs/etl/fetch_ga4_website_analytics.cjs
+DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/load_website_analytics_to_neon.cjs
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/export_round3_analytics_report.cjs
 ```

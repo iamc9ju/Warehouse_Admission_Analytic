@@ -94,11 +94,27 @@ Excel Admissions Data
 - `outputs/real_data/`
   - เก็บ CSV/JSON ที่ดึงจากแหล่งข้อมูลจริง
 
+### Website Analytics Collection
+
+- `outputs/etl/fetch_ga4_website_analytics.cjs`
+  - ดึง aggregate website analytics จาก GA4 Data API
+  - ต้องใช้ `GA4_PROPERTY_ID` และ service account ที่มีสิทธิ์อ่าน GA4 property
+  - ส่งออกเฉพาะข้อมูล aggregate รายเดือนตาม academic year, channel group และ landing page
+
+- `outputs/etl/load_website_analytics_to_neon.cjs`
+  - โหลด CSV จาก GA4 เข้า Neon PostgreSQL
+  - สร้าง website analytics fact/dimension tables และ correlation views
+
+- `outputs/sql/website_analytics_warehouse.sql`
+  - สร้าง `fact_website_analytics_monthly`
+  - สร้าง views สำหรับ website analytics year overview, channel summary, landing page summary และ admissions correlation
+
 Current fetch status:
 
 - GDELT collector implemented but current network/API session returned `429` rate limit
 - YouTube collector implemented and successfully fetched public YouTube Data API results after `YOUTUBE_API_KEY` was provided
 - YouTube output: 79 raw videos and 31 monthly aggregate rows
+- GA4 website analytics collector implemented; credentials were verified, but property `524676058` returned 0 rows for both admissions windows and an all-time diagnostic range through 2026-07-15
 - See `outputs/real_data/FETCH_STATUS.md`
 
 ---
@@ -128,6 +144,10 @@ Views:
 - `vw_round3_major_performance`
 - `vw_round3_status_summary`
 - `vw_round3_year_comparison`
+- `vw_website_analytics_year_overview`
+- `vw_website_analytics_channel_summary`
+- `vw_website_analytics_landing_page_summary`
+- `vw_website_admissions_year_correlation`
 
 ---
 
@@ -235,4 +255,21 @@ DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/e
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/export_round3_analytics_report.cjs
 ```
 
-Do not commit `DATABASE_URL` or database credentials.
+### 4. Fetch GA4 website analytics
+
+```bash
+GA4_PROPERTY_ID="..." \
+GA4_SERVICE_ACCOUNT_FILE="/secure/path/service-account.json" \
+node outputs/etl/fetch_ga4_website_analytics.cjs
+```
+
+### 5. Load GA4 website analytics to Neon
+
+```bash
+DATABASE_URL="postgresql://..." \
+WEBSITE_ANALYTICS_CSV="outputs/real_data/ga4_website_monthly.csv" \
+NODE_PATH="/path/to/node_modules" \
+node outputs/etl/load_website_analytics_to_neon.cjs
+```
+
+Do not commit `DATABASE_URL`, GA4 service account JSON or database credentials.
