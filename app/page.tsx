@@ -81,6 +81,15 @@ type LineageStep = {
   detail: string;
 };
 
+const navLinks = [
+  { href: "#overview", label: "Overview" },
+  { href: "#warehouse", label: "Warehouse" },
+  { href: "#rounds", label: "Rounds" },
+  { href: "#social", label: "Social" },
+  { href: "#majors", label: "Majors" },
+  { href: "#quality", label: "Quality" },
+];
+
 const years: YearOverview[] = [
   {
     year: 2568,
@@ -392,7 +401,25 @@ export default function Home() {
 
   return (
     <main className="dashboard-shell">
-      <section className="dashboard-header" aria-labelledby="dashboard-title">
+      <nav className="dashboard-nav" aria-label="Dashboard navigation">
+        <a className="nav-brand" href="#overview" aria-label="Go to dashboard overview">
+          <span>TCAS DW</span>
+          <small>Engineering Admissions</small>
+        </a>
+        <div className="nav-links">
+          {navLinks.map((link) => (
+            <a href={link.href} key={link.href}>
+              {link.label}
+            </a>
+          ))}
+        </div>
+        <div className="nav-status" aria-label="Warehouse status">
+          <span />
+          Live DW
+        </div>
+      </nav>
+
+      <section id="overview" className="dashboard-header" aria-labelledby="dashboard-title">
         <div>
           <p className="eyebrow">Engineering Admissions Analytics</p>
           <h1 id="dashboard-title">TCAS Admissions Data Warehouse</h1>
@@ -454,7 +481,7 @@ export default function Home() {
         </article>
       </section>
 
-      <section className="warehouse-section" aria-label="Data warehouse architecture">
+      <section id="warehouse" className="warehouse-section" aria-label="Data warehouse architecture">
         <article className="panel warehouse-map">
           <div className="panel-heading">
             <div>
@@ -589,7 +616,7 @@ export default function Home() {
         </article>
       </section>
 
-      <section className="panel">
+      <section id="rounds" className="panel">
         <div className="panel-heading">
           <div>
             <p className="section-kicker">Round grain fact</p>
@@ -629,7 +656,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="content-grid social-grid">
+      <section id="social" className="content-grid social-grid">
         <article className="panel">
           <div className="panel-heading">
             <div>
@@ -685,7 +712,7 @@ export default function Home() {
         </article>
       </section>
 
-      <section className="panel">
+      <section id="majors" className="panel">
         <div className="panel-heading">
           <div>
             <p className="section-kicker">Major ranking</p>
@@ -733,7 +760,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="content-grid lower-grid">
+      <section id="quality" className="content-grid lower-grid">
         <article className="panel">
           <div className="panel-heading">
             <div>

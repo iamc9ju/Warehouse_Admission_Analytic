@@ -29,6 +29,7 @@
 
 html {
   background: var(--background);
+  scroll-behavior: smooth;
 }
 
 body {
@@ -51,6 +52,102 @@ textarea {
   width: min(1440px, 100%);
   margin: 0 auto;
   padding: 28px;
+}
+
+.dashboard-nav {
+  position: sticky;
+  top: 12px;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(190px, auto) minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  min-height: 62px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(217, 222, 215, 0.9);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 42px rgba(22, 33, 32, 0.08);
+  padding: 10px 12px;
+  backdrop-filter: blur(18px);
+}
+
+.nav-brand {
+  display: grid;
+  gap: 2px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.nav-brand span {
+  font-size: 18px;
+  font-weight: 820;
+  line-height: 1;
+}
+
+.nav-brand small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.nav-links a {
+  border-radius: 999px;
+  color: #3f4b48;
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 1;
+  padding: 10px 12px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav-links a:hover,
+.nav-links a:focus-visible {
+  background: #e9f3f1;
+  color: var(--teal-dark);
+  outline: none;
+}
+
+.nav-status {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #bdd8d2;
+  border-radius: 999px;
+  background: #eff8f6;
+  color: var(--teal-dark);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1;
+  padding: 10px 12px;
+  white-space: nowrap;
+}
+
+.nav-status span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 4px rgba(47, 125, 50, 0.12);
+}
+
+#overview,
+#warehouse,
+#rounds,
+#social,
+#majors,
+#quality {
+  scroll-margin-top: 96px;
 }
 
 .dashboard-header {
@@ -690,6 +787,20 @@ h2 {
 }
 
 @media (max-width: 1100px) {
+  .dashboard-nav {
+    grid-template-columns: minmax(170px, auto) minmax(0, 1fr);
+  }
+
+  .nav-links {
+    justify-content: end;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .nav-status {
+    display: none;
+  }
+
   .dashboard-header,
   .content-grid,
   .warehouse-section {
@@ -730,6 +841,29 @@ h2 {
 @media (max-width: 720px) {
   .dashboard-shell {
     padding: 18px;
+  }
+
+  .dashboard-nav {
+    top: 8px;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  .nav-brand {
+    grid-template-columns: auto 1fr;
+    gap: 8px;
+    align-items: baseline;
+  }
+
+  .nav-brand small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nav-links {
+    justify-content: start;
   }
 
   .header-status {
