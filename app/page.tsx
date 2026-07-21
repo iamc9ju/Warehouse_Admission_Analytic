@@ -1,6 +1,22 @@
 "use client";
 
+import type { ComponentType, SVGProps } from "react";
 import { useMemo, useState } from "react";
+import {
+  AcademicCapIcon,
+  ChartBarSquareIcon,
+  ChatBubbleLeftRightIcon,
+  CheckCircleIcon,
+  CircleStackIcon,
+  ClipboardDocumentListIcon,
+  ClockIcon,
+  Cog6ToothIcon,
+  DocumentTextIcon,
+  HomeIcon,
+  PresentationChartBarIcon,
+  ShieldCheckIcon,
+  Squares2X2Icon,
+} from "@heroicons/react/24/outline";
 
 type Year = 2568 | 2569;
 
@@ -139,26 +155,23 @@ function deltaClass(value?: number) {
 }
 
 function Icon({ name }: { name: string }) {
-  const icons: Record<string, string> = {
-    home: "H",
-    stack: "W",
-    check: "R",
-    scope: "S",
-    bars: "M",
-    shield: "Q",
-    grid: "G",
-    tiles: "D",
-    doc: "P",
-    catalog: "C",
-    gear: "A",
-    users: "U",
-    tick: "✓",
-    trend: "↗",
-    list: "L",
-    source: "F",
-    clock: "T",
+  const icons: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
+    home: HomeIcon,
+    stack: CircleStackIcon,
+    check: CheckCircleIcon,
+    scope: ChatBubbleLeftRightIcon,
+    bars: AcademicCapIcon,
+    shield: ShieldCheckIcon,
+    grid: Squares2X2Icon,
+    tiles: PresentationChartBarIcon,
+    doc: DocumentTextIcon,
+    catalog: ClipboardDocumentListIcon,
+    gear: Cog6ToothIcon,
+    clock: ClockIcon,
+    trend: ChartBarSquareIcon,
   };
-  return <span className={`ui-icon ui-icon-${name}`} aria-hidden="true">{icons[name] ?? "•"}</span>;
+  const HeroIcon = icons[name] ?? Squares2X2Icon;
+  return <HeroIcon className={`ui-icon ui-icon-${name}`} aria-hidden="true" />;
 }
 
 export default function Home() {
