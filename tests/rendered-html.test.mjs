@@ -54,6 +54,7 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.match(html, /TCAS Admissions Data Warehouse/);
   assert.match(html, /aria-label="Dashboard sidebar"/);
   assert.match(html, /aria-label="Section navigation"/);
+  assert.match(html, /class="page-transition"/);
   assert.match(html, /href="\/warehouse"/);
   assert.match(html, /href="\/rounds"/);
   assert.match(html, /href="\/majors"/);
@@ -95,6 +96,9 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(page, /"Source rows", "9,432"/);
   assert.match(page, /"Source files", "11"/);
   assert.match(page, /fact_admission_round_overview/);
+  assert.match(page, /startViewTransition/);
+  assert.match(page, /role="dialog"/);
+  assert.match(page, /dialog-success-icon/);
 
   assert.doesNotMatch(page, /mock|synthetic|sample platform|TikTok|Pantip|YouTube API|Facebook public search/i);
   assert.doesNotMatch(page, /Your site is taking shape|Codex is working/i);

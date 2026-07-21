@@ -1,10 +1,12 @@
 "use client";
 
-import type { ComponentType, SVGProps } from "react";
-import { useMemo, useState } from "react";
+import type { ComponentType, MouseEvent, SVGProps } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   AcademicCapIcon,
+  CheckIcon,
   CheckCircleIcon,
   CircleStackIcon,
   ClockIcon,
@@ -54,6 +56,11 @@ type RoundRow = {
   confirmed: number;
   rate: number;
   files: number;
+};
+
+type InsightDialog = {
+  title: string;
+  description: string;
 };
 
 export type PageName =
@@ -192,12 +199,14 @@ function Icon({ name }: { name: string }) {
 }
 
 export function DashboardPage({ activePage }: { activePage: PageName }) {
+  const router = useRouter();
   const [selectedYear, setSelectedYear] = useState<Year>(2569);
   const [showAllStatus, setShowAllStatus] = useState(false);
   const [showAllMajors, setShowAllMajors] = useState(false);
   const [showAllRounds, setShowAllRounds] = useState(false);
   const [majorQuery, setMajorQuery] = useState("");
   const [detail, setDetail] = useState("Dashboard พร้อมใช้งานจาก admissions warehouse ที่ตัด PII แล้ว");
+  const [dialog, setDialog] = useState<InsightDialog | null>(null);
   const meta = pageMeta[activePage];
 
   const current = years.find((year) => year.year === selectedYear) ?? years[1];
@@ -273,6 +282,47 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
   const showWarehousePanel = isOverview || activePage === "Warehouse";
   const isFocusedPage = !isOverview;
 
+  useEffect(() => {
+    if (!dialog) return;
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setDialog(null);
+      }
+    }
+
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [dialog]);
+
+  function openInsight(title: string, description: string) {
+    setDetail(`${title}: ${description}`);
+    setDialog({ title, description });
+  }
+
+  function navigateWithTransition(event: MouseEvent<HTMLAnchorElement>, label: string, href: string) {
+    setDetail(`${label} panel is ready`);
+
+    if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    if (window.location.pathname === href) return;
+
+    const navigate = () => router.push(href);
+    const transitionDocument = document as Document & {
+      startViewTransition?: (callback: () => void) => void;
+    };
+
+    if (transitionDocument.startViewTransition) {
+      transitionDocument.startViewTransition(navigate);
+      return;
+    }
+
+    navigate();
+  }
+
   return (
     <main className="app-frame">
       <aside className="sidebar" aria-label="Dashboard sidebar">
@@ -290,9 +340,7 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
               className={activePage === label ? "active" : ""}
               href={href}
               key={label}
-              onClick={() => {
-                setDetail(`${label} panel is ready`);
-              }}
+              onClick={(event) => navigateWithTransition(event, label, href)}
             >
               <Icon name={icon} />
               <span>{label}</span>
@@ -315,7 +363,8 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
         </section>
       </aside>
 
-      <section className="workspace">
+      <section className="workspace" data-page={activePage}>
+        <div className="page-transition" key={activePage}>
         <section id="overview" className="hero-panel">
           <div>
             <p className="eyebrow">{meta.eyebrow}</p>
@@ -332,7 +381,7 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
             </label>
             <div className="pipeline-tabs" aria-label="Warehouse pipeline">
               {pipeline.map((item) => (
-                <button type="button" key={item} onClick={() => setDetail(`${item}: active warehouse stage`)}>
+                <button type="button" key={item} onClick={() => openInsight(item, "active warehouse stage")}>
                   {item}
                 </button>
               ))}
@@ -439,7 +488,7 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
                 </div>
               ))}
             </dl>
-            <button type="button" className="link-button" onClick={() => setDetail("Data quality checks pass: missing score 0, missing major 0, PII exported 0 columns")}>
+            <button type="button" className="link-button" onClick={() => openInsight("Data quality checks pass", "missing score 0, missing major 0, PII exported 0 columns")}>
               ดูรายละเอียดคุณภาพข้อมูล
             </button>
           </article>
@@ -477,7 +526,7 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
                 ))}
               </tbody>
             </table>
-            <button type="button" className="link-button" onClick={() => setDetail("fact_admission_round_overview แสดง grain: academic year + TCAS round")}>
+            <button type="button" className="link-button" onClick={() => openInsight("fact_admission_round_overview", "แสดง grain: academic year + TCAS round")}>
               ดูรายละเอียดทั้งหมด
             </button>
           </article>
@@ -507,7 +556,7 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
                 </div>
               ))}
             </div>
-            <button type="button" className="link-button" onClick={() => setDetail("ปี 2569 applicants ลดลง แต่ confirmed และ confirmed rate เพิ่มขึ้น")}>
+            <button type="button" className="link-button" onClick={() => openInsight("เปรียบเทียบ TCAS", "ปี 2569 applicants ลดลง แต่ confirmed และ confirmed rate เพิ่มขึ้น")}>
               ดูการเปรียบเทียบราย round
             </button>
           </article>
@@ -529,7 +578,7 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
               ["Marts", "year, round, major conversion"],
               ["Dashboard", "interactive BI view"],
             ].map(([title, copy]) => (
-              <button type="button" key={title} onClick={() => setDetail(`${title}: ${copy}`)}>
+              <button type="button" key={title} onClick={() => openInsight(title, copy)}>
                 <strong>{title}</strong>
                 <span>{copy}</span>
               </button>
@@ -541,7 +590,32 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
         <section id="reports" className="detail-bar" aria-live="polite">
           {detail}
         </section>
+        </div>
       </section>
+
+      {dialog && (
+        <div className="dialog-backdrop" role="presentation" onMouseDown={() => setDialog(null)}>
+          <section
+            aria-labelledby="insight-dialog-title"
+            aria-describedby="insight-dialog-description"
+            aria-modal="true"
+            className="insight-dialog"
+            role="dialog"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="dialog-success-icon">
+              <CheckIcon aria-hidden="true" />
+            </div>
+            <div className="dialog-header">
+              <h2 id="insight-dialog-title">{dialog.title}</h2>
+              <p id="insight-dialog-description">{dialog.description}</p>
+            </div>
+            <button type="button" className="dialog-close-button" onClick={() => setDialog(null)}>
+              กลับสู่ dashboard
+            </button>
+          </section>
+        </div>
+      )}
     </main>
   );
 }
