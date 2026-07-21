@@ -201,9 +201,6 @@ function Icon({ name }: { name: string }) {
 export function DashboardPage({ activePage }: { activePage: PageName }) {
   const router = useRouter();
   const [selectedYear, setSelectedYear] = useState<Year>(2569);
-  const [showAllStatus, setShowAllStatus] = useState(false);
-  const [showAllMajors, setShowAllMajors] = useState(false);
-  const [showAllRounds, setShowAllRounds] = useState(false);
   const [majorQuery, setMajorQuery] = useState("");
   const [detail, setDetail] = useState("Dashboard พร้อมใช้งานจาก admissions warehouse ที่ตัด PII แล้ว");
   const [dialog, setDialog] = useState<InsightDialog | null>(null);
@@ -227,12 +224,10 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
       .sort((a, b) => b.applicants - a.applicants);
   }, [majorQuery, selectedYear]);
 
-  const visibleMajors = showAllMajors ? filteredMajors : filteredMajors.slice(0, 10);
+  const visibleMajors = filteredMajors;
   const maxApplicants = Math.max(...filteredMajors.map((major) => major.applicants), 1);
-  const visibleStatuses = showAllStatus
-    ? statuses.filter((status) => status.year === selectedYear)
-    : statuses.filter((status) => status.year === selectedYear).slice(0, 8);
-  const visibleRounds = showAllRounds ? rounds : rounds.filter((round) => round.year === selectedYear);
+  const visibleStatuses = statuses.filter((status) => status.year === selectedYear);
+  const visibleRounds = rounds;
 
   const statCards = [
     {
@@ -410,9 +405,6 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
           <article id="quality" className="panel status-panel">
             <div className="panel-title">
               <h2>การกระจายสถานะ TCAS ปี {selectedYear} ทุก round</h2>
-              <button type="button" onClick={() => setShowAllStatus((value) => !value)}>
-                {showAllStatus ? "ย่อ" : "ดูทั้งหมด"}
-              </button>
             </div>
             <div className="status-list">
               {visibleStatuses.map((status) => (
@@ -429,16 +421,13 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
                 </div>
               ))}
             </div>
-            <button type="button" className="link-button" onClick={() => setShowAllStatus((value) => !value)}>
-              ดูรายละเอียดทั้งหมด
-            </button>
           </article>
           )}
 
           {showMajorsPanel && (
           <article id="majors" className="panel majors-panel">
             <div className="panel-title">
-              <h2>Top 10 สาขาวิชา ปี {selectedYear}</h2>
+              <h2>ทุกสาขาวิชา ปี {selectedYear}</h2>
               <input
                 aria-label="ค้นหาสาขา"
                 placeholder="ค้นหาสาขา"
@@ -469,9 +458,6 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
                 </div>
               ))}
             </div>
-            <button type="button" className="link-button" onClick={() => setShowAllMajors((value) => !value)}>
-              {showAllMajors ? "แสดง Top 10" : "ดูรายละเอียดทั้งหมด"}
-            </button>
           </article>
           )}
 
@@ -497,10 +483,7 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
           {showRoundsPanel && (
           <article id="rounds" className="panel rounds-panel">
             <div className="panel-title">
-              <h2>ภาพรวม TCAS รอบ 1-4 ที่โหลดเข้า warehouse</h2>
-              <button type="button" onClick={() => setShowAllRounds((value) => !value)}>
-                {showAllRounds ? `เฉพาะ ${selectedYear}` : "ดูทุกปี"}
-              </button>
+              <h2>ภาพรวม TCAS รอบ 1-4 ทุกปีที่โหลดเข้า warehouse</h2>
             </div>
             <table>
               <thead>
@@ -526,9 +509,6 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
                 ))}
               </tbody>
             </table>
-            <button type="button" className="link-button" onClick={() => openInsight("fact_admission_round_overview", "แสดง grain: academic year + TCAS round")}>
-              ดูรายละเอียดทั้งหมด
-            </button>
           </article>
           )}
 

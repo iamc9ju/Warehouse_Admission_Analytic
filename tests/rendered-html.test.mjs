@@ -67,7 +67,8 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.match(html, /TCAS1/);
   assert.match(html, /TCAS4/);
   assert.match(html, /คุณภาพข้อมูล/);
-  assert.match(html, /Top 10 สาขาวิชา/);
+  assert.match(html, /ทุกสาขาวิชา/);
+  assert.doesNotMatch(html, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี/);
 });
 
 test("renders separate route pages instead of anchor-only sections", async () => {
@@ -76,14 +77,18 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   const roundsHtml = await roundsResponse.text();
   assert.match(roundsHtml, /TCAS Round Analytics/);
   assert.match(roundsHtml, /ภาพรวม TCAS รอบ 1-4/);
-  assert.doesNotMatch(roundsHtml, /Top 10 สาขาวิชา/);
+  assert.match(roundsHtml, /2568[\s\S]*TCAS1/);
+  assert.match(roundsHtml, /2569[\s\S]*TCAS4/);
+  assert.doesNotMatch(roundsHtml, /ทุกสาขาวิชา/);
+  assert.doesNotMatch(roundsHtml, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี/);
 
   const majorsResponse = await renderPath("/majors");
   assert.equal(majorsResponse.status, 200);
   const majorsHtml = await majorsResponse.text();
   assert.match(majorsHtml, /Major Demand and Conversion/);
-  assert.match(majorsHtml, /Top 10 สาขาวิชา/);
+  assert.match(majorsHtml, /ทุกสาขาวิชา/);
   assert.doesNotMatch(majorsHtml, /ภาพรวม TCAS รอบ 1-4/);
+  assert.doesNotMatch(majorsHtml, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี/);
 });
 
 test("keeps dashboard copy tied to real warehouse data", async () => {
@@ -95,10 +100,10 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(page, /sourceFiles:\s*5/);
   assert.match(page, /"Source rows", "9,432"/);
   assert.match(page, /"Source files", "11"/);
-  assert.match(page, /fact_admission_round_overview/);
   assert.match(page, /startViewTransition/);
   assert.match(page, /role="dialog"/);
   assert.match(page, /dialog-success-icon/);
+  assert.doesNotMatch(page, /showAll|setShowAll|slice\(0,\s*10\)|ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี/);
 
   assert.doesNotMatch(page, /mock|synthetic|sample platform|TikTok|Pantip|YouTube API|Facebook public search/i);
   assert.doesNotMatch(page, /Your site is taking shape|Codex is working/i);
