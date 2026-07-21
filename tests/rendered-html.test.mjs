@@ -51,7 +51,6 @@ test("server-renders the admissions warehouse dashboard", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>TCAS Admissions Data Warehouse<\/title>/i);
-  assert.match(html, /tcas-dw-cartoon-logo\.png/);
   assert.match(html, /TCAS Admissions Data Warehouse/);
   assert.match(html, /aria-label="Dashboard sidebar"/);
   assert.match(html, /aria-label="Section navigation"/);
@@ -114,6 +113,7 @@ test("renders separate route pages instead of anchor-only sections", async () =>
 
 test("keeps dashboard copy tied to real warehouse data", async () => {
   const page = await readFile(new URL("../app/dashboard-page.tsx", import.meta.url), "utf8");
+  const styles = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
   const snapshot = await readFile(new URL("../app/data/warehouse-snapshot.ts", import.meta.url), "utf8");
   const evidence = await readFile(new URL("../docs/data-warehouse-evidence.md", import.meta.url), "utf8");
   const queryContract = await readFile(new URL("../docs/warehouse-query-contract.md", import.meta.url), "utf8");
@@ -132,7 +132,8 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(snapshot, /lineageEdges/);
 
   assert.match(page, /warehouseSnapshot/);
-  assert.match(page, /tcas-dw-cartoon-logo\.png/);
+  assert.match(styles, /tcas-dw-cartoon-logo\.png/);
+  assert.doesNotMatch(page, /next\/image/);
   assert.doesNotMatch(page, /<span className="brand-mark">DW<\/span>/);
   assert.match(page, /Data catalog evidence/);
   assert.match(page, /Dashboard query contract/);

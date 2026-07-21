@@ -90,15 +90,8 @@ select {
   flex: 0 0 auto;
   overflow: hidden;
   border-radius: 12px;
-  background: #fff8ef;
+  background: #fff8ef url("/tcas-dw-cartoon-logo.png") center / cover no-repeat;
   box-shadow: inset 0 0 0 1px #f0d6b5;
-}
-
-.brand-mark img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .brand strong {

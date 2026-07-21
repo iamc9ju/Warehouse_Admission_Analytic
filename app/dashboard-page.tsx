@@ -2,7 +2,6 @@
 
 import type { ComponentType, MouseEvent, SVGProps } from "react";
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -199,9 +198,7 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
     <main className="app-frame">
       <aside className="sidebar" aria-label="Dashboard sidebar">
         <Link className="brand" href="/" onClick={() => setDetail("กลับสู่ภาพรวม TCAS Admissions Data Warehouse")}>
-          <span className="brand-mark" aria-hidden="true">
-            <Image src="/tcas-dw-cartoon-logo.png" alt="" width={48} height={48} priority />
-          </span>
+          <span className="brand-mark" aria-hidden="true" />
           <span>
             <strong>TCAS DW</strong>
             <small>Engineering Admissions</small>
