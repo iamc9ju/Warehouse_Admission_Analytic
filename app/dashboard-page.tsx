@@ -1,12 +1,11 @@
 "use client";
 
 import type { ComponentType, MouseEvent, SVGProps } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   AcademicCapIcon,
-  CheckIcon,
   CheckCircleIcon,
   CircleStackIcon,
   HomeIcon,
@@ -26,11 +25,6 @@ import {
   years,
   type Year,
 } from "./data/warehouse-snapshot";
-
-type InsightDialog = {
-  title: string;
-  description: string;
-};
 
 export type PageName =
   | "Overview"
@@ -75,8 +69,6 @@ const pageMeta: Record<PageName, { eyebrow: string; title: string; copy: string 
   },
 };
 
-const pipeline = ["Source", "Staging", "Core DW", "Marts", "Dashboard"];
-
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
 }
@@ -110,7 +102,6 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
   const [selectedYear, setSelectedYear] = useState<Year>(2569);
   const [majorQuery, setMajorQuery] = useState("");
   const [detail, setDetail] = useState("Dashboard พร้อมใช้งานจาก admissions warehouse ที่ตัด PII แล้ว");
-  const [dialog, setDialog] = useState<InsightDialog | null>(null);
   const meta = pageMeta[activePage];
 
   const current = years.find((year) => year.year === selectedYear) ?? years[1];
@@ -179,24 +170,6 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
   const showDashboardGrid = showStatusPanel || showMajorsPanel || showQualityPanel || showRoundsPanel || showComparePanel;
   const showWarehousePanel = isOverview || activePage === "Warehouse";
   const isFocusedPage = !isOverview;
-
-  useEffect(() => {
-    if (!dialog) return;
-
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setDialog(null);
-      }
-    }
-
-    document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [dialog]);
-
-  function openInsight(title: string, description: string) {
-    setDetail(`${title}: ${description}`);
-    setDialog({ title, description });
-  }
 
   function navigateWithTransition(event: MouseEvent<HTMLAnchorElement>, label: string, href: string) {
     setDetail(`${label} panel is ready`);
@@ -268,13 +241,6 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
                 <option value={2568}>2568</option>
               </select>
             </label>
-            <div className="pipeline-tabs" aria-label="Warehouse pipeline">
-              {pipeline.map((item) => (
-                <button type="button" key={item} onClick={() => openInsight(item, "active warehouse stage")}>
-                  {item}
-                </button>
-              ))}
-            </div>
           </div>
         </section>
 
@@ -466,10 +432,10 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
               ["Marts", "year, round, major conversion"],
               ["Dashboard", "interactive BI view"],
             ].map(([title, copy]) => (
-              <button type="button" key={title} onClick={() => openInsight(title, copy)}>
+              <div key={title}>
                 <strong>{title}</strong>
                 <span>{copy}</span>
-              </button>
+              </div>
             ))}
           </div>
           {activePage === "Warehouse" && (
@@ -556,30 +522,6 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
         </section>
         </div>
       </section>
-
-      {dialog && (
-        <div className="dialog-backdrop" role="presentation" onMouseDown={() => setDialog(null)}>
-          <section
-            aria-labelledby="insight-dialog-title"
-            aria-describedby="insight-dialog-description"
-            aria-modal="true"
-            className="insight-dialog"
-            role="dialog"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className="dialog-success-icon">
-              <CheckIcon aria-hidden="true" />
-            </div>
-            <div className="dialog-header">
-              <h2 id="insight-dialog-title">{dialog.title}</h2>
-              <p id="insight-dialog-description">{dialog.description}</p>
-            </div>
-            <button type="button" className="dialog-close-button" onClick={() => setDialog(null)}>
-              กลับสู่ dashboard
-            </button>
-          </section>
-        </div>
-      )}
     </main>
   );
 }

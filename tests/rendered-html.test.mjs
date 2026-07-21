@@ -56,6 +56,7 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.match(html, /aria-label="Section navigation"/);
   assert.doesNotMatch(html, /Warehouse status|Last sync|2 นาทีที่แล้ว/);
   assert.match(html, /class="page-transition"/);
+  assert.doesNotMatch(html, /Warehouse pipeline|active warehouse stage|role="dialog"|กลับสู่ dashboard/);
   assert.match(html, /href="\/warehouse"/);
   assert.match(html, /href="\/rounds"/);
   assert.match(html, /href="\/majors"/);
@@ -134,10 +135,9 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(page, /Dashboard query contract/);
   assert.match(page, /ETL validation checks/);
   assert.match(page, /startViewTransition/);
-  assert.match(page, /role="dialog"/);
-  assert.match(page, /dialog-success-icon/);
   assert.match(page, /round-table-wrap/);
   assert.match(page, /compare-summary/);
+  assert.doesNotMatch(page, /openInsight|InsightDialog|setDialog|dialog-backdrop|dialog-success-icon|active warehouse stage|Warehouse pipeline/);
   assert.doesNotMatch(page, /showAll|setShowAll|slice\(0,\s*10\)|ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี|ดูการเปรียบเทียบราย round/);
 
   assert.match(evidence, /Active Source Catalog/);
