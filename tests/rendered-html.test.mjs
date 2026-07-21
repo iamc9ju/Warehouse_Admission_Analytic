@@ -23,6 +23,27 @@ async function render() {
   );
 }
 
+async function renderPath(pathname) {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}-${pathname}`);
+  const { default: worker } = await import(workerUrl.href);
+
+  return worker.fetch(
+    new Request(`http://localhost${pathname}`, {
+      headers: { accept: "text/html" },
+    }),
+    {
+      ASSETS: {
+        fetch: async () => new Response("Not found", { status: 404 }),
+      },
+    },
+    {
+      waitUntil() {},
+      passThroughOnException() {},
+    },
+  );
+}
+
 test("server-renders the admissions warehouse dashboard", async () => {
   const response = await render();
   assert.equal(response.status, 200);
@@ -33,10 +54,10 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.match(html, /TCAS Admissions Data Warehouse/);
   assert.match(html, /aria-label="Dashboard sidebar"/);
   assert.match(html, /aria-label="Section navigation"/);
-  assert.match(html, /href="#warehouse"/);
-  assert.match(html, /href="#rounds"/);
-  assert.match(html, /href="#scope"/);
-  assert.match(html, /href="#quality"/);
+  assert.match(html, /href="\/warehouse"/);
+  assert.match(html, /href="\/rounds"/);
+  assert.match(html, /href="\/social"/);
+  assert.match(html, /href="\/quality"/);
   assert.match(html, /TCAS รอบ 1-4/);
   assert.match(html, /3,443/);
   assert.match(html, /4,579/);
@@ -49,8 +70,24 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.match(html, /Top 10 สาขาวิชา/);
 });
 
+test("renders separate route pages instead of anchor-only sections", async () => {
+  const roundsResponse = await renderPath("/rounds");
+  assert.equal(roundsResponse.status, 200);
+  const roundsHtml = await roundsResponse.text();
+  assert.match(roundsHtml, /TCAS Round Analytics/);
+  assert.match(roundsHtml, /ภาพรวม TCAS รอบ 1-4/);
+  assert.doesNotMatch(roundsHtml, /Top 10 สาขาวิชา/);
+
+  const majorsResponse = await renderPath("/majors");
+  assert.equal(majorsResponse.status, 200);
+  const majorsHtml = await majorsResponse.text();
+  assert.match(majorsHtml, /Major Demand and Conversion/);
+  assert.match(majorsHtml, /Top 10 สาขาวิชา/);
+  assert.doesNotMatch(majorsHtml, /ภาพรวม TCAS รอบ 1-4/);
+});
+
 test("keeps dashboard copy tied to real warehouse data", async () => {
-  const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  const page = await readFile(new URL("../app/dashboard-page.tsx", import.meta.url), "utf8");
 
   assert.match(page, /choices:\s*4579/);
   assert.match(page, /applicants:\s*3443/);

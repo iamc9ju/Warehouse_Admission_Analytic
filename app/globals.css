@@ -396,6 +396,15 @@ h2 {
   margin-top: 24px;
 }
 
+.dashboard-grid.focused-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dashboard-grid.focused-grid .panel {
+  grid-column: auto;
+  grid-row: auto;
+}
+
 .panel {
   min-width: 0;
   padding: 18px;
