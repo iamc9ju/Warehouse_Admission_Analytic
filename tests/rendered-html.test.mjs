@@ -66,9 +66,11 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.match(html, /545/);
   assert.match(html, /TCAS1/);
   assert.match(html, /TCAS4/);
+  assert.match(html, /round rows/);
+  assert.match(html, /Year over year summary/);
   assert.match(html, /คุณภาพข้อมูล/);
   assert.match(html, /ทุกสาขาวิชา/);
-  assert.doesNotMatch(html, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี/);
+  assert.doesNotMatch(html, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี|ดูการเปรียบเทียบราย round/);
 });
 
 test("renders separate route pages instead of anchor-only sections", async () => {
@@ -80,7 +82,7 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.match(roundsHtml, /2568[\s\S]*TCAS1/);
   assert.match(roundsHtml, /2569[\s\S]*TCAS4/);
   assert.doesNotMatch(roundsHtml, /ทุกสาขาวิชา/);
-  assert.doesNotMatch(roundsHtml, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี/);
+  assert.doesNotMatch(roundsHtml, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี|ดูการเปรียบเทียบราย round/);
 
   const majorsResponse = await renderPath("/majors");
   assert.equal(majorsResponse.status, 200);
@@ -88,7 +90,7 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.match(majorsHtml, /Major Demand and Conversion/);
   assert.match(majorsHtml, /ทุกสาขาวิชา/);
   assert.doesNotMatch(majorsHtml, /ภาพรวม TCAS รอบ 1-4/);
-  assert.doesNotMatch(majorsHtml, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี/);
+  assert.doesNotMatch(majorsHtml, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี|ดูการเปรียบเทียบราย round/);
 });
 
 test("keeps dashboard copy tied to real warehouse data", async () => {
@@ -103,7 +105,9 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(page, /startViewTransition/);
   assert.match(page, /role="dialog"/);
   assert.match(page, /dialog-success-icon/);
-  assert.doesNotMatch(page, /showAll|setShowAll|slice\(0,\s*10\)|ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี/);
+  assert.match(page, /round-table-wrap/);
+  assert.match(page, /compare-summary/);
+  assert.doesNotMatch(page, /showAll|setShowAll|slice\(0,\s*10\)|ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี|ดูการเปรียบเทียบราย round/);
 
   assert.doesNotMatch(page, /mock|synthetic|sample platform|TikTok|Pantip|YouTube API|Facebook public search/i);
   assert.doesNotMatch(page, /Your site is taking shape|Codex is working/i);

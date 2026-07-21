@@ -228,6 +228,11 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
   const maxApplicants = Math.max(...filteredMajors.map((major) => major.applicants), 1);
   const visibleStatuses = statuses.filter((status) => status.year === selectedYear);
   const visibleRounds = rounds;
+  const compareMetrics = [
+    ["ผู้สมัครไม่ซ้ำ", years[0].applicants, years[1].applicants, 3600],
+    ["ยืนยันสิทธิ์", years[0].confirmed, years[1].confirmed, 600],
+    ["อัตราการยืนยัน", years[0].rate, years[1].rate, 20],
+  ] as const;
 
   const statCards = [
     {
@@ -484,31 +489,38 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
           <article id="rounds" className="panel rounds-panel">
             <div className="panel-title">
               <h2>ภาพรวม TCAS รอบ 1-4 ทุกปีที่โหลดเข้า warehouse</h2>
+              <span className="mini-pill">{visibleRounds.length} round rows</span>
             </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>TCAS</th>
-                  <th>Choices</th>
-                  <th>Unique Applicants</th>
-                  <th>Confirmed</th>
-                  <th>Rate</th>
-                  <th>Files</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visibleRounds.map((round) => (
-                  <tr key={`${round.year}-${round.code}`}>
-                    <td>{round.year} · {round.code} ({round.name})</td>
-                    <td>{formatNumber(round.choices)}</td>
-                    <td>{formatNumber(round.applicants)}</td>
-                    <td>{formatNumber(round.confirmed)}</td>
-                    <td>{round.rate.toFixed(2)}%</td>
-                    <td>{round.files}</td>
+            <div className="round-table-wrap">
+              <table className="round-table">
+                <thead>
+                  <tr>
+                    <th>TCAS</th>
+                    <th>Choices</th>
+                    <th>Unique Applicants</th>
+                    <th>Confirmed</th>
+                    <th>Rate</th>
+                    <th>Files</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {visibleRounds.map((round) => (
+                    <tr key={`${round.year}-${round.code}`}>
+                      <td>
+                        <span className={`round-year y${round.year}`}>{round.year}</span>
+                        <strong>{round.code}</strong>
+                        <small>{round.name}</small>
+                      </td>
+                      <td>{formatNumber(round.choices)}</td>
+                      <td>{formatNumber(round.applicants)}</td>
+                      <td>{formatNumber(round.confirmed)}</td>
+                      <td><span className="rate-chip">{round.rate.toFixed(2)}%</span></td>
+                      <td>{round.files}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </article>
           )}
 
@@ -521,12 +533,13 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
               <span><i className="year-68" />2568</span>
               <span><i className="year-69" />2569</span>
             </div>
+            <div className="compare-summary" aria-label="Year over year summary">
+              <span><strong>-154</strong> applicants</span>
+              <span><strong>+17</strong> confirmed</span>
+              <span><strong>+1.15 pts</strong> rate</span>
+            </div>
             <div className="compare-chart">
-              {[
-                ["ผู้สมัครไม่ซ้ำ", years[0].applicants, years[1].applicants, 3600],
-                ["ยืนยันสิทธิ์", years[0].confirmed, years[1].confirmed, 600],
-                ["อัตราการยืนยัน", years[0].rate, years[1].rate, 20],
-              ].map(([label, first, second, max]) => (
+              {compareMetrics.map(([label, first, second, max]) => (
                 <div className="chart-group" key={label}>
                   <div className="bars">
                     <span className="year-68" style={{ height: `${(Number(first) / Number(max)) * 100}%` }}><b>{typeof first === "number" && first < 100 ? `${first}%` : formatNumber(Number(first))}</b></span>
@@ -536,9 +549,6 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
                 </div>
               ))}
             </div>
-            <button type="button" className="link-button" onClick={() => openInsight("เปรียบเทียบ TCAS", "ปี 2569 applicants ลดลง แต่ confirmed และ confirmed rate เพิ่มขึ้น")}>
-              ดูการเปรียบเทียบราย round
-            </button>
           </article>
           )}
         </section>
