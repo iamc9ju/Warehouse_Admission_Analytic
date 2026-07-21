@@ -230,18 +230,6 @@ export default function Home() {
       change: `${formatSigned(choicesChange)} vs ${previous.year}`,
       changeType: deltaClass(choicesChange),
     },
-    {
-      name: `Source files (${selectedYear})`,
-      value: String(current.sourceFiles),
-      change: "Excel workbooks",
-      changeType: "neutral",
-    },
-    {
-      name: "PII exported",
-      value: "0",
-      change: "columns",
-      changeType: "positive",
-    },
   ];
 
   const qualityCards = [
