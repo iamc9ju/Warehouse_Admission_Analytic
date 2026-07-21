@@ -11,6 +11,7 @@ Excel admissions files / owned GA4 aggregate reports
   -> Neon PostgreSQL admissions_dw schema
   -> conformed dimensions and aggregate fact tables
   -> quality, lineage and mart views
+  -> exported dashboard snapshot
   -> web dashboard and markdown reports
 ```
 
@@ -23,6 +24,7 @@ Excel admissions files / owned GA4 aggregate reports
 | Core | Dimensional warehouse model | `dim_*`, `fact_*` tables in `admissions_dw` |
 | Mart | Dashboard-ready presentation views | `mart_admissions_executive_summary`, `mart_major_conversion`, TCAS summary marts |
 | Governance | Metadata, lineage and data quality | `dw_dataset_catalog`, `dw_lineage_edge`, `dw_refresh_run`, quality views |
+| Snapshot | Credential-free dashboard export | `app/data/warehouse-snapshot.ts` |
 
 ## Dimensional Model
 
@@ -35,6 +37,13 @@ The core warehouse uses a star-schema style model:
 ## Privacy Boundary
 
 Raw applicant identifiers are used only during local aggregation to count unique applicants. They are not written to processed CSV, Neon tables, reports or dashboard output.
+
+## Audit Evidence
+
+- Data catalog, lineage and ETL validation evidence are documented in `docs/data-warehouse-evidence.md`.
+- Dashboard query contracts are documented in `docs/warehouse-query-contract.md`.
+- Quality metric definitions are documented in `docs/data-quality-metrics.md`.
+- The dashboard reads `app/data/warehouse-snapshot.ts`, a typed export from warehouse marts/views, instead of embedding numbers directly in the page component.
 
 ## Current Caveats
 

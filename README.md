@@ -42,7 +42,7 @@ core facts and dimensions
   -> dataset catalog + lineage + refresh log
   -> data quality scorecard
   -> presentation marts
-  -> dashboard warehouse architecture section
+  -> exported dashboard snapshot with query contract
 ```
 
 ---
@@ -72,8 +72,12 @@ Allowed sources:
 | Path | Purpose |
 |---|---|
 | `PROJECT_DOCUMENTATION.md` | Full project documentation, limitations and runbook |
+| `docs/data-warehouse-evidence.md` | Evidence pack for source scope, lineage, ETL validation, quality metrics and limitations |
+| `docs/warehouse-query-contract.md` | SQL query contract for exporting dashboard snapshot from warehouse marts/views |
+| `docs/data-quality-metrics.md` | Data quality metric definitions, source objects and validation rules |
 | `docs/decisions/` | Architecture decision records |
-| `app/page.tsx` | Web dashboard content and data |
+| `app/data/warehouse-snapshot.ts` | Typed exported warehouse snapshot used by the web dashboard |
+| `app/dashboard-page.tsx` | Web dashboard UI and interactive route pages |
 | `app/globals.css` | Dashboard layout and styling |
 | `outputs/etl/aggregate_round3_admissions.py` | Aggregate Excel admissions files |
 | `outputs/etl/aggregate_admissions_all_rounds.py` | Aggregate TCAS round 1-4 Excel files without exporting PII |
@@ -88,7 +92,7 @@ Allowed sources:
 | `outputs/etl/apply_warehouse_governance_marts.cjs` | Idempotently apply base schemas plus governed mart layer to Neon |
 | `outputs/reports/` | Generated markdown analytics reports |
 
-`outputs/` is ignored by git because it contains generated artifacts and local deliverables.
+`outputs/` is ignored by git because it contains generated artifacts and local deliverables. The committed dashboard uses `app/data/warehouse-snapshot.ts` as the auditable, typed export from the warehouse mart layer.
 
 ---
 
@@ -110,6 +114,8 @@ Allowed sources:
 - Social media ingestion has been removed from the active project scope.
 - Website analytics support is limited to GA4 aggregate reports from an owned property.
 - Because there are only two academic years in the current dataset, correlation should be presented as a capability demo, not causal proof.
+- The dashboard is not a live database client. It reads a committed warehouse snapshot exported from Neon marts/views so no database credentials are shipped to the browser.
+- The current grading evidence lives in `docs/data-warehouse-evidence.md`, `docs/warehouse-query-contract.md` and `docs/data-quality-metrics.md`.
 
 ---
 

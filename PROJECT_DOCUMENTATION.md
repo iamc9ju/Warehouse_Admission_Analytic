@@ -15,7 +15,7 @@ Excel Admissions Data
   -> Neon PostgreSQL
   -> Core Facts / Dimensions
   -> Governance Metadata / Data Marts
-  -> Markdown Report
+  -> Exported Dashboard Snapshot
   -> Web Dashboard
 ```
 
@@ -122,8 +122,14 @@ Current fetch status:
 
 ### Web Dashboard
 
-- `app/page.tsx`
-  - Dashboard หน้าเดียวสำหรับพรีเซนต์ผล admissions analytics และ governed warehouse scope
+- `app/data/warehouse-snapshot.ts`
+  - typed snapshot ที่ export จาก Neon warehouse marts/views สำหรับ dashboard
+  - ระบุ `sourceSystem`, `schema`, `dashboardMode`, `exportedAt` และ `sourceQuery`
+
+- `app/dashboard-page.tsx`
+  - Dashboard route pages สำหรับ Overview, Warehouse, Rounds, Majors และ Quality
+  - หน้า Warehouse แสดง data catalog, lineage edges, query contract และ ETL validation checks
+  - หน้า Quality แสดง metric definitions, source object และ validation rule ของแต่ละ quality metric
 
 - `app/globals.css`
   - Dashboard layout และ visual design
@@ -183,6 +189,16 @@ Active views and marts:
 - `mart_admissions_executive_summary`
 - `mart_major_conversion`
 
+Committed dashboard snapshot:
+
+- `app/data/warehouse-snapshot.ts`
+  - `years` มาจาก `mart_admissions_executive_summary`
+  - `rounds` มาจาก `vw_admission_round_overview`
+  - `majorRows` มาจาก `mart_major_conversion`
+  - `statuses` มาจาก `vw_admission_round_status_distribution`
+  - `qualityMetricDefinitions` มาจาก quality scorecard contract
+  - `dataCatalogRows` และ `lineageEdges` ใช้เป็น governance evidence สำหรับการตรวจโปรเจค
+
 ---
 
 ## Key Results
@@ -218,6 +234,26 @@ Important interpretation:
 2. ไม่เขียนค่า `citizen_id` ลง processed CSV
 3. ไม่โหลด PII เข้า Neon
 4. ไม่แสดง PII ใน dashboard หรือ report
+
+---
+
+## Audit Evidence
+
+เอกสารที่ใช้ตอบคำถามเชิง Data Warehouse:
+
+- `docs/data-warehouse-evidence.md`
+  - source catalog, lineage, ETL cleaning contract, validation checks, dashboard snapshot contract และ limitations
+- `docs/warehouse-query-contract.md`
+  - SQL contract สำหรับ query จาก Neon views/marts ก่อน export dashboard snapshot
+- `docs/data-quality-metrics.md`
+  - นิยาม metric เช่น source rows, missing score, missing major, PII exported, catalog rows และ lineage edges
+
+เหตุผลที่ dashboard ไม่ query Neon โดยตรง:
+
+- ไม่ส่ง database credentials ไป browser
+- ลดความเสี่ยง credential leak ใน public/private deployed site
+- ทำให้การตรวจโปรเจค reproducible ด้วย committed snapshot
+- หากข้อมูล warehouse เปลี่ยน ให้ export snapshot ใหม่ตาม query contract
 
 ---
 

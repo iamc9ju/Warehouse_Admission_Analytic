@@ -75,6 +75,15 @@ test("server-renders the admissions warehouse dashboard", async () => {
 });
 
 test("renders separate route pages instead of anchor-only sections", async () => {
+  const warehouseResponse = await renderPath("/warehouse");
+  assert.equal(warehouseResponse.status, 200);
+  const warehouseHtml = await warehouseResponse.text();
+  assert.match(warehouseHtml, /Data catalog evidence/);
+  assert.match(warehouseHtml, /Lineage edges/);
+  assert.match(warehouseHtml, /Dashboard query contract/);
+  assert.match(warehouseHtml, /ETL validation checks/);
+  assert.match(warehouseHtml, /mart_admissions_executive_summary/);
+
   const roundsResponse = await renderPath("/rounds");
   assert.equal(roundsResponse.status, 200);
   const roundsHtml = await roundsResponse.text();
@@ -92,23 +101,52 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.match(majorsHtml, /ทุกสาขาวิชา/);
   assert.doesNotMatch(majorsHtml, /ภาพรวม TCAS รอบ 1-4/);
   assert.doesNotMatch(majorsHtml, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี|ดูการเปรียบเทียบราย round/);
+
+  const qualityResponse = await renderPath("/quality");
+  assert.equal(qualityResponse.status, 200);
+  const qualityHtml = await qualityResponse.text();
+  assert.match(qualityHtml, /Data quality metric definitions/);
+  assert.match(qualityHtml, /admission_round_source_data_quality\.missing_score_rows/);
+  assert.match(qualityHtml, /processed aggregate CSV column audit/);
 });
 
 test("keeps dashboard copy tied to real warehouse data", async () => {
   const page = await readFile(new URL("../app/dashboard-page.tsx", import.meta.url), "utf8");
+  const snapshot = await readFile(new URL("../app/data/warehouse-snapshot.ts", import.meta.url), "utf8");
+  const evidence = await readFile(new URL("../docs/data-warehouse-evidence.md", import.meta.url), "utf8");
+  const queryContract = await readFile(new URL("../docs/warehouse-query-contract.md", import.meta.url), "utf8");
+  const qualityMetrics = await readFile(new URL("../docs/data-quality-metrics.md", import.meta.url), "utf8");
 
-  assert.match(page, /choices:\s*4579/);
-  assert.match(page, /applicants:\s*3443/);
-  assert.match(page, /confirmed:\s*545/);
-  assert.match(page, /sourceFiles:\s*5/);
-  assert.match(page, /"Source rows", "9,432"/);
-  assert.match(page, /"Source files", "11"/);
+  assert.match(snapshot, /choices:\s*4579/);
+  assert.match(snapshot, /applicants:\s*3443/);
+  assert.match(snapshot, /confirmed:\s*545/);
+  assert.match(snapshot, /sourceFiles:\s*5/);
+  assert.match(snapshot, /sourceRows:\s*9432/);
+  assert.match(snapshot, /sourceFiles:\s*11/);
+  assert.match(snapshot, /mart_admissions_executive_summary/);
+  assert.match(snapshot, /vw_admission_round_overview/);
+  assert.match(snapshot, /qualityMetricDefinitions/);
+  assert.match(snapshot, /dataCatalogRows/);
+  assert.match(snapshot, /lineageEdges/);
+
+  assert.match(page, /warehouseSnapshot/);
+  assert.match(page, /Data catalog evidence/);
+  assert.match(page, /Dashboard query contract/);
+  assert.match(page, /ETL validation checks/);
   assert.match(page, /startViewTransition/);
   assert.match(page, /role="dialog"/);
   assert.match(page, /dialog-success-icon/);
   assert.match(page, /round-table-wrap/);
   assert.match(page, /compare-summary/);
   assert.doesNotMatch(page, /showAll|setShowAll|slice\(0,\s*10\)|ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี|ดูการเปรียบเทียบราย round/);
+
+  assert.match(evidence, /Active Source Catalog/);
+  assert.match(evidence, /ETL and Cleaning Contract/);
+  assert.match(evidence, /Dashboard Snapshot Contract/);
+  assert.match(queryContract, /Warehouse Query Contract/);
+  assert.match(queryContract, /admissions_dw\.mart_admissions_executive_summary/);
+  assert.match(qualityMetrics, /Data Quality Metrics/);
+  assert.match(qualityMetrics, /Missing score/);
 
   assert.doesNotMatch(page, /mock|synthetic|sample platform|TikTok|Pantip|YouTube API|Facebook public search/i);
   assert.doesNotMatch(page, /Your site is taking shape|Codex is working/i);
