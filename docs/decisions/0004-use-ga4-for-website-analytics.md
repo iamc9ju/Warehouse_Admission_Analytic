@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-Website traffic is the closest social-adjacent signal to the admissions funnel because users who visit admissions pages are already showing measurable intent. Unlike public social media, website analytics should come from an owned analytics property with explicit access permission.
+Website traffic is an owned analytics signal close to the admissions funnel because users who visit admissions pages are already showing measurable intent. Unlike public social media, website analytics should come from an owned analytics property with explicit access permission.
 
 ## Decision
 
@@ -17,7 +17,7 @@ Add a dedicated GA4 website analytics pipeline:
 - Export only aggregate monthly rows by academic year, channel group and landing page
 - Load aggregates into dedicated website analytics fact/dimension tables
 - Join website analytics aggregates with admissions year summaries through warehouse views
-- Use the existing Node/PostgreSQL loader pattern with `pg`; this makes the new loader consistent with `load_round3_to_neon.cjs` and `load_social_media_to_neon.cjs`
+- Use the existing Node/PostgreSQL loader pattern with `pg`; this makes the new loader consistent with the admissions warehouse loaders
 
 No raw user identifiers, cookies, client IDs or device-level visitor records are stored in the project.
 
@@ -25,7 +25,7 @@ No raw user identifiers, cookies, client IDs or device-level visitor records are
 
 ข้อดี:
 
-- Website data is closer to admissions intent than generic social engagement
+- Website data is closer to admissions intent than generic public engagement
 - Keeps credentials out of source files
 - Preserves privacy by using aggregate GA4 metrics only
 - Records `pg` as an explicit runtime dependency so Neon loaders can run without relying on a hidden global package path

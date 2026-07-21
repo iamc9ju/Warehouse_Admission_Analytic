@@ -1,5 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS admissions_dw;
 
+DROP VIEW IF EXISTS admissions_dw.mart_channel_effectiveness;
+
 CREATE TABLE IF NOT EXISTS admissions_dw.dw_dataset_catalog (
     dataset_key BIGSERIAL PRIMARY KEY,
     dataset_name TEXT NOT NULL UNIQUE,
@@ -137,16 +139,6 @@ VALUES
         'Major-level admissions fact for ranking, conversion and score analytics.'
     ),
     (
-        'fact_social_media_monthly_summary',
-        'core',
-        'One row per academic year, month, platform, keyword and sentiment',
-        'Social APIs / sample CSV / manual public search',
-        'Manual or API refresh',
-        'Admissions analytics project',
-        'internal',
-        'Monthly social mention aggregate fact. Some sources are demonstration/sample data unless documented otherwise.'
-    ),
-    (
         'fact_website_analytics_monthly',
         'core',
         'One row per academic year, month, channel group and landing page',
@@ -184,7 +176,7 @@ VALUES
         'After core fact refresh',
         'Admissions analytics project',
         'internal',
-        'Presentation mart joining admissions, social, website and quality indicators for dashboard consumption.'
+        'Presentation mart joining admissions, owned website analytics and quality indicators for dashboard consumption.'
     ),
     (
         'mart_major_conversion',
@@ -206,6 +198,11 @@ SET
     sensitivity_level = EXCLUDED.sensitivity_level,
     business_description = EXCLUDED.business_description,
     updated_at = now();
+
+DELETE FROM admissions_dw.dw_dataset_catalog
+WHERE dataset_name IN (
+    'fact_social_media_monthly_summary'
+);
 
 INSERT INTO admissions_dw.dw_lineage_edge (
     upstream_dataset,
@@ -272,13 +269,6 @@ VALUES
         'Loads TCAS status distribution summary.'
     ),
     (
-        'social_source_exports',
-        'fact_social_media_monthly_summary',
-        'load_social_media_to_neon.cjs',
-        'normalize',
-        'Loads monthly platform, keyword and sentiment aggregates from API output, sample CSV or manual public-search CSV.'
-    ),
-    (
         'ga4_data_api',
         'fact_website_analytics_monthly',
         'load_website_analytics_to_neon.cjs',
@@ -290,7 +280,7 @@ VALUES
         'mart_admissions_executive_summary',
         'mart_admissions_executive_summary view',
         'join',
-        'Combines admissions, social, website and data quality metrics at academic-year grain.'
+        'Combines admissions, owned website analytics and data quality metrics at academic-year grain.'
     ),
     (
         'fact_admission_round_major_summary',
@@ -303,6 +293,10 @@ ON CONFLICT (upstream_dataset, downstream_dataset, transform_name) DO UPDATE
 SET
     transform_type = EXCLUDED.transform_type,
     notes = EXCLUDED.notes;
+
+DELETE FROM admissions_dw.dw_lineage_edge
+WHERE upstream_dataset = 'social_source_exports'
+   OR downstream_dataset = 'fact_social_media_monthly_summary';
 
 CREATE OR REPLACE VIEW admissions_dw.vw_dw_dataset_inventory AS
 SELECT
@@ -362,12 +356,6 @@ SELECT
 FROM admissions_dw.fact_admission_round_status_summary
 UNION ALL
 SELECT
-    'fact_social_media_monthly_summary',
-    'fact',
-    COUNT(*)::BIGINT
-FROM admissions_dw.fact_social_media_monthly_summary
-UNION ALL
-SELECT
     'fact_website_analytics_monthly',
     'fact',
     COUNT(*)::BIGINT
@@ -407,13 +395,6 @@ WITH admissions_quality AS (
         SUM(duplicate_applicant_rows) AS duplicate_applicant_rows
     FROM admissions_dw.admission_round_data_quality
 ),
-social_quality AS (
-    SELECT
-        COUNT(*) AS social_rows,
-        COUNT(DISTINCT platform_key) AS social_platforms,
-        COALESCE(SUM(mention_count), 0) AS social_mentions
-    FROM admissions_dw.fact_social_media_monthly_summary
-),
 website_quality AS (
     SELECT
         COUNT(*) AS website_rows,
@@ -426,9 +407,6 @@ SELECT
     missing_priority_rows,
     missing_major_rows,
     duplicate_applicant_rows,
-    social_rows,
-    social_platforms,
-    social_mentions,
     website_rows,
     website_sessions,
     CASE
@@ -439,15 +417,10 @@ SELECT
         ELSE 'review'
     END AS admissions_quality_status,
     CASE
-        WHEN social_rows > 0 THEN 'pass'
-        ELSE 'review'
-    END AS social_quality_status,
-    CASE
         WHEN website_rows > 0 THEN 'pass'
         ELSE 'waiting_for_data'
     END AS website_quality_status
 FROM admissions_quality
-CROSS JOIN social_quality
 CROSS JOIN website_quality;
 
 CREATE OR REPLACE VIEW admissions_dw.mart_admissions_executive_summary AS
@@ -462,19 +435,13 @@ SELECT
     q.source_rows,
     q.missing_score_rows,
     q.missing_major_rows,
-    COALESCE(s.total_mentions, 0) AS total_social_mentions,
-    COALESCE(s.total_engagement, 0) AS total_social_engagement,
-    s.weighted_sentiment_score,
     COALESCE(w.total_sessions, 0) AS total_website_sessions,
     COALESCE(w.total_page_views, 0) AS total_website_page_views,
     a.unique_applicants - LAG(a.unique_applicants) OVER (ORDER BY a.academic_year) AS unique_applicants_change,
-    a.confirmed_unique_applicants - LAG(a.confirmed_unique_applicants) OVER (ORDER BY a.academic_year) AS confirmed_applicants_change,
-    COALESCE(s.total_mentions, 0) - LAG(COALESCE(s.total_mentions, 0)) OVER (ORDER BY a.academic_year) AS social_mentions_change
+    a.confirmed_unique_applicants - LAG(a.confirmed_unique_applicants) OVER (ORDER BY a.academic_year) AS confirmed_applicants_change
 FROM admissions_dw.vw_round3_year_overview a
 LEFT JOIN admissions_dw.admission_round_data_quality q
     ON a.academic_year = q.academic_year
-LEFT JOIN admissions_dw.vw_social_media_year_overview s
-    ON a.academic_year = s.academic_year
 LEFT JOIN admissions_dw.vw_website_analytics_year_overview w
     ON a.academic_year = w.academic_year;
 
@@ -506,22 +473,3 @@ SELECT
         ORDER BY confirmed_unique_rate DESC NULLS LAST
     ) AS conversion_rank
 FROM admissions_dw.vw_round3_major_performance;
-
-CREATE OR REPLACE VIEW admissions_dw.mart_channel_effectiveness AS
-SELECT
-    s.academic_year,
-    s.platform_name AS channel_name,
-    'social' AS channel_type,
-    s.total_mentions AS volume_metric,
-    s.total_engagement AS engagement_metric,
-    s.engagement_per_mention AS efficiency_metric
-FROM admissions_dw.vw_social_media_platform_summary s
-UNION ALL
-SELECT
-    w.academic_year,
-    w.channel_group AS channel_name,
-    'website' AS channel_type,
-    w.total_sessions AS volume_metric,
-    w.total_page_views AS engagement_metric,
-    w.weighted_engagement_rate AS efficiency_metric
-FROM admissions_dw.vw_website_analytics_channel_summary w;

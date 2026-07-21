@@ -2,7 +2,11 @@
 
 ## Status
 
-Accepted
+Superseded by ADR 0008
+
+## Supersession Note
+
+โปรเจคยกเลิกการใช้ข้อมูลจาก social media ingestion ทุกช่องทางแล้ว ADR นี้เก็บไว้เป็นประวัติการตัดสินใจเดิมเท่านั้น และไม่ใช่ active implementation guidance อีกต่อไป
 
 ## Context
 

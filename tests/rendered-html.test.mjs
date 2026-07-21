@@ -34,6 +34,7 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.match(html, /aria-label="Dashboard navigation"/);
   assert.match(html, /href="#warehouse"/);
   assert.match(html, /href="#rounds"/);
+  assert.match(html, /href="#scope"/);
   assert.match(html, /href="#quality"/);
   assert.match(html, /TCAS รอบ 1-4/);
   assert.match(html, /3,443/);
@@ -41,23 +42,23 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.match(html, /545/);
   assert.match(html, /TCAS1/);
   assert.match(html, /TCAS4/);
-  assert.match(html, /fact_admission_round_overview/);
-  assert.match(html, /YouTube API/);
-  assert.match(html, /Facebook public search/);
+  assert.match(html, /no social ingestion/);
+  assert.match(html, /ขอบเขตแหล่งข้อมูล/);
+  assert.match(html, /คุณภาพข้อมูล/);
+  assert.match(html, /Top 10 สาขาวิชา/);
 });
 
 test("keeps dashboard copy tied to real warehouse data", async () => {
   const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
 
-  assert.match(page, /applicationChoices:\s*4579/);
-  assert.match(page, /uniqueApplicants:\s*3443/);
+  assert.match(page, /choices:\s*4579/);
+  assert.match(page, /applicants:\s*3443/);
   assert.match(page, /confirmed:\s*545/);
-  assert.match(page, /sourceFiles:\s*2/);
-  assert.match(page, /Source rows<\/dt>\s*<dd>9,432<\/dd>/);
-  assert.match(page, /11 Excel source files/);
-  assert.match(page, /fact_admission_year_overview/);
+  assert.match(page, /sourceFiles:\s*5/);
+  assert.match(page, /"Source rows", "9,432"/);
+  assert.match(page, /"Source files", "11"/);
   assert.match(page, /fact_admission_round_overview/);
 
-  assert.doesNotMatch(page, /mock|synthetic|sample platform|TikTok|Pantip/i);
+  assert.doesNotMatch(page, /mock|synthetic|sample platform|TikTok|Pantip|YouTube API|Facebook public search/i);
   assert.doesNotMatch(page, /Your site is taking shape|Codex is working/i);
 });

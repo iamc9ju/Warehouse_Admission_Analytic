@@ -40,4 +40,4 @@ This adds:
 ข้อจำกัด:
 
 - ตอนนี้ mart เป็น SQL views ไม่ใช่ materialized views เพราะข้อมูลยังเล็กและต้องการให้ refresh ง่าย
-- Facebook public mentions แบบ manual ยังเป็น sample ขนาดเล็ก ต้อง label ให้ชัดเจน
+- Social media marts ถูกถอดออกจาก active scope ตาม ADR 0008

@@ -2,7 +2,11 @@
 
 ## Status
 
-Accepted
+Superseded by ADR 0008
+
+## Supersession Note
+
+โปรเจคไม่ใช้ Facebook Page API หรือ social media ingestion ใน active dashboard/warehouse scope แล้ว ADR นี้เก็บไว้เป็นประวัติของแนวทางเดิมเท่านั้น
 
 ## Context
 

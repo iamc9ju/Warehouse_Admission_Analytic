@@ -1,16 +1,21 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
+type Year = 2568 | 2569;
+
 type YearOverview = {
-  year: number;
-  applicationChoices: number;
-  uniqueApplicants: number;
+  year: Year;
+  choices: number;
+  applicants: number;
   confirmed: number;
-  confirmedRate: number;
+  rate: number;
+  sourceFiles: number;
   avgScore: number;
-  applicantsChange?: number;
-  confirmedChange?: number;
 };
 
-type MajorPerformance = {
-  year: number;
+type MajorRow = {
+  year: Year;
   code: string;
   name: string;
   type: string;
@@ -19,818 +24,530 @@ type MajorPerformance = {
   rate: number;
   avgScore: number;
   applicantChange?: number;
-  confirmedChange?: number;
 };
 
-type StatusDistribution = {
-  year: number;
+type StatusRow = {
+  year: Year;
   label: string;
   choices: number;
   share: number;
+  tone: "green" | "amber" | "blue" | "red" | "muted" | "purple" | "orange";
 };
 
-type RoundPerformance = {
-  year: number;
+type RoundRow = {
+  year: Year;
   code: string;
   name: string;
   choices: number;
   applicants: number;
   confirmed: number;
   rate: number;
-  sourceFiles: number;
+  files: number;
 };
-
-type SocialOverview = {
-  year: number;
-  mentions: number;
-  engagement: number;
-  engagementPerMention: number;
-  sentimentScore: number;
-  mentionChange?: number;
-  engagementChange?: number;
-};
-
-type PlatformSummary = {
-  platform: string;
-  mentions: number;
-  engagement: number;
-};
-
-type WarehouseLayer = {
-  layer: string;
-  purpose: string;
-  objects: string;
-  status: string;
-};
-
-type WarehouseMetric = {
-  label: string;
-  value: string;
-  detail: string;
-};
-
-type DataMart = {
-  name: string;
-  grain: string;
-  useCase: string;
-};
-
-type LineageStep = {
-  step: string;
-  title: string;
-  detail: string;
-};
-
-const navLinks = [
-  { href: "#overview", label: "Overview" },
-  { href: "#warehouse", label: "Warehouse" },
-  { href: "#rounds", label: "Rounds" },
-  { href: "#social", label: "Social" },
-  { href: "#majors", label: "Majors" },
-  { href: "#quality", label: "Quality" },
-];
 
 const years: YearOverview[] = [
-  {
-    year: 2568,
-    applicationChoices: 4853,
-    uniqueApplicants: 3597,
-    confirmed: 528,
-    confirmedRate: 14.68,
-    avgScore: 21.7825,
-  },
-  {
-    year: 2569,
-    applicationChoices: 4579,
-    uniqueApplicants: 3443,
-    confirmed: 545,
-    confirmedRate: 15.83,
-    avgScore: 19.101,
-    applicantsChange: -154,
-    confirmedChange: 17,
-  },
+  { year: 2568, choices: 4853, applicants: 3597, confirmed: 528, rate: 14.68, sourceFiles: 6, avgScore: 21.7825 },
+  { year: 2569, choices: 4579, applicants: 3443, confirmed: 545, rate: 15.83, sourceFiles: 5, avgScore: 19.101 },
 ];
 
-const majorPerformance: MajorPerformance[] = [
-  {
-    year: 2569,
-    code: "E38",
-    name: "วิศวกรรมโยธา-โครงสร้างพื้นฐาน",
-    type: "ภาคปกติ",
-    applicants: 825,
-    confirmed: 63,
-    rate: 7.64,
-    avgScore: 8.9477,
-    applicantChange: -2,
-    confirmedChange: 3,
-  },
-  {
-    year: 2569,
-    code: "E24",
-    name: "วิศวกรรมอุตสาหการ-โลจิสติกส์",
-    type: "ภาคปกติ",
-    applicants: 684,
-    confirmed: 62,
-    rate: 9.06,
-    avgScore: 11.9987,
-    applicantChange: 157,
-    confirmedChange: 0,
-  },
-  {
-    year: 2569,
-    code: "E29",
-    name: "วิศวกรรมคอมพิวเตอร์",
-    type: "ภาคปกติ",
-    applicants: 680,
-    confirmed: 67,
-    rate: 9.85,
-    avgScore: 13.3404,
-    applicantChange: -61,
-    confirmedChange: 4,
-  },
-  {
-    year: 2569,
-    code: "E04",
-    name: "วิศวกรรมโยธา-ชลประทาน",
-    type: "ภาคปกติ",
-    applicants: 602,
-    confirmed: 62,
-    rate: 10.3,
-    avgScore: 9.4494,
-    applicantChange: -148,
-    confirmedChange: 2,
-  },
-  {
-    year: 2569,
-    code: "E03",
-    name: "วิศวกรรมเครื่องกล",
-    type: "ภาคปกติ",
-    applicants: 543,
-    confirmed: 51,
-    rate: 9.39,
-    avgScore: 11.8395,
-    applicantChange: 26,
-    confirmedChange: 3,
-  },
-  {
-    year: 2569,
-    code: "E38",
-    name: "วิศวกรรมโยธา-โครงสร้างพื้นฐาน (ภาคพิเศษ)",
-    type: "ภาคพิเศษ",
-    applicants: 343,
-    confirmed: 52,
-    rate: 15.16,
-    avgScore: 8.5462,
-    applicantChange: 8,
-    confirmedChange: 0,
-  },
-  {
-    year: 2569,
-    code: "E36",
-    name: "วิศวกรรมอาหาร",
-    type: "ภาคปกติ",
-    applicants: 294,
-    confirmed: 59,
-    rate: 20.07,
-    avgScore: 11.2315,
-    applicantChange: -19,
-    confirmedChange: 2,
-  },
-  {
-    year: 2569,
-    code: "E03",
-    name: "วิศวกรรมเครื่องกล (ภาคพิเศษ)",
-    type: "ภาคพิเศษ",
-    applicants: 286,
-    confirmed: 34,
-    rate: 11.89,
-    avgScore: 11.036,
-    applicantChange: -7,
-    confirmedChange: -1,
-  },
-  {
-    year: 2569,
-    code: "E37",
-    name: "วิศวกรรมเครื่องกล-เกษตร",
-    type: "ภาคปกติ",
-    applicants: 214,
-    confirmed: 59,
-    rate: 27.57,
-    avgScore: 7.5748,
-    applicantChange: -197,
-    confirmedChange: 3,
-  },
-  {
-    year: 2569,
-    code: "E39",
-    name: "วิศวกรรมนวัตกรรมเพื่อการเกษตรและอุตสาหกรรม",
-    type: "ภาคปกติ",
-    applicants: 108,
-    confirmed: 36,
-    rate: 33.33,
-    avgScore: 7.709,
-    applicantChange: -31,
-    confirmedChange: 1,
-  },
+const majorRows: MajorRow[] = [
+  { year: 2568, code: "E38", name: "วิศวกรรมโยธา-โครงสร้างพื้นฐาน", type: "ภาคปกติ", applicants: 827, confirmed: 60, rate: 7.26, avgScore: 35.6516 },
+  { year: 2568, code: "E04", name: "วิศวกรรมโยธา-ชลประทาน", type: "ภาคปกติ", applicants: 750, confirmed: 60, rate: 8, avgScore: 49.224 },
+  { year: 2568, code: "E29", name: "วิศวกรรมคอมพิวเตอร์", type: "ภาคปกติ", applicants: 741, confirmed: 63, rate: 8.5, avgScore: 40.7674 },
+  { year: 2568, code: "E24", name: "วิศวกรรมอุตสาหการ-โลจิสติกส์", type: "ภาคปกติ", applicants: 527, confirmed: 62, rate: 11.76, avgScore: 35.7684 },
+  { year: 2568, code: "E03", name: "วิศวกรรมเครื่องกล", type: "ภาคปกติ", applicants: 517, confirmed: 48, rate: 9.28, avgScore: 35.6015 },
+  { year: 2568, code: "E37", name: "วิศวกรรมเครื่องกล-เกษตร", type: "ภาคปกติ", applicants: 411, confirmed: 56, rate: 13.63, avgScore: 46.0421 },
+  { year: 2568, code: "E38", name: "วิศวกรรมโยธา-โครงสร้างพื้นฐาน (ภาคพิเศษ)", type: "ภาคพิเศษ", applicants: 335, confirmed: 52, rate: 15.52, avgScore: 33.0021 },
+  { year: 2568, code: "E36", name: "วิศวกรรมอาหาร", type: "ภาคปกติ", applicants: 313, confirmed: 57, rate: 18.21, avgScore: 34.5253 },
+  { year: 2568, code: "E03", name: "วิศวกรรมเครื่องกล (ภาคพิเศษ)", type: "ภาคพิเศษ", applicants: 293, confirmed: 35, rate: 11.95, avgScore: 31.1507 },
+  { year: 2568, code: "E39", name: "วิศวกรรมนวัตกรรมเพื่อการเกษตรและอุตสาหกรรม", type: "ภาคปกติ", applicants: 139, confirmed: 35, rate: 25.18, avgScore: 43.2799 },
+  { year: 2569, code: "E38", name: "วิศวกรรมโยธา-โครงสร้างพื้นฐาน", type: "ภาคปกติ", applicants: 825, confirmed: 63, rate: 7.64, avgScore: 35.7908, applicantChange: -2 },
+  { year: 2569, code: "E24", name: "วิศวกรรมอุตสาหการ-โลจิสติกส์", type: "ภาคปกติ", applicants: 684, confirmed: 62, rate: 9.06, avgScore: 35.9961, applicantChange: 157 },
+  { year: 2569, code: "E29", name: "วิศวกรรมคอมพิวเตอร์", type: "ภาคปกติ", applicants: 680, confirmed: 67, rate: 9.85, avgScore: 40.0213, applicantChange: -61 },
+  { year: 2569, code: "E04", name: "วิศวกรรมโยธา-ชลประทาน", type: "ภาคปกติ", applicants: 602, confirmed: 62, rate: 10.3, avgScore: 47.2472, applicantChange: -148 },
+  { year: 2569, code: "E03", name: "วิศวกรรมเครื่องกล", type: "ภาคปกติ", applicants: 543, confirmed: 51, rate: 9.39, avgScore: 35.5185, applicantChange: 26 },
+  { year: 2569, code: "E38", name: "วิศวกรรมโยธา-โครงสร้างพื้นฐาน (ภาคพิเศษ)", type: "ภาคพิเศษ", applicants: 343, confirmed: 52, rate: 15.16, avgScore: 34.1846, applicantChange: 8 },
+  { year: 2569, code: "E36", name: "วิศวกรรมอาหาร", type: "ภาคปกติ", applicants: 294, confirmed: 59, rate: 20.07, avgScore: 33.6946, applicantChange: -19 },
+  { year: 2569, code: "E03", name: "วิศวกรรมเครื่องกล (ภาคพิเศษ)", type: "ภาคพิเศษ", applicants: 286, confirmed: 34, rate: 11.89, avgScore: 33.1081, applicantChange: -7 },
+  { year: 2569, code: "E37", name: "วิศวกรรมเครื่องกล-เกษตร", type: "ภาคปกติ", applicants: 214, confirmed: 59, rate: 27.57, avgScore: 30.2993, applicantChange: -197 },
+  { year: 2569, code: "E39", name: "วิศวกรรมนวัตกรรมเพื่อการเกษตรและอุตสาหกรรม", type: "ภาคปกติ", applicants: 108, confirmed: 36, rate: 33.33, avgScore: 30.836, applicantChange: -31 },
 ];
 
-const statusDistribution: StatusDistribution[] = [
-  { year: 2569, label: "ไม่ผ่านการคัดเลือก", choices: 2552, share: 55.73 },
-  { year: 2569, label: "ผ่านการคัดเลือกในลำดับที่ดีกว่า", choices: 1191, share: 26.01 },
-  { year: 2569, label: "ยืนยันสิทธิ์", choices: 545, share: 11.9 },
-  { year: 2569, label: "ยืนยันที่อื่นแล้ว", choices: 210, share: 4.59 },
-  { year: 2569, label: "ไม่ใช้สิทธิ์", choices: 30, share: 0.66 },
-  { year: 2569, label: "สละสิทธิ์", choices: 26, share: 0.57 },
-  { year: 2569, label: "ไม่เข้าระบบมาดำเนินการใดๆ", choices: 18, share: 0.39 },
-  { year: 2569, label: "สละสิทธิ์ในรอบ 2", choices: 6, share: 0.13 },
-  { year: 2569, label: "ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2", choices: 1, share: 0.02 },
+const statuses: StatusRow[] = [
+  { year: 2568, label: "ไม่ผ่านการคัดเลือก", choices: 2551, share: 52.57, tone: "green" },
+  { year: 2568, label: "ผ่านการคัดเลือกในลำดับที่ดีกว่า", choices: 1097, share: 22.6, tone: "amber" },
+  { year: 2568, label: "ยืนยันสิทธิ์", choices: 528, share: 10.88, tone: "orange" },
+  { year: 2568, label: "ผู้สมัคร", choices: 400, share: 8.24, tone: "blue" },
+  { year: 2568, label: "ยืนยันที่อื่นแล้ว", choices: 191, share: 3.94, tone: "blue" },
+  { year: 2568, label: "ไม่เข้าระบบมาดำเนินการใดๆ", choices: 34, share: 0.7, tone: "purple" },
+  { year: 2568, label: "สละสิทธิ์", choices: 24, share: 0.49, tone: "red" },
+  { year: 2568, label: "ไม่ใช้สิทธิ์", choices: 18, share: 0.37, tone: "muted" },
+  { year: 2568, label: "สละสิทธิ์ในรอบ 2", choices: 8, share: 0.16, tone: "orange" },
+  { year: 2568, label: "ผ่านการคัดเลือก", choices: 1, share: 0.02, tone: "green" },
+  { year: 2569, label: "ไม่ผ่านการคัดเลือก", choices: 2552, share: 55.73, tone: "green" },
+  { year: 2569, label: "ผ่านการคัดเลือกในลำดับที่ดีกว่า", choices: 1191, share: 26.01, tone: "amber" },
+  { year: 2569, label: "ยืนยันสิทธิ์", choices: 545, share: 11.9, tone: "orange" },
+  { year: 2569, label: "ยืนยันที่อื่นแล้ว", choices: 210, share: 4.59, tone: "blue" },
+  { year: 2569, label: "ไม่ใช้สิทธิ์", choices: 30, share: 0.66, tone: "muted" },
+  { year: 2569, label: "สละสิทธิ์", choices: 26, share: 0.57, tone: "red" },
+  { year: 2569, label: "ไม่เข้าระบบมาดำเนินการใดๆ", choices: 18, share: 0.39, tone: "purple" },
+  { year: 2569, label: "สละสิทธิ์ในรอบ 2", choices: 6, share: 0.13, tone: "orange" },
+  { year: 2569, label: "ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2", choices: 1, share: 0.02, tone: "green" },
 ];
 
-const majorTypeSummary = [
-  {
-    year: 2569,
-    type: "ภาคปกติ",
-    applicants: 3950,
-    confirmed: 459,
-    rate: 11.62,
-    avgScore: 9.9794,
-  },
-  {
-    year: 2569,
-    type: "ภาคพิเศษ",
-    applicants: 629,
-    confirmed: 86,
-    rate: 13.67,
-    avgScore: 9.6132,
-  },
+const rounds: RoundRow[] = [
+  { year: 2568, code: "TCAS1", name: "Portfolio", choices: 1385, applicants: 1320, confirmed: 191, rate: 14.47, files: 2 },
+  { year: 2568, code: "TCAS2", name: "Quota", choices: 519, applicants: 518, confirmed: 112, rate: 21.62, files: 2 },
+  { year: 2568, code: "TCAS3", name: "Admission", choices: 2711, applicants: 1810, confirmed: 214, rate: 11.82, files: 1 },
+  { year: 2568, code: "TCAS4", name: "Direct Admission", choices: 238, applicants: 238, confirmed: 11, rate: 4.62, files: 1 },
+  { year: 2569, code: "TCAS1", name: "Portfolio", choices: 1391, applicants: 1324, confirmed: 163, rate: 12.31, files: 1 },
+  { year: 2569, code: "TCAS2", name: "Quota", choices: 614, applicants: 614, confirmed: 90, rate: 14.66, files: 2 },
+  { year: 2569, code: "TCAS3", name: "Admission", choices: 2379, applicants: 1620, confirmed: 283, rate: 17.47, files: 1 },
+  { year: 2569, code: "TCAS4", name: "Direct Admission", choices: 195, applicants: 195, confirmed: 9, rate: 4.62, files: 1 },
 ];
 
-const roundPerformance: RoundPerformance[] = [
-  { year: 2568, code: "TCAS1", name: "Portfolio", choices: 1385, applicants: 1320, confirmed: 191, rate: 14.47, sourceFiles: 2 },
-  { year: 2568, code: "TCAS2", name: "Quota", choices: 519, applicants: 518, confirmed: 112, rate: 21.62, sourceFiles: 2 },
-  { year: 2568, code: "TCAS3", name: "Admission", choices: 2711, applicants: 1810, confirmed: 214, rate: 11.82, sourceFiles: 1 },
-  { year: 2568, code: "TCAS4", name: "Direct Admission", choices: 238, applicants: 238, confirmed: 11, rate: 4.62, sourceFiles: 1 },
-  { year: 2569, code: "TCAS1", name: "Portfolio", choices: 1391, applicants: 1324, confirmed: 163, rate: 12.31, sourceFiles: 1 },
-  { year: 2569, code: "TCAS2", name: "Quota", choices: 614, applicants: 614, confirmed: 90, rate: 14.66, sourceFiles: 2 },
-  { year: 2569, code: "TCAS3", name: "Admission", choices: 2379, applicants: 1620, confirmed: 283, rate: 17.47, sourceFiles: 1 },
-  { year: 2569, code: "TCAS4", name: "Direct Admission", choices: 195, applicants: 195, confirmed: 9, rate: 4.62, sourceFiles: 1 },
+const topLinks = [
+  ["Overview", "#overview"],
+  ["Warehouse", "#warehouse"],
+  ["Rounds", "#rounds"],
+  ["Social", "#scope"],
+  ["Majors", "#majors"],
+  ["Quality", "#quality"],
+];
+const sideLinks = [
+  ["Overview", "home", "#overview"],
+  ["Warehouse", "stack", "#warehouse"],
+  ["Rounds", "check", "#rounds"],
+  ["Social", "scope", "#scope"],
+  ["Majors", "bars", "#majors"],
+  ["Quality", "shield", "#quality"],
+  ["Marts", "grid", "#warehouse"],
+  ["Dashboard", "tiles", "#overview"],
+  ["Reports", "doc", "#reports"],
+  ["Data Catalog", "catalog", "#warehouse"],
+  ["Settings", "gear", "#settings"],
 ];
 
-const socialOverview: SocialOverview[] = [
-  {
-    year: 2568,
-    mentions: 41,
-    engagement: 259431,
-    engagementPerMention: 6327.59,
-    sentimentScore: 0,
-  },
-  {
-    year: 2569,
-    mentions: 41,
-    engagement: 113465,
-    engagementPerMention: 2767.44,
-    sentimentScore: 0,
-    mentionChange: 0,
-    engagementChange: -145966,
-  },
-];
-
-const platformSummary: PlatformSummary[] = [
-  { platform: "YouTube API", mentions: 79, engagement: 372815 },
-  { platform: "Facebook public search", mentions: 3, engagement: 81 },
-];
-
-const warehouseLayers: WarehouseLayer[] = [
-  {
-    layer: "Source",
-    purpose: "เก็บหลักฐานต้นทาง",
-    objects: "Excel, YouTube API, GA4 API, manual Facebook search",
-    status: "controlled",
-  },
-  {
-    layer: "Staging",
-    purpose: "แปลงเป็น aggregate ที่ไม่มี PII",
-    objects: "processed CSV, real_data CSV/JSON",
-    status: "repeatable",
-  },
-  {
-    layer: "Core",
-    purpose: "star schema สำหรับ query ซ้ำได้",
-    objects: "dimensions + admissions/social/website facts",
-    status: "loaded",
-  },
-  {
-    layer: "Mart",
-    purpose: "presentation-ready BI layer",
-    objects: "executive, major conversion, channel effectiveness marts",
-    status: "published",
-  },
-  {
-    layer: "Governance",
-    purpose: "metadata, lineage, refresh และ quality",
-    objects: "dataset catalog, lineage edges, refresh runs",
-    status: "auditable",
-  },
-];
-
-const warehouseMetrics: WarehouseMetric[] = [
-  { label: "Fact tables", value: "7", detail: "Admissions year/round/major/status, social, website, quality" },
-  { label: "Dimensions", value: "8", detail: "Round, faculty, major, status, platform, keyword, sentiment, web channel" },
-  { label: "Presentation marts", value: "4", detail: "TCAS year, TCAS round, major conversion, channel effectiveness" },
-  { label: "Governance objects", value: "3", detail: "Catalog, lineage, refresh run log" },
-];
-
-const dataMarts: DataMart[] = [
-  {
-    name: "mart_tcas_year_summary",
-    grain: "academic year",
-    useCase: "ผู้บริหารดู applicants, choices, confirmed และ conversion ครบทุก TCAS round",
-  },
-  {
-    name: "mart_tcas_round_summary",
-    grain: "academic year + TCAS round",
-    useCase: "เปรียบเทียบ performance ของ Portfolio, Quota, Admission และ Direct Admission",
-  },
-  {
-    name: "mart_major_round_conversion",
-    grain: "academic year + TCAS round + major",
-    useCase: "จัดอันดับ demand และ conversion ของแต่ละสาขาแยกตามรอบรับสมัคร",
-  },
-  {
-    name: "mart_channel_effectiveness",
-    grain: "academic year + channel",
-    useCase: "เปรียบเทียบ social platform กับ website channel",
-  },
-];
-
-const lineageSteps: LineageStep[] = [
-  { step: "01", title: "Extract", detail: "Excel/API/manual public search" },
-  { step: "02", title: "Clean", detail: "PII removed, aggregates created" },
-  { step: "03", title: "Load", detail: "idempotent upsert into Neon" },
-  { step: "04", title: "Model", detail: "star schema dimensions and facts" },
-  { step: "05", title: "Publish", detail: "marts, quality views and dashboard" },
-];
-
-const maxApplicants = Math.max(...majorPerformance.map((major) => major.applicants));
-const maxConfirmed = Math.max(...majorPerformance.map((major) => major.confirmed));
-const maxPlatformMentions = Math.max(...platformSummary.map((platform) => platform.mentions));
+const pipeline = ["Source", "Staging", "Core DW", "Marts", "Dashboard"];
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
 function formatSigned(value?: number) {
-  if (value === undefined) {
-    return "baseline";
+  if (value === undefined || value === 0) {
+    return value === 0 ? "0" : "baseline";
   }
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${formatNumber(value)}`;
+  return `${value > 0 ? "+" : ""}${formatNumber(value)}`;
 }
 
-function changeClass(value?: number) {
-  if (value === undefined || value === 0) {
-    return "neutral";
-  }
+function deltaClass(value?: number) {
+  if (!value) return "neutral";
   return value > 0 ? "positive" : "negative";
 }
 
+function Icon({ name }: { name: string }) {
+  const icons: Record<string, string> = {
+    home: "H",
+    stack: "W",
+    check: "R",
+    scope: "S",
+    bars: "M",
+    shield: "Q",
+    grid: "G",
+    tiles: "D",
+    doc: "P",
+    catalog: "C",
+    gear: "A",
+    users: "U",
+    tick: "✓",
+    trend: "↗",
+    list: "L",
+    source: "F",
+    clock: "T",
+    bell: "!",
+    user: "I",
+  };
+  return <span className={`ui-icon ui-icon-${name}`} aria-hidden="true">{icons[name] ?? "•"}</span>;
+}
+
 export default function Home() {
-  const latest = years[1];
-  const previous = years[0];
-  const latestSocial = socialOverview[1];
+  const [selectedYear, setSelectedYear] = useState<Year>(2569);
+  const [showAllStatus, setShowAllStatus] = useState(false);
+  const [showAllMajors, setShowAllMajors] = useState(false);
+  const [showAllRounds, setShowAllRounds] = useState(false);
+  const [majorQuery, setMajorQuery] = useState("");
+  const [detail, setDetail] = useState("Dashboard พร้อมใช้งานจาก admissions warehouse ที่ตัด PII แล้ว");
+  const [activeNav, setActiveNav] = useState("Overview");
+
+  const current = years.find((year) => year.year === selectedYear) ?? years[1];
+  const previous = years.find((year) => year.year !== selectedYear) ?? years[0];
+  const applicantChange = current.applicants - previous.applicants;
+  const confirmedChange = current.confirmed - previous.confirmed;
+  const choicesChange = current.choices - previous.choices;
+  const rateChange = current.rate - previous.rate;
+
+  const filteredMajors = useMemo(() => {
+    const normalizedQuery = majorQuery.trim().toLowerCase();
+    return majorRows
+      .filter((major) => major.year === selectedYear)
+      .filter((major) => {
+        if (!normalizedQuery) return true;
+        return `${major.code} ${major.name} ${major.type}`.toLowerCase().includes(normalizedQuery);
+      })
+      .sort((a, b) => b.applicants - a.applicants);
+  }, [majorQuery, selectedYear]);
+
+  const visibleMajors = showAllMajors ? filteredMajors : filteredMajors.slice(0, 10);
+  const maxApplicants = Math.max(...filteredMajors.map((major) => major.applicants), 1);
+  const visibleStatuses = showAllStatus
+    ? statuses.filter((status) => status.year === selectedYear)
+    : statuses.filter((status) => status.year === selectedYear).slice(0, 8);
+  const visibleRounds = showAllRounds ? rounds : rounds.filter((round) => round.year === selectedYear);
+
+  const qualityCards = [
+    ["Source rows", "9,432"],
+    ["Missing score", "0"],
+    ["Missing major", "0"],
+    ["PII exported", "0 columns"],
+    ["Active source groups", "1"],
+    ["Source files", "11"],
+    ["Catalog rows", "7"],
+    ["Lineage edges", "7"],
+  ];
 
   return (
-    <main className="dashboard-shell">
-      <nav className="dashboard-nav" aria-label="Dashboard navigation">
-        <a className="nav-brand" href="#overview" aria-label="Go to dashboard overview">
-          <span>TCAS DW</span>
-          <small>Engineering Admissions</small>
+    <main className="app-frame">
+      <aside className="sidebar" aria-label="Dashboard sidebar">
+        <a className="brand" href="#overview" onClick={() => setDetail("กลับสู่ภาพรวม TCAS Admissions Data Warehouse")}>
+          <span className="brand-mark">DW</span>
+          <span>
+            <strong>TCAS DW</strong>
+            <small>Engineering Admissions</small>
+          </span>
         </a>
-        <div className="nav-links">
-          {navLinks.map((link) => (
-            <a href={link.href} key={link.href}>
-              {link.label}
+
+        <nav className="side-nav" aria-label="Section navigation">
+          {sideLinks.map(([label, icon, href]) => (
+            <a
+              className={activeNav === label ? "active" : ""}
+              href={href}
+              key={label}
+              onClick={() => {
+                setActiveNav(label);
+                setDetail(label === "Social" ? "Social ingestion is disabled by scope decision" : `${label} panel is ready`);
+              }}
+            >
+              <Icon name={icon} />
+              <span>{label}</span>
             </a>
           ))}
-        </div>
-        <div className="nav-status" aria-label="Warehouse status">
-          <span />
-          Live DW
-        </div>
-      </nav>
+        </nav>
 
-      <section id="overview" className="dashboard-header" aria-labelledby="dashboard-title">
-        <div>
-          <p className="eyebrow">Engineering Admissions Analytics</p>
-          <h1 id="dashboard-title">TCAS Admissions Data Warehouse</h1>
-          <p className="header-copy">
-            ภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน ครบ TCAS รอบ 1-4
-            ปี 2568 และ 2569 ผ่าน ETL เข้า Neon PostgreSQL, dimensional facts,
-            governed marts และ dashboard
-          </p>
-        </div>
-        <div className="header-status" aria-label="Data pipeline status">
-          <span>Source</span>
-          <span>Staging</span>
-          <span>Core DW</span>
-          <span>Marts</span>
-          <span>Dashboard</span>
-        </div>
-      </section>
-
-      <section className="kpi-grid" aria-label="Key admissions metrics">
-        <article className="kpi-card">
-          <span className="kpi-label">Unique applicants 2569</span>
-          <strong>{formatNumber(latest.uniqueApplicants)}</strong>
-          <span className={changeClass(latest.applicantsChange)}>
-            {formatSigned(latest.applicantsChange)} vs 2568
-          </span>
-        </article>
-        <article className="kpi-card">
-          <span className="kpi-label">Confirmed applicants 2569</span>
-          <strong>{formatNumber(latest.confirmed)}</strong>
-          <span className={changeClass(latest.confirmedChange)}>
-            {formatSigned(latest.confirmedChange)} vs 2568
-          </span>
-        </article>
-        <article className="kpi-card">
-          <span className="kpi-label">Confirmed rate 2569</span>
-          <strong>{latest.confirmedRate.toFixed(2)}%</strong>
-          <span className="positive">
-            +{(latest.confirmedRate - previous.confirmedRate).toFixed(2)} pts
-          </span>
-        </article>
-        <article className="kpi-card">
-          <span className="kpi-label">Application choices 2569</span>
-          <strong>{formatNumber(latest.applicationChoices)}</strong>
-          <span className="negative">-274 vs 2568</span>
-        </article>
-        <article className="kpi-card social-kpi">
-          <span className="kpi-label">Social mentions 2569</span>
-          <strong>{formatNumber(latestSocial.mentions)}</strong>
-          <span className={changeClass(latestSocial.mentionChange)}>
-            {formatSigned(latestSocial.mentionChange)} vs 2568
-          </span>
-        </article>
-        <article className="kpi-card social-kpi">
-          <span className="kpi-label">Social engagement 2569</span>
-          <strong>{formatNumber(latestSocial.engagement)}</strong>
-          <span className={changeClass(latestSocial.engagementChange)}>
-            {formatSigned(latestSocial.engagementChange)} vs 2568
-          </span>
-        </article>
-      </section>
-
-      <section id="warehouse" className="warehouse-section" aria-label="Data warehouse architecture">
-        <article className="panel warehouse-map">
-          <div className="panel-heading">
-            <div>
-              <p className="section-kicker">Data warehouse architecture</p>
-              <h2>Layered warehouse model</h2>
-            </div>
-            <span className="pill">governed DW</span>
-          </div>
-          <div className="layer-flow">
-            {warehouseLayers.map((layer) => (
-              <div className="layer-card" key={layer.layer}>
-                <div>
-                  <strong>{layer.layer}</strong>
-                  <span>{layer.status}</span>
-                </div>
-                <p>{layer.purpose}</p>
-                <small>{layer.objects}</small>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="panel">
-          <div className="panel-heading">
-            <div>
-              <p className="section-kicker">Warehouse inventory</p>
-              <h2>Objects พร้อมสำหรับ BI</h2>
-            </div>
-          </div>
-          <div className="warehouse-metrics">
-            {warehouseMetrics.map((metric) => (
-              <div className="warehouse-metric" key={metric.label}>
-                <span>{metric.label}</span>
-                <strong>{metric.value}</strong>
-                <small>{metric.detail}</small>
-              </div>
-            ))}
-          </div>
-        </article>
-      </section>
-
-      <section className="content-grid mart-grid">
-        <article className="panel">
-          <div className="panel-heading">
-            <div>
-              <p className="section-kicker">Presentation marts</p>
-              <h2>SQL marts สำหรับ Dashboard</h2>
-            </div>
-          </div>
-          <div className="mart-list">
-            {dataMarts.map((mart) => (
-              <div className="mart-row" key={mart.name}>
-                <code>{mart.name}</code>
-                <span>{mart.grain}</span>
-                <p>{mart.useCase}</p>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="panel">
-          <div className="panel-heading">
-            <div>
-              <p className="section-kicker">Lineage</p>
-              <h2>ตรวจสอบเส้นทางข้อมูล</h2>
-            </div>
-          </div>
-          <div className="lineage-list">
-            {lineageSteps.map((item) => (
-              <div className="lineage-step" key={item.step}>
-                <span>{item.step}</span>
-                <div>
-                  <strong>{item.title}</strong>
-                  <small>{item.detail}</small>
-                </div>
-              </div>
-            ))}
-          </div>
-        </article>
-      </section>
-
-      <section className="content-grid">
-        <article className="panel year-panel">
-          <div className="panel-heading">
-            <div>
-              <p className="section-kicker">Year comparison</p>
-              <h2>ภาพรวมทุก TCAS rounds ปี 2568 เทียบ 2569</h2>
-            </div>
-            <span className="subtle-label">fact_admission_year_overview</span>
-          </div>
-          <div className="year-bars">
-            {years.map((year) => (
-              <div className="year-row" key={year.year}>
-                <div className="year-label">
-                  <strong>{year.year}</strong>
-                  <span>{formatNumber(year.uniqueApplicants)} applicants</span>
-                </div>
-                <div className="bar-track" aria-label={`Applicants ${year.year}`}>
-                  <span
-                    className="bar-fill applicants"
-                    style={{
-                      width: `${(year.uniqueApplicants / previous.uniqueApplicants) * 100}%`,
-                    }}
-                  />
-                </div>
-                <div className="year-rate">{year.confirmedRate.toFixed(2)}%</div>
-              </div>
-            ))}
-          </div>
-          <p className="panel-note">
-            ปี 2569 มีผู้สมัครไม่ซ้ำข้ามทุก round ลดลง 154 คน แต่ผู้ยืนยันสิทธิ์
-            เพิ่มขึ้น 17 คน เมื่อเทียบกับปี 2568
-          </p>
-        </article>
-
-        <article className="panel">
-          <div className="panel-heading">
-            <div>
-              <p className="section-kicker">Major type</p>
-              <h2>ภาคปกติ vs ภาคพิเศษ</h2>
-            </div>
-          </div>
-          <div className="type-grid">
-            {majorTypeSummary.map((item) => (
-              <div className="type-card" key={item.type}>
-                <span>{item.type}</span>
-                <strong>{formatNumber(item.applicants)}</strong>
-                <small>{item.rate.toFixed(2)}% confirmed rate</small>
-              </div>
-            ))}
-          </div>
-        </article>
-      </section>
-
-      <section id="rounds" className="panel">
-        <div className="panel-heading">
+        <section className="sidebar-status" aria-label="Warehouse status">
           <div>
-            <p className="section-kicker">Round grain fact</p>
-            <h2>TCAS รอบ 1-4 ที่โหลดเข้า warehouse</h2>
+            <span className="online-dot" />
+            <strong>Data Warehouse</strong>
+            <small>Online</small>
           </div>
-          <span className="subtle-label">fact_admission_round_overview</span>
-        </div>
-        <div className="round-list">
-          {roundPerformance.map((round) => (
-            <article className="round-row" key={`${round.year}-${round.code}`}>
+          <div className="status-divider" />
+          <div>
+            <Icon name="clock" />
+            <span>Last sync</span>
+            <strong>2 นาทีที่แล้ว</strong>
+          </div>
+        </section>
+      </aside>
+
+      <section className="workspace">
+        <header className="topbar">
+          <nav className="top-tabs" aria-label="Dashboard navigation">
+            {topLinks.map(([item, href]) => (
+              <a
+                href={href}
+                className={activeNav === item ? "active" : ""}
+                key={item}
+                onClick={() => {
+                  setActiveNav(item);
+                  setDetail(item === "Social" ? "Social ingestion is disabled by scope decision" : `${item} section selected`);
+                }}
+              >
+                {item}
+              </a>
+            ))}
+          </nav>
+          <div className="top-actions">
+            <button type="button" className="live-pill" onClick={() => setDetail("Warehouse status: online")}>
+              <span className="online-dot" />
+              Live DW
+            </button>
+            <button type="button" className="icon-button" aria-label="Notifications" onClick={() => setDetail("ไม่มีการแจ้งเตือนใหม่")}>
+              <Icon name="bell" />
+            </button>
+            <button type="button" className="icon-button" aria-label="User profile" onClick={() => setDetail("Profile: Admissions analytics project")}>
+              <Icon name="user" />
+            </button>
+          </div>
+        </header>
+
+        <section id="overview" className="hero-panel">
+          <div>
+            <p className="eyebrow">Engineering Admissions Analytics</p>
+            <h1>TCAS Admissions Data Warehouse</h1>
+            <p>
+              ภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน ครบ TCAS รอบ 1-4 ปี 2568 และ 2569
+              ผ่าน ETL เข้า Neon PostgreSQL, dimensional facts, governed marts และ dashboard
+            </p>
+          </div>
+          <div className="hero-controls">
+            <label className="year-select">
+              <span>ปีการศึกษา</span>
+              <select value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value) as Year)}>
+                <option value={2569}>2569</option>
+                <option value={2568}>2568</option>
+              </select>
+            </label>
+            <div className="pipeline-tabs" aria-label="Warehouse pipeline">
+              {pipeline.map((item) => (
+                <button type="button" key={item} onClick={() => setDetail(`${item}: active warehouse stage`)}>
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="kpi-strip" aria-label="Key metrics">
+          <article className="metric-card">
+            <Icon name="users" />
+            <span>ผู้สมัครไม่ซ้ำ ({selectedYear})</span>
+            <strong>{formatNumber(current.applicants)}</strong>
+            <small className={deltaClass(applicantChange)}>{formatSigned(applicantChange)} vs {previous.year}</small>
+          </article>
+          <article className="metric-card">
+            <Icon name="tick" />
+            <span>ผู้ยืนยันสิทธิ์ ({selectedYear})</span>
+            <strong>{formatNumber(current.confirmed)}</strong>
+            <small className={deltaClass(confirmedChange)}>{formatSigned(confirmedChange)} vs {previous.year}</small>
+          </article>
+          <article className="metric-card">
+            <Icon name="trend" />
+            <span>อัตราการยืนยัน ({selectedYear})</span>
+            <strong>{current.rate.toFixed(2)}%</strong>
+            <small className={deltaClass(rateChange)}>{rateChange > 0 ? "+" : ""}{rateChange.toFixed(2)} pts</small>
+          </article>
+          <article className="metric-card">
+            <Icon name="list" />
+            <span>จำนวนตัวเลือก ({selectedYear})</span>
+            <strong>{formatNumber(current.choices)}</strong>
+            <small className={deltaClass(choicesChange)}>{formatSigned(choicesChange)} vs {previous.year}</small>
+          </article>
+          <article className="metric-card">
+            <Icon name="source" />
+            <span>Source files ({selectedYear})</span>
+            <strong>{current.sourceFiles}</strong>
+            <small className="neutral">Excel workbooks</small>
+          </article>
+          <article className="metric-card">
+            <Icon name="shield" />
+            <span>PII exported</span>
+            <strong>0</strong>
+            <small className="positive">columns</small>
+          </article>
+        </section>
+
+        <section className="dashboard-grid">
+          <article id="quality" className="panel status-panel">
+            <div className="panel-title">
+              <h2>การกระจายสถานะ TCAS ปี {selectedYear} ทุก round</h2>
+              <button type="button" onClick={() => setShowAllStatus((value) => !value)}>
+                {showAllStatus ? "ย่อ" : "ดูทั้งหมด"}
+              </button>
+            </div>
+            <div className="status-list">
+              {visibleStatuses.map((status) => (
+                <div className="status-item" key={`${selectedYear}-${status.label}`}>
+                  <span className={`status-badge ${status.tone}`}>{status.label.slice(0, 1)}</span>
+                  <div>
+                    <strong>{status.label}</strong>
+                    <small>{formatNumber(status.choices)} choices</small>
+                  </div>
+                  <div className="bar-track">
+                    <span style={{ width: `${status.share}%` }} />
+                  </div>
+                  <b>{status.share.toFixed(2)}%</b>
+                </div>
+              ))}
+            </div>
+            <button type="button" className="link-button" onClick={() => setShowAllStatus((value) => !value)}>
+              ดูรายละเอียดทั้งหมด
+            </button>
+          </article>
+
+          <article id="majors" className="panel majors-panel">
+            <div className="panel-title">
+              <h2>Top 10 สาขาวิชา ปี {selectedYear}</h2>
+              <input
+                aria-label="ค้นหาสาขา"
+                placeholder="ค้นหาสาขา"
+                value={majorQuery}
+                onChange={(event) => setMajorQuery(event.target.value)}
+              />
+            </div>
+            <div className="major-table" role="table" aria-label="Major ranking">
+              <div className="major-head" role="row">
+                <span>ลำดับ</span>
+                <span>สาขา</span>
+                <span>ผู้สมัคร</span>
+                <span>ยืนยันสิทธิ์</span>
+                <span>อัตรา</span>
+                <span>Δ vs 2568</span>
+              </div>
+              {visibleMajors.map((major, index) => (
+                <div className="major-row" role="row" key={`${major.year}-${major.code}-${major.name}`}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <strong>{major.name}</strong>
+                  <span className="value-with-bar">
+                    {formatNumber(major.applicants)}
+                    <i style={{ width: `${(major.applicants / maxApplicants) * 100}%` }} />
+                  </span>
+                  <span>{formatNumber(major.confirmed)}</span>
+                  <span>{major.rate.toFixed(2)}%</span>
+                  <span className={`change-chip ${deltaClass(major.applicantChange)}`}>{formatSigned(major.applicantChange)}</span>
+                </div>
+              ))}
+            </div>
+            <button type="button" className="link-button" onClick={() => setShowAllMajors((value) => !value)}>
+              {showAllMajors ? "แสดง Top 10" : "ดูรายละเอียดทั้งหมด"}
+            </button>
+          </article>
+
+          <article className="panel quality-panel">
+            <div className="panel-title">
+              <h2>คุณภาพข้อมูล (Data Quality)</h2>
+            </div>
+            <dl className="quality-grid">
+              {qualityCards.map(([label, value]) => (
+                <div key={label}>
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <button type="button" className="link-button" onClick={() => setDetail("Data quality checks pass: missing score 0, missing major 0, PII exported 0 columns")}>
+              ดูรายละเอียดคุณภาพข้อมูล
+            </button>
+          </article>
+
+          <article id="scope" className="panel scope-panel">
+            <div className="panel-title">
+              <h2>ขอบเขตแหล่งข้อมูล</h2>
+              <span className="mini-pill">no social ingestion</span>
+            </div>
+            <div className="source-cards">
               <div>
-                <strong>{round.code}</strong>
-                <span>{round.year} · {round.name}</span>
+                <strong>Admissions Excel ({selectedYear})</strong>
+                <span>{current.sourceFiles} source files, {formatNumber(current.choices)} choices</span>
               </div>
-              <div className="metric-stack">
-                <span>{formatNumber(round.choices)}</span>
-                <small>choices</small>
+              <div>
+                <strong>Owned GA4 analytics</strong>
+                <span>พร้อม pipeline แต่ property เดิมยังได้ 0 rows</span>
               </div>
-              <div className="metric-stack">
-                <span>{formatNumber(round.applicants)}</span>
-                <small>unique applicants</small>
-              </div>
-              <div className="metric-stack">
-                <span>{formatNumber(round.confirmed)}</span>
-                <small>confirmed</small>
-              </div>
-              <div className="metric-stack rate">
-                <span>{round.rate.toFixed(2)}%</span>
-                <small>rate</small>
-              </div>
-              <div className="metric-stack">
-                <span>{round.sourceFiles}</span>
-                <small>files</small>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section id="social" className="content-grid social-grid">
-        <article className="panel">
-          <div className="panel-heading">
-            <div>
-              <p className="section-kicker">Social impact</p>
-              <h2>Social Media vs Admissions</h2>
             </div>
-            <span className="pill">real sources only</span>
-          </div>
-          <div className="impact-grid">
-            {socialOverview.map((item) => (
-              <div className="impact-card" key={item.year}>
-                <span>{item.year}</span>
-                <strong>{formatNumber(item.mentions)}</strong>
-                <small>mentions · {formatNumber(item.engagement)} engagement</small>
-                <div className="impact-meter">
-                  <span
-                    style={{
-                      width: `${(item.mentions / latestSocial.mentions) * 100}%`,
-                    }}
-                  />
+            <p>
+              ไม่ใช้ข้อมูลจาก social media, public mention feed หรือ social listening เป็น input ของ dashboard และ marts ใหม่
+            </p>
+          </article>
+
+          <article id="rounds" className="panel rounds-panel">
+            <div className="panel-title">
+              <h2>ภาพรวม TCAS รอบ 1-4 ที่โหลดเข้า warehouse</h2>
+              <button type="button" onClick={() => setShowAllRounds((value) => !value)}>
+                {showAllRounds ? `เฉพาะ ${selectedYear}` : "ดูทุกปี"}
+              </button>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>TCAS</th>
+                  <th>Choices</th>
+                  <th>Unique Applicants</th>
+                  <th>Confirmed</th>
+                  <th>Rate</th>
+                  <th>Files</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleRounds.map((round) => (
+                  <tr key={`${round.year}-${round.code}`}>
+                    <td>{round.year} · {round.code} ({round.name})</td>
+                    <td>{formatNumber(round.choices)}</td>
+                    <td>{formatNumber(round.applicants)}</td>
+                    <td>{formatNumber(round.confirmed)}</td>
+                    <td>{round.rate.toFixed(2)}%</td>
+                    <td>{round.files}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <button type="button" className="link-button" onClick={() => setDetail("fact_admission_round_overview แสดง grain: academic year + TCAS round")}>
+              ดูรายละเอียดทั้งหมด
+            </button>
+          </article>
+
+          <article className="panel compare-panel">
+            <div className="panel-title">
+              <h2>เปรียบเทียบ TCAS ปี 2568 vs 2569</h2>
+            </div>
+            <div className="legend">
+              <span><i className="year-68" />2568</span>
+              <span><i className="year-69" />2569</span>
+            </div>
+            <div className="compare-chart">
+              {[
+                ["ผู้สมัครไม่ซ้ำ", years[0].applicants, years[1].applicants, 3600],
+                ["ยืนยันสิทธิ์", years[0].confirmed, years[1].confirmed, 600],
+                ["อัตราการยืนยัน", years[0].rate, years[1].rate, 20],
+              ].map(([label, first, second, max]) => (
+                <div className="chart-group" key={label}>
+                  <div className="bars">
+                    <span className="year-68" style={{ height: `${(Number(first) / Number(max)) * 100}%` }}><b>{typeof first === "number" && first < 100 ? `${first}%` : formatNumber(Number(first))}</b></span>
+                    <span className="year-69" style={{ height: `${(Number(second) / Number(max)) * 100}%` }}><b>{typeof second === "number" && second < 100 ? `${second}%` : formatNumber(Number(second))}</b></span>
+                  </div>
+                  <small>{label}</small>
                 </div>
-              </div>
+              ))}
+            </div>
+            <button type="button" className="link-button" onClick={() => setDetail("ปี 2569 applicants ลดลง แต่ confirmed และ confirmed rate เพิ่มขึ้น")}>
+              ดูการเปรียบเทียบราย round
+            </button>
+          </article>
+        </section>
+
+        <section id="warehouse" className="panel warehouse-panel">
+          <div className="panel-title">
+            <h2>Warehouse, marts และ lineage ที่ใช้งานจริง</h2>
+            <span className="mini-pill">governed DW</span>
+          </div>
+          <div className="warehouse-flow">
+            {[
+              ["Source", "Excel admissions files"],
+              ["Staging", "PII-free processed CSV"],
+              ["Core DW", "facts + dimensions"],
+              ["Marts", "year, round, major conversion"],
+              ["Dashboard", "interactive BI view"],
+            ].map(([title, copy]) => (
+              <button type="button" key={title} onClick={() => setDetail(`${title}: ${copy}`)}>
+                <strong>{title}</strong>
+                <span>{copy}</span>
+              </button>
             ))}
           </div>
-          <p className="panel-note">
-            ส่วนนี้แสดงเฉพาะ YouTube API และ Facebook public search
-            ที่มีหลักฐานไฟล์ต้นทางใน outputs/real_data
-          </p>
-        </article>
+        </section>
 
-        <article className="panel">
-          <div className="panel-heading">
-            <div>
-              <p className="section-kicker">Platform mix</p>
-              <h2>ช่องทางที่สร้างกระแส</h2>
-            </div>
-            <span className="pill">verified</span>
-          </div>
-          <div className="platform-list">
-            {platformSummary.map((platform) => (
-              <div className="platform-row" key={platform.platform}>
-                <div>
-                  <strong>{platform.platform}</strong>
-                  <span>{formatNumber(platform.engagement)} engagement</span>
-                </div>
-                <div className="platform-bar">
-                  <span style={{ width: `${(platform.mentions / maxPlatformMentions) * 100}%` }} />
-                </div>
-                <b>{formatNumber(platform.mentions)}</b>
-              </div>
-            ))}
-          </div>
-        </article>
-      </section>
-
-      <section id="majors" className="panel">
-        <div className="panel-heading">
-          <div>
-            <p className="section-kicker">Major ranking</p>
-            <h2>Top majors ปี 2569 จากทุก TCAS rounds</h2>
-          </div>
-          <span className="subtle-label">sorted by unique applicants</span>
-        </div>
-        <div className="ranking-list">
-          {majorPerformance.map((major, index) => (
-            <article className="ranking-row" key={`${major.code}-${major.name}-${major.type}`}>
-              <div className="rank-number">{String(index + 1).padStart(2, "0")}</div>
-              <div className="major-name">
-                <strong>{major.name}</strong>
-                <span>
-                  {major.code} · {major.type}
-                </span>
-              </div>
-              <div className="metric-stack">
-                <span>{formatNumber(major.applicants)}</span>
-                <small>applicants</small>
-              </div>
-              <div className="mini-bars" aria-label={`${major.name} applicant and confirmed bars`}>
-                <span
-                  className="mini-bar applicants"
-                  style={{ width: `${(major.applicants / maxApplicants) * 100}%` }}
-                />
-                <span
-                  className="mini-bar confirmed"
-                  style={{ width: `${(major.confirmed / maxConfirmed) * 100}%` }}
-                />
-              </div>
-              <div className="metric-stack">
-                <span>{formatNumber(major.confirmed)}</span>
-                <small>confirmed</small>
-              </div>
-              <div className="metric-stack rate">
-                <span>{major.rate.toFixed(2)}%</span>
-                <small>rate</small>
-              </div>
-              <div className={`change-badge ${changeClass(major.applicantChange)}`}>
-                {formatSigned(major.applicantChange)}
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section id="quality" className="content-grid lower-grid">
-        <article className="panel">
-          <div className="panel-heading">
-            <div>
-              <p className="section-kicker">Status distribution</p>
-              <h2>สถานะ TCAS ปี 2569 ทุก round</h2>
-            </div>
-          </div>
-          <div className="status-list">
-            {statusDistribution.map((status) => (
-              <div className="status-row" key={status.label}>
-                <div>
-                  <strong>{status.label}</strong>
-                  <span>{formatNumber(status.choices)} choices</span>
-                </div>
-                <div className="status-bar">
-                  <span style={{ width: `${status.share}%` }} />
-                </div>
-                <b>{status.share.toFixed(2)}%</b>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="panel insight-panel">
-          <div className="panel-heading">
-            <div>
-              <p className="section-kicker">Data quality</p>
-              <h2>พร้อมใช้งานสำหรับ BI</h2>
-            </div>
-          </div>
-          <dl className="quality-list">
-            <div>
-              <dt>Source rows</dt>
-              <dd>9,432</dd>
-            </div>
-            <div>
-              <dt>Missing score</dt>
-              <dd>0</dd>
-            </div>
-            <div>
-              <dt>Missing major</dt>
-              <dd>0</dd>
-            </div>
-            <div>
-              <dt>PII exported</dt>
-              <dd>0 columns</dd>
-            </div>
-            <div>
-              <dt>Displayed social rows</dt>
-              <dd>34</dd>
-            </div>
-            <div>
-              <dt>Displayed platforms</dt>
-              <dd>2</dd>
-            </div>
-            <div>
-              <dt>Catalog rows</dt>
-              <dd>8</dd>
-            </div>
-            <div>
-              <dt>Lineage edges</dt>
-              <dd>8</dd>
-            </div>
-          </dl>
-          <p>
-            ข้อมูลส่วนบุคคลถูกใช้เฉพาะตอนนับ unique applicants แล้วไม่ถูกส่งออกมาใน
-            processed CSV หรือ dashboard นี้ ตอนนี้ admissions warehouse โหลดครบ 11 Excel source files
-            ครอบคลุม TCAS รอบ 1-4 ของปี 2568 และ 2569
-          </p>
-        </article>
+        <section id="reports" className="detail-bar" aria-live="polite">
+          {detail}
+        </section>
       </section>
     </main>
   );
