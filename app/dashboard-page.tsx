@@ -5,16 +5,10 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   AcademicCapIcon,
-  ChartBarSquareIcon,
-  ChatBubbleLeftRightIcon,
   CheckCircleIcon,
   CircleStackIcon,
-  ClipboardDocumentListIcon,
   ClockIcon,
-  Cog6ToothIcon,
-  DocumentTextIcon,
   HomeIcon,
-  PresentationChartBarIcon,
   ShieldCheckIcon,
   Squares2X2Icon,
 } from "@heroicons/react/24/outline";
@@ -66,14 +60,8 @@ export type PageName =
   | "Overview"
   | "Warehouse"
   | "Rounds"
-  | "Social"
   | "Majors"
-  | "Quality"
-  | "Marts"
-  | "Dashboard"
-  | "Reports"
-  | "Data Catalog"
-  | "Settings";
+  | "Quality";
 
 const years: YearOverview[] = [
   { year: 2568, choices: 4853, applicants: 3597, confirmed: 528, rate: 14.68, sourceFiles: 6, avgScore: 21.7825 },
@@ -140,14 +128,8 @@ const sideLinks = [
   ["Overview", "home", "/"],
   ["Warehouse", "stack", "/warehouse"],
   ["Rounds", "check", "/rounds"],
-  ["Social", "scope", "/social"],
   ["Majors", "bars", "/majors"],
   ["Quality", "shield", "/quality"],
-  ["Marts", "grid", "/marts"],
-  ["Dashboard", "tiles", "/dashboard"],
-  ["Reports", "doc", "/reports"],
-  ["Data Catalog", "catalog", "/data-catalog"],
-  ["Settings", "gear", "/settings"],
 ] as const;
 
 const pageMeta: Record<PageName, { eyebrow: string; title: string; copy: string }> = {
@@ -166,11 +148,6 @@ const pageMeta: Record<PageName, { eyebrow: string; title: string; copy: string 
     title: "TCAS Round Analytics",
     copy: "แยกข้อมูลรายรอบ TCAS1 Portfolio, TCAS2 Quota, TCAS3 Admission และ TCAS4 Direct Admission",
   },
-  Social: {
-    eyebrow: "Data Scope",
-    title: "Social Ingestion Disabled",
-    copy: "หน้านี้เก็บขอบเขตการตัดสินใจว่าไม่ใช้ social media ingestion เป็นแหล่งข้อมูลของ dashboard หรือ marts ใหม่",
-  },
   Majors: {
     eyebrow: "Major Ranking",
     title: "Major Demand and Conversion",
@@ -180,31 +157,6 @@ const pageMeta: Record<PageName, { eyebrow: string; title: string; copy: string 
     eyebrow: "Data Quality",
     title: "Data Quality and Status Distribution",
     copy: "ตรวจคุณภาพข้อมูล, missing values, PII boundary และการกระจายสถานะ TCAS จาก processed admissions data",
-  },
-  Marts: {
-    eyebrow: "Presentation Layer",
-    title: "Dashboard Marts",
-    copy: "รวม presentation marts สำหรับ year summary, round summary, major conversion และ executive dashboard",
-  },
-  Dashboard: {
-    eyebrow: "Executive View",
-    title: "Executive Dashboard",
-    copy: "รวม KPI และกราฟเปรียบเทียบสำหรับผู้บริหารโดยไม่ลงรายละเอียด source layer มากเกินไป",
-  },
-  Reports: {
-    eyebrow: "Reports",
-    title: "Analytics Reports",
-    copy: "รายการ report และ narrative insight ที่สร้างจาก Neon warehouse และ processed admissions data",
-  },
-  "Data Catalog": {
-    eyebrow: "Data Catalog",
-    title: "Dataset Catalog and Lineage",
-    copy: "แสดง inventory ของ dataset, owner, sensitivity, refresh cadence และ lineage ของ warehouse objects",
-  },
-  Settings: {
-    eyebrow: "Settings",
-    title: "Dashboard Settings",
-    copy: "ตั้งค่า year filter, scope, refresh notes และ operational status สำหรับ dashboard",
   },
 };
 
@@ -231,16 +183,9 @@ function Icon({ name }: { name: string }) {
     home: HomeIcon,
     stack: CircleStackIcon,
     check: CheckCircleIcon,
-    scope: ChatBubbleLeftRightIcon,
     bars: AcademicCapIcon,
     shield: ShieldCheckIcon,
-    grid: Squares2X2Icon,
-    tiles: PresentationChartBarIcon,
-    doc: DocumentTextIcon,
-    catalog: ClipboardDocumentListIcon,
-    gear: Cog6ToothIcon,
     clock: ClockIcon,
-    trend: ChartBarSquareIcon,
   };
   const HeroIcon = icons[name] ?? Squares2X2Icon;
   return <HeroIcon className={`ui-icon ui-icon-${name}`} aria-hidden="true" />;
@@ -318,16 +263,14 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
     ["Lineage edges", "7"],
   ];
   const isOverview = activePage === "Overview";
-  const isDashboard = activePage === "Dashboard";
-  const showKpiStrip = isOverview || isDashboard;
+  const showKpiStrip = isOverview;
   const showStatusPanel = isOverview || activePage === "Quality";
   const showMajorsPanel = isOverview || activePage === "Majors";
   const showQualityPanel = isOverview || activePage === "Quality";
-  const showScopePanel = isOverview || activePage === "Social";
   const showRoundsPanel = isOverview || activePage === "Rounds";
-  const showComparePanel = isOverview || isDashboard;
-  const showDashboardGrid = showStatusPanel || showMajorsPanel || showQualityPanel || showScopePanel || showRoundsPanel || showComparePanel;
-  const showWarehousePanel = isOverview || activePage === "Warehouse" || activePage === "Marts" || activePage === "Data Catalog";
+  const showComparePanel = isOverview;
+  const showDashboardGrid = showStatusPanel || showMajorsPanel || showQualityPanel || showRoundsPanel || showComparePanel;
+  const showWarehousePanel = isOverview || activePage === "Warehouse";
   const isFocusedPage = !isOverview;
 
   return (
@@ -348,7 +291,7 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
               href={href}
               key={label}
               onClick={() => {
-                setDetail(label === "Social" ? "Social ingestion is disabled by scope decision" : `${label} panel is ready`);
+                setDetail(`${label} panel is ready`);
               }}
             >
               <Icon name={icon} />
@@ -502,28 +445,6 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
           </article>
           )}
 
-          {showScopePanel && (
-          <article id="scope" className="panel scope-panel">
-            <div className="panel-title">
-              <h2>ขอบเขตแหล่งข้อมูล</h2>
-              <span className="mini-pill">no social ingestion</span>
-            </div>
-            <div className="source-cards">
-              <div>
-                <strong>Admissions Excel ({selectedYear})</strong>
-                <span>{current.sourceFiles} source files, {formatNumber(current.choices)} choices</span>
-              </div>
-              <div>
-                <strong>Owned GA4 analytics</strong>
-                <span>พร้อม pipeline แต่ property เดิมยังได้ 0 rows</span>
-              </div>
-            </div>
-            <p>
-              ไม่ใช้ข้อมูลจาก social media, public mention feed หรือ social listening เป็น input ของ dashboard และ marts ใหม่
-            </p>
-          </article>
-          )}
-
           {showRoundsPanel && (
           <article id="rounds" className="panel rounds-panel">
             <div className="panel-title">
@@ -615,55 +536,6 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
             ))}
           </div>
         </section>
-        )}
-
-        {activePage === "Reports" && (
-          <section id="reports-page" className="panel warehouse-panel">
-            <div className="panel-title">
-              <h2>รายงานที่พร้อมใช้งาน</h2>
-              <span className="mini-pill">markdown reports</span>
-            </div>
-            <div className="warehouse-flow">
-              {[
-                ["Admissions analytics", "outputs/reports/admissions_round3_analytics_report.md"],
-                ["YouTube historical report", "historical artifact, not active dashboard input"],
-                ["Quality summary", "missing score 0, missing major 0, PII exported 0 columns"],
-                ["Runbook", "README.md และ PROJECT_DOCUMENTATION.md"],
-              ].map(([title, copy]) => (
-                <button type="button" key={title} onClick={() => setDetail(`${title}: ${copy}`)}>
-                  <strong>{title}</strong>
-                  <span>{copy}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {activePage === "Settings" && (
-          <section id="settings" className="panel warehouse-panel">
-            <div className="panel-title">
-              <h2>Dashboard settings</h2>
-              <span className="mini-pill">local UI</span>
-            </div>
-            <div className="source-cards">
-              <div>
-                <strong>Default year</strong>
-                <span>2569, เปลี่ยนได้จาก dropdown ด้านบนของแต่ละหน้า</span>
-              </div>
-              <div>
-                <strong>Deployment</strong>
-                <span>ไม่ deploy อัตโนมัติ ตาม workflow ปัจจุบันจะ push Git เท่านั้น</span>
-              </div>
-              <div>
-                <strong>Data scope</strong>
-                <span>Admissions Excel + optional owned GA4, no social ingestion</span>
-              </div>
-              <div>
-                <strong>Privacy</strong>
-                <span>PII exported = 0 columns</span>
-              </div>
-            </div>
-          </section>
         )}
 
         <section id="reports" className="detail-bar" aria-live="polite">

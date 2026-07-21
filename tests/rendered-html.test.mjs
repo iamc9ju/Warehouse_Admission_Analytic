@@ -56,16 +56,15 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.match(html, /aria-label="Section navigation"/);
   assert.match(html, /href="\/warehouse"/);
   assert.match(html, /href="\/rounds"/);
-  assert.match(html, /href="\/social"/);
+  assert.match(html, /href="\/majors"/);
   assert.match(html, /href="\/quality"/);
+  assert.doesNotMatch(html, /href="\/(?:social|marts|dashboard|reports|data-catalog|settings)"/);
   assert.match(html, /TCAS รอบ 1-4/);
   assert.match(html, /3,443/);
   assert.match(html, /4,579/);
   assert.match(html, /545/);
   assert.match(html, /TCAS1/);
   assert.match(html, /TCAS4/);
-  assert.match(html, /no social ingestion/);
-  assert.match(html, /ขอบเขตแหล่งข้อมูล/);
   assert.match(html, /คุณภาพข้อมูล/);
   assert.match(html, /Top 10 สาขาวิชา/);
 });
