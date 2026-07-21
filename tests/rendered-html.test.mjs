@@ -54,6 +54,7 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.match(html, /TCAS Admissions Data Warehouse/);
   assert.match(html, /aria-label="Dashboard sidebar"/);
   assert.match(html, /aria-label="Section navigation"/);
+  assert.doesNotMatch(html, /Warehouse status|Last sync|2 นาทีที่แล้ว/);
   assert.match(html, /class="page-transition"/);
   assert.match(html, /href="\/warehouse"/);
   assert.match(html, /href="\/rounds"/);

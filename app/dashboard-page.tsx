@@ -9,7 +9,6 @@ import {
   CheckIcon,
   CheckCircleIcon,
   CircleStackIcon,
-  ClockIcon,
   HomeIcon,
   ShieldCheckIcon,
   Squares2X2Icon,
@@ -192,7 +191,6 @@ function Icon({ name }: { name: string }) {
     check: CheckCircleIcon,
     bars: AcademicCapIcon,
     shield: ShieldCheckIcon,
-    clock: ClockIcon,
   };
   const HeroIcon = icons[name] ?? Squares2X2Icon;
   return <HeroIcon className={`ui-icon ui-icon-${name}`} aria-hidden="true" />;
@@ -347,20 +345,6 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
             </Link>
           ))}
         </nav>
-
-        <section className="sidebar-status" aria-label="Warehouse status">
-          <div>
-            <span className="online-dot" />
-            <strong>Data Warehouse</strong>
-            <small>Online</small>
-          </div>
-          <div className="status-divider" />
-          <div>
-            <Icon name="clock" />
-            <span>Last sync</span>
-            <strong>2 นาทีที่แล้ว</strong>
-          </div>
-        </section>
       </aside>
 
       <section className="workspace" data-page={activePage}>

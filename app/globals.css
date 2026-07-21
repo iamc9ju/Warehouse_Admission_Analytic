@@ -164,53 +164,6 @@ select {
   stroke-width: 2;
 }
 
-.sidebar-status {
-  display: grid;
-  gap: 14px;
-  margin-top: auto;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #fffdf9;
-  padding: 16px;
-  box-shadow: 0 10px 26px rgba(42, 31, 19, 0.05);
-}
-
-.sidebar-status div {
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
-  gap: 4px 9px;
-  align-items: center;
-}
-
-.sidebar-status strong {
-  font-size: 13px;
-}
-
-.sidebar-status small,
-.sidebar-status span {
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.sidebar-status small {
-  grid-column: 2;
-  color: var(--green);
-}
-
-.status-divider {
-  display: block !important;
-  height: 1px;
-  background: var(--line);
-}
-
-.online-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 0 5px rgba(47, 125, 50, 0.12);
-}
-
 .workspace {
   min-width: 0;
   padding: 0 36px 28px;
@@ -1218,10 +1171,6 @@ th {
   .side-nav {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     margin-top: 24px;
-  }
-
-  .sidebar-status {
-    display: none;
   }
 
   .hero-panel {
