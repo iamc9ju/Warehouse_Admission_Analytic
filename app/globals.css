@@ -379,10 +379,14 @@ h2 {
 .kpi-strip {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 22px;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--line);
+  box-shadow: var(--shadow);
 }
 
-.metric-card,
 .panel {
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -391,41 +395,56 @@ h2 {
 }
 
 .metric-card {
-  min-height: 122px;
+  min-width: 0;
+  min-height: 118px;
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr);
-  gap: 2px 16px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 14px;
   align-content: center;
-  padding: 20px;
+  border: 0;
+  border-radius: 0;
+  background: var(--surface);
+  box-shadow: none;
+  padding: 22px 24px;
 }
 
-.metric-card .ui-icon {
-  grid-row: span 3;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: var(--accent-soft);
-  color: var(--accent-dark);
-  font-size: 13px;
+.metric-card.first {
+  border-radius: 13px 0 0 13px;
 }
 
-.metric-card span {
+.metric-card.last {
+  border-radius: 0 13px 13px 0;
+}
+
+.metric-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
   color: #424749;
-  font-size: 13px;
-  font-weight: 720;
+  font-size: 14px;
+  font-weight: 760;
   line-height: 1.35;
 }
 
-.metric-card strong {
-  color: var(--ink);
-  font-size: clamp(24px, 2.2vw, 32px);
-  font-weight: 880;
-  line-height: 1;
+.metric-change {
+  align-self: start;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 820;
+  line-height: 1.35;
+  text-align: right;
+  white-space: nowrap;
 }
 
-.metric-card small {
-  font-size: 13px;
+.metric-card strong {
+  grid-column: 1 / -1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: clamp(27px, 2.05vw, 42px);
+  font-variant-numeric: tabular-nums;
   font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1;
 }
 
 .positive {
@@ -897,10 +916,6 @@ th {
     padding-inline: 28px;
   }
 
-  .kpi-strip {
-    gap: 14px;
-  }
-
   .dashboard-grid {
     grid-template-columns: minmax(360px, 0.9fr) minmax(500px, 1.2fr);
   }
@@ -1021,7 +1036,9 @@ th {
   }
 
   .metric-card {
-    grid-template-columns: 46px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 104px;
+    padding: 18px;
   }
 
   table {

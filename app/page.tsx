@@ -205,6 +205,45 @@ export default function Home() {
     : statuses.filter((status) => status.year === selectedYear).slice(0, 8);
   const visibleRounds = showAllRounds ? rounds : rounds.filter((round) => round.year === selectedYear);
 
+  const statCards = [
+    {
+      name: `ผู้สมัครไม่ซ้ำ (${selectedYear})`,
+      value: formatNumber(current.applicants),
+      change: `${formatSigned(applicantChange)} vs ${previous.year}`,
+      changeType: deltaClass(applicantChange),
+    },
+    {
+      name: `ผู้ยืนยันสิทธิ์ (${selectedYear})`,
+      value: formatNumber(current.confirmed),
+      change: `${formatSigned(confirmedChange)} vs ${previous.year}`,
+      changeType: deltaClass(confirmedChange),
+    },
+    {
+      name: `อัตราการยืนยัน (${selectedYear})`,
+      value: `${current.rate.toFixed(2)}%`,
+      change: `${rateChange > 0 ? "+" : ""}${rateChange.toFixed(2)} pts`,
+      changeType: deltaClass(rateChange),
+    },
+    {
+      name: `จำนวนตัวเลือก (${selectedYear})`,
+      value: formatNumber(current.choices),
+      change: `${formatSigned(choicesChange)} vs ${previous.year}`,
+      changeType: deltaClass(choicesChange),
+    },
+    {
+      name: `Source files (${selectedYear})`,
+      value: String(current.sourceFiles),
+      change: "Excel workbooks",
+      changeType: "neutral",
+    },
+    {
+      name: "PII exported",
+      value: "0",
+      change: "columns",
+      changeType: "positive",
+    },
+  ];
+
   const qualityCards = [
     ["Source rows", "9,432"],
     ["Missing score", "0"],
@@ -318,42 +357,16 @@ export default function Home() {
         </section>
 
         <section className="kpi-strip" aria-label="Key metrics">
-          <article className="metric-card">
-            <Icon name="users" />
-            <span>ผู้สมัครไม่ซ้ำ ({selectedYear})</span>
-            <strong>{formatNumber(current.applicants)}</strong>
-            <small className={deltaClass(applicantChange)}>{formatSigned(applicantChange)} vs {previous.year}</small>
-          </article>
-          <article className="metric-card">
-            <Icon name="tick" />
-            <span>ผู้ยืนยันสิทธิ์ ({selectedYear})</span>
-            <strong>{formatNumber(current.confirmed)}</strong>
-            <small className={deltaClass(confirmedChange)}>{formatSigned(confirmedChange)} vs {previous.year}</small>
-          </article>
-          <article className="metric-card">
-            <Icon name="trend" />
-            <span>อัตราการยืนยัน ({selectedYear})</span>
-            <strong>{current.rate.toFixed(2)}%</strong>
-            <small className={deltaClass(rateChange)}>{rateChange > 0 ? "+" : ""}{rateChange.toFixed(2)} pts</small>
-          </article>
-          <article className="metric-card">
-            <Icon name="list" />
-            <span>จำนวนตัวเลือก ({selectedYear})</span>
-            <strong>{formatNumber(current.choices)}</strong>
-            <small className={deltaClass(choicesChange)}>{formatSigned(choicesChange)} vs {previous.year}</small>
-          </article>
-          <article className="metric-card">
-            <Icon name="source" />
-            <span>Source files ({selectedYear})</span>
-            <strong>{current.sourceFiles}</strong>
-            <small className="neutral">Excel workbooks</small>
-          </article>
-          <article className="metric-card">
-            <Icon name="shield" />
-            <span>PII exported</span>
-            <strong>0</strong>
-            <small className="positive">columns</small>
-          </article>
+          {statCards.map((stat, index) => (
+            <article
+              className={`metric-card ${index === 0 ? "first" : ""} ${index === statCards.length - 1 ? "last" : ""}`}
+              key={stat.name}
+            >
+              <div className="metric-label">{stat.name}</div>
+              <div className={`metric-change ${stat.changeType}`}>{stat.change}</div>
+              <strong>{stat.value}</strong>
+            </article>
+          ))}
         </section>
 
         <section className="dashboard-grid">
