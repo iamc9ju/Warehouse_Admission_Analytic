@@ -106,14 +106,6 @@ const rounds: RoundRow[] = [
   { year: 2569, code: "TCAS4", name: "Direct Admission", choices: 195, applicants: 195, confirmed: 9, rate: 4.62, files: 1 },
 ];
 
-const topLinks = [
-  ["Overview", "#overview"],
-  ["Warehouse", "#warehouse"],
-  ["Rounds", "#rounds"],
-  ["Social", "#scope"],
-  ["Majors", "#majors"],
-  ["Quality", "#quality"],
-];
 const sideLinks = [
   ["Overview", "home", "#overview"],
   ["Warehouse", "stack", "#warehouse"],
@@ -165,8 +157,6 @@ function Icon({ name }: { name: string }) {
     list: "L",
     source: "F",
     clock: "T",
-    bell: "!",
-    user: "I",
   };
   return <span className={`ui-icon ui-icon-${name}`} aria-hidden="true">{icons[name] ?? "•"}</span>;
 }
@@ -287,36 +277,6 @@ export default function Home() {
       </aside>
 
       <section className="workspace">
-        <header className="topbar">
-          <nav className="top-tabs" aria-label="Dashboard navigation">
-            {topLinks.map(([item, href]) => (
-              <a
-                href={href}
-                className={activeNav === item ? "active" : ""}
-                key={item}
-                onClick={() => {
-                  setActiveNav(item);
-                  setDetail(item === "Social" ? "Social ingestion is disabled by scope decision" : `${item} section selected`);
-                }}
-              >
-                {item}
-              </a>
-            ))}
-          </nav>
-          <div className="top-actions">
-            <button type="button" className="live-pill" onClick={() => setDetail("Warehouse status: online")}>
-              <span className="online-dot" />
-              Live DW
-            </button>
-            <button type="button" className="icon-button" aria-label="Notifications" onClick={() => setDetail("ไม่มีการแจ้งเตือนใหม่")}>
-              <Icon name="bell" />
-            </button>
-            <button type="button" className="icon-button" aria-label="User profile" onClick={() => setDetail("Profile: Admissions analytics project")}>
-              <Icon name="user" />
-            </button>
-          </div>
-        </header>
-
         <section id="overview" className="hero-panel">
           <div>
             <p className="eyebrow">Engineering Admissions Analytics</p>

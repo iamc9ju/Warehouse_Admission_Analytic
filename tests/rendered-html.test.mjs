@@ -31,7 +31,8 @@ test("server-renders the admissions warehouse dashboard", async () => {
   const html = await response.text();
   assert.match(html, /<title>TCAS Admissions Data Warehouse<\/title>/i);
   assert.match(html, /TCAS Admissions Data Warehouse/);
-  assert.match(html, /aria-label="Dashboard navigation"/);
+  assert.match(html, /aria-label="Dashboard sidebar"/);
+  assert.match(html, /aria-label="Section navigation"/);
   assert.match(html, /href="#warehouse"/);
   assert.match(html, /href="#rounds"/);
   assert.match(html, /href="#scope"/);
