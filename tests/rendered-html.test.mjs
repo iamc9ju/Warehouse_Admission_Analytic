@@ -62,6 +62,7 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.match(html, /href="\/rounds"/);
   assert.match(html, /href="\/majors"/);
   assert.match(html, /href="\/quality"/);
+  assert.match(html, /href="\/insights"/);
   assert.doesNotMatch(html, /href="\/(?:social|marts|dashboard|reports|data-catalog|settings)"/);
   assert.match(html, /TCAS รอบ 1-4/);
   assert.match(html, /3,443/);
@@ -108,8 +109,20 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.equal(qualityResponse.status, 200);
   const qualityHtml = await qualityResponse.text();
   assert.match(qualityHtml, /Data quality metric definitions/);
+  assert.match(qualityHtml, /Warehouse health:[\s\S]*pass/);
   assert.match(qualityHtml, /admission_round_source_data_quality\.missing_score_rows/);
   assert.match(qualityHtml, /processed aggregate CSV column audit/);
+
+  const insightsResponse = await renderPath("/insights");
+  assert.equal(insightsResponse.status, 200);
+  const insightsHtml = await insightsResponse.text();
+  assert.match(insightsHtml, /Business Questions and Decision Insights/);
+  assert.match(insightsHtml, /Decision insights from governed marts/);
+  assert.match(insightsHtml, /High demand but low conversion/);
+  assert.match(insightsHtml, /Business question catalog/);
+  assert.match(insightsHtml, /Warehouse health and freshness/);
+  assert.match(insightsHtml, /Decision mart contract/);
+  assert.match(insightsHtml, /mart_major_opportunity/);
 });
 
 test("keeps dashboard copy tied to real warehouse data", async () => {
@@ -135,6 +148,10 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(snapshot, /qualityMetricDefinitions/);
   assert.match(snapshot, /dataCatalogRows/);
   assert.match(snapshot, /lineageEdges/);
+  assert.match(snapshot, /businessQuestions/);
+  assert.match(snapshot, /decisionInsights/);
+  assert.match(snapshot, /warehouseHealth/);
+  assert.match(snapshot, /decisionMartContract/);
 
   assert.match(loader, /warehouse-dashboard-snapshot\.json/);
   assert.match(loader, /DATABASE_URL/);
@@ -146,6 +163,7 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.doesNotMatch(page, /const\s+majorRows\s*=\s*\[/);
   assert.doesNotMatch(page, /const\s+statuses\s*=\s*\[/);
   assert.doesNotMatch(page, /const\s+rounds\s*=\s*\[/);
+  assert.doesNotMatch(page, /-154<\/strong> applicants|\+17<\/strong> confirmed|\+1\.15 pts<\/strong> rate/);
   assert.match(styles, /tcas-dw-cartoon-logo\.png/);
   assert.doesNotMatch(page, /next\/image/);
   assert.doesNotMatch(page, /<span className="brand-mark">DW<\/span>/);
@@ -168,6 +186,7 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(qualityMetrics, /Missing score/);
   assert.match(productionRunbook, /Production Data Warehouse Runbook/);
   assert.match(staticDataDecision, /Ban embedded dashboard data/);
+  assert.match(staticDataDecision, /live-neon-dashboard-adapter/);
 
   assert.doesNotMatch(page, /mock|synthetic|sample platform|TikTok|Pantip|YouTube API|Facebook public search/i);
   assert.doesNotMatch(page, /Your site is taking shape|Codex is working/i);

@@ -6,9 +6,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   AcademicCapIcon,
+  ChartBarSquareIcon,
   CheckCircleIcon,
   CircleStackIcon,
   HomeIcon,
+  LightBulbIcon,
   ShieldCheckIcon,
   Squares2X2Icon,
 } from "@heroicons/react/24/outline";
@@ -22,7 +24,8 @@ export type PageName =
   | "Warehouse"
   | "Rounds"
   | "Majors"
-  | "Quality";
+  | "Quality"
+  | "Insights";
 
 const sideLinks = [
   ["Overview", "home", "/"],
@@ -30,13 +33,14 @@ const sideLinks = [
   ["Rounds", "check", "/rounds"],
   ["Majors", "bars", "/majors"],
   ["Quality", "shield", "/quality"],
+  ["Insights", "insights", "/insights"],
 ] as const;
 
 const pageMeta: Record<PageName, { eyebrow: string; title: string; copy: string }> = {
   Overview: {
     eyebrow: "Engineering Admissions Analytics",
     title: "TCAS Admissions Data Warehouse",
-    copy: "ภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน ครบ TCAS รอบ 1-4 ปี 2568 และ 2569 จาก exported warehouse snapshot ที่ trace กลับไปยัง Neon PostgreSQL marts, dimensional facts และ governed lineage ได้",
+    copy: "ภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน ครบ TCAS รอบ 1-4 ปี 2568 และ 2569 จาก server-side warehouse loader หรือ generated mart artifact ที่ trace กลับไปยัง Neon PostgreSQL marts, dimensional facts และ governed lineage ได้",
   },
   Warehouse: {
     eyebrow: "Warehouse Architecture",
@@ -57,6 +61,11 @@ const pageMeta: Record<PageName, { eyebrow: string; title: string; copy: string 
     eyebrow: "Data Quality",
     title: "Data Quality and Status Distribution",
     copy: "ตรวจคุณภาพข้อมูลพร้อมนิยาม metric, source object, validation rule, missing values, PII boundary และการกระจายสถานะ TCAS จาก processed admissions data",
+  },
+  Insights: {
+    eyebrow: "Decision Intelligence",
+    title: "Business Questions and Decision Insights",
+    copy: "ตอบคำถามเชิงธุรกิจจาก decision marts พร้อม metric, recommended action, confidence, quality gate และ lineage กลับไปยัง warehouse object ที่ใช้ตัดสินใจ",
   },
 };
 
@@ -83,6 +92,7 @@ function Icon({ name }: { name: string }) {
     check: CheckCircleIcon,
     bars: AcademicCapIcon,
     shield: ShieldCheckIcon,
+    insights: LightBulbIcon,
   };
   const HeroIcon = icons[name] ?? Squares2X2Icon;
   return <HeroIcon className={`ui-icon ui-icon-${name}`} aria-hidden="true" />;
@@ -106,6 +116,10 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
     warehouseSnapshot,
     years,
     runtime,
+    businessQuestions,
+    decisionInsights,
+    warehouseHealth,
+    decisionMartContract,
   } = snapshot;
 
   const current = years.find((year) => year.year === selectedYear) ?? years[1];
@@ -134,6 +148,11 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
     ["ผู้สมัครไม่ซ้ำ", years[0].applicants, years[1].applicants, 3600],
     ["ยืนยันสิทธิ์", years[0].confirmed, years[1].confirmed, 600],
     ["อัตราการยืนยัน", years[0].rate, years[1].rate, 20],
+  ] as const;
+  const compareSummary = [
+    ["applicants", years[1].applicants - years[0].applicants],
+    ["confirmed", years[1].confirmed - years[0].confirmed],
+    ["rate", years[1].rate - years[0].rate],
   ] as const;
 
   const statCards = [
@@ -171,6 +190,7 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
   const showQualityPanel = isOverview || activePage === "Quality";
   const showRoundsPanel = isOverview || activePage === "Rounds";
   const showComparePanel = isOverview;
+  const showInsightsPanel = activePage === "Insights";
   const showDashboardGrid = showStatusPanel || showMajorsPanel || showQualityPanel || showRoundsPanel || showComparePanel;
   const showWarehousePanel = isOverview || activePage === "Warehouse";
   const isFocusedPage = !isOverview;
@@ -340,16 +360,24 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
               ))}
             </dl>
             {activePage === "Quality" && (
-              <div className="quality-definitions" aria-label="Data quality metric definitions">
-                {qualityMetricDefinitions.map((metric) => (
-                  <section key={metric.label}>
-                    <strong>{metric.label}</strong>
-                    <span>{metric.sourceObject}</span>
-                    <p>{metric.definition}</p>
-                    <small>{metric.rule}</small>
-                  </section>
-                ))}
-              </div>
+              <>
+                <div className="health-inline" aria-label="Warehouse health and freshness">
+                  <strong>Warehouse health: {warehouseHealth.status}</strong>
+                  <span>last refresh {warehouseHealth.lastRefreshAt}</span>
+                  <span>{warehouseHealth.qualityChecksFailed} failed checks</span>
+                  <span>{warehouseHealth.freshnessSlaHours}h freshness SLA</span>
+                </div>
+                <div className="quality-definitions" aria-label="Data quality metric definitions">
+                  {qualityMetricDefinitions.map((metric) => (
+                    <section key={metric.label}>
+                      <strong>{metric.label}</strong>
+                      <span>{metric.sourceObject}</span>
+                      <p>{metric.definition}</p>
+                      <small>{metric.rule}</small>
+                    </section>
+                  ))}
+                </div>
+              </>
             )}
           </article>
           )}
@@ -403,9 +431,11 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
               <span><i className="year-69" />2569</span>
             </div>
             <div className="compare-summary" aria-label="Year over year summary">
-              <span><strong>-154</strong> applicants</span>
-              <span><strong>+17</strong> confirmed</span>
-              <span><strong>+1.15 pts</strong> rate</span>
+              {compareSummary.map(([label, value]) => (
+                <span key={label}>
+                  <strong>{label === "rate" ? `${value > 0 ? "+" : ""}${value.toFixed(2)} pts` : formatSigned(value)}</strong> {label}
+                </span>
+              ))}
             </div>
             <div className="compare-chart">
               {compareMetrics.map(([label, first, second, max]) => (
@@ -421,6 +451,116 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
           </article>
           )}
         </section>
+        )}
+
+        {showInsightsPanel && (
+          <section className="insights-layout" aria-label="Business decision insights">
+            <article className="panel insights-panel">
+              <div className="panel-title">
+                <h2>Decision insights from governed marts</h2>
+                <span className="mini-pill">{decisionInsights.length} insights</span>
+              </div>
+              <div className="insight-grid">
+                {decisionInsights
+                  .slice()
+                  .sort((a, b) => a.priority - b.priority)
+                  .map((insight) => (
+                    <section className={`insight-card ${insight.category}`} key={insight.id}>
+                      <div className="insight-card-head">
+                        <span>{insight.id}</span>
+                        <b>{insight.confidence}</b>
+                      </div>
+                      <h2>{insight.title}</h2>
+                      <p>{insight.summary}</p>
+                      <dl>
+                        <div>
+                          <dt>{insight.metricLabel}</dt>
+                          <dd>{insight.metricValue}</dd>
+                        </div>
+                        <div>
+                          <dt>Mart</dt>
+                          <dd>{insight.martObject}</dd>
+                        </div>
+                        <div>
+                          <dt>Decision</dt>
+                          <dd>{insight.decision}</dd>
+                        </div>
+                      </dl>
+                      <strong className="action-line">{insight.recommendedAction}</strong>
+                      <small>{insight.qualityGate}</small>
+                    </section>
+                  ))}
+              </div>
+            </article>
+
+            <article className="panel business-question-panel">
+              <div className="panel-title">
+                <h2>Business question catalog</h2>
+                <span className="mini-pill">{businessQuestions.length} questions</span>
+              </div>
+              <div className="business-question-list">
+                {businessQuestions.map((question) => (
+                  <section key={question.id}>
+                    <span>{question.id}</span>
+                    <strong>{question.question}</strong>
+                    <p>{question.decisionUse}</p>
+                    <small>{question.martObject} · {question.qualityGate}</small>
+                  </section>
+                ))}
+              </div>
+            </article>
+
+            <article className="panel health-panel">
+              <div className="panel-title">
+                <h2>Warehouse health and freshness</h2>
+                <span className={`health-status ${warehouseHealth.status}`}>{warehouseHealth.status}</span>
+              </div>
+              <dl className="health-grid">
+                <div>
+                  <dt>Last refresh</dt>
+                  <dd>{warehouseHealth.lastRefreshAt}</dd>
+                </div>
+                <div>
+                  <dt>Freshness SLA</dt>
+                  <dd>{warehouseHealth.freshnessSlaHours}h</dd>
+                </div>
+                <div>
+                  <dt>Source rows</dt>
+                  <dd>{formatNumber(warehouseHealth.sourceRows)}</dd>
+                </div>
+                <div>
+                  <dt>Source files</dt>
+                  <dd>{warehouseHealth.sourceFiles}</dd>
+                </div>
+                <div>
+                  <dt>Quality failed</dt>
+                  <dd>{warehouseHealth.qualityChecksFailed}</dd>
+                </div>
+                <div>
+                  <dt>PII exported</dt>
+                  <dd>{warehouseHealth.piiExportedColumns}</dd>
+                </div>
+              </dl>
+              <p>{warehouseHealth.notes}</p>
+            </article>
+
+            <article className="panel decision-mart-panel">
+              <div className="panel-title">
+                <h2>Decision mart contract</h2>
+                <ChartBarSquareIcon className="panel-icon" aria-hidden="true" />
+              </div>
+              <div className="mart-contract-list">
+                {decisionMartContract.map((mart) => (
+                  <section key={mart.martObject}>
+                    <strong>{mart.martObject}</strong>
+                    <span>{mart.grain}</span>
+                    <p>{mart.purpose}</p>
+                    <small>{mart.sourceObjects}</small>
+                  </section>
+                ))}
+              </div>
+            </article>
+          </section>
         )}
 
         {showWarehousePanel && (

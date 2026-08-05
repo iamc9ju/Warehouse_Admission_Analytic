@@ -29,6 +29,7 @@ Excel admissions files / owned GA4 aggregate reports
 | Query exports | Mart/query output contract | `warehouse/query-results/*.tsv` |
 | Dashboard artifact | Pipeline-generated credential-free dashboard data | `app/data/generated/warehouse-dashboard-snapshot.json` |
 | Live adapter | Server-side Neon mart query | `app/data/live-neon-dashboard-adapter.ts` |
+| Decision layer | Business questions, insights and refresh health | `/insights`, `warehouse/query-results/decision_*.tsv` |
 
 ## Dimensional Model
 

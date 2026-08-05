@@ -15,6 +15,10 @@ const rounds = snapshot.rounds;
 const quality = snapshot.qualityMetricDefinitions;
 const catalog = snapshot.dataCatalogRows;
 const lineage = snapshot.lineageEdges;
+const businessQuestions = snapshot.businessQuestions;
+const decisionInsights = snapshot.decisionInsights;
+const health = snapshot.warehouseHealth;
+const decisionMarts = snapshot.decisionMartContract;
 
 assert(snapshot.runtime.source === "generated-artifact", "generated artifact must declare generated-artifact runtime source");
 assert(snapshot.warehouseSnapshot.dashboardMode === "generated warehouse mart artifact", "dashboard must use generated warehouse artifact mode");
@@ -28,6 +32,14 @@ assert(lineage.length === snapshot.warehouseSnapshot.lineageEdges, "lineage edge
 assert(quality.some((metric) => metric.label === "Missing score" && metric.value === "0"), "missing score quality metric must be zero");
 assert(quality.some((metric) => metric.label === "PII exported" && metric.value === "0 columns"), "PII quality metric must be zero columns");
 assert(snapshot.etlValidationChecks.every((check) => check[2] === "pass"), "all ETL checks must pass");
+assert(businessQuestions.length >= 5, "expected at least five business questions");
+assert(decisionInsights.length >= 5, "expected at least five decision insights");
+assert(decisionMarts.length >= 5, "expected decision mart contract rows");
+assert(health.status === "pass", "warehouse health must be pass");
+assert(health.sourceRows === snapshot.warehouseSnapshot.sourceRows, "warehouse health source rows mismatch");
+assert(health.sourceFiles === snapshot.warehouseSnapshot.sourceFiles, "warehouse health source files mismatch");
+assert(health.qualityChecksFailed === 0, "warehouse health must have zero failed quality checks");
+assert(health.piiExportedColumns === 0, "warehouse health must have zero PII columns");
 
 for (const year of years) {
   assert([2568, 2569].includes(year.year), `unexpected academic year ${year.year}`);
@@ -38,6 +50,16 @@ for (const round of ["TCAS1", "TCAS2", "TCAS3", "TCAS4"]) {
   for (const year of [2568, 2569]) {
     assert(rounds.some((row) => row.year === year && row.code === round), `missing ${year} ${round}`);
   }
+}
+
+const questionIds = new Set(businessQuestions.map((question) => question.id));
+const martObjects = new Set(decisionMarts.map((mart) => mart.martObject));
+
+for (const insight of decisionInsights) {
+  assert(questionIds.has(insight.businessQuestionId), `insight ${insight.id} has no business question mapping`);
+  assert(martObjects.has(insight.martObject), `insight ${insight.id} has no decision mart contract`);
+  assert(insight.decision && insight.recommendedAction, `insight ${insight.id} must include decision and recommended action`);
+  assert(["High", "Medium", "Low"].includes(insight.confidence), `insight ${insight.id} has invalid confidence`);
 }
 
 const serialized = JSON.stringify(snapshot);

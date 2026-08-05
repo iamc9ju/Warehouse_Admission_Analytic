@@ -100,6 +100,18 @@ Lineage edges used in the UI:
 | Round coverage | TCAS1-4 represented for both 2568 and 2569 | Pass |
 | Social exclusion | 0 social media source groups in active warehouse scope | Pass |
 
+## Business Decision Layer
+
+หน้า Insights ใช้ decision marts เพื่อเปลี่ยน warehouse จาก “รายงานตัวเลข” เป็น “คำตอบเพื่อการตัดสินใจ”
+
+| Business Question | Mart/View | Decision output |
+|---|---|---|
+| สาขาไหน demand สูงแต่ยืนยันสิทธิ์ต่ำ | `mart_major_opportunity` | ปรับ communication, quota หรือ offer strategy |
+| รอบ TCAS ไหนมี conversion ดีที่สุด | `mart_round_efficiency` | วางกลยุทธ์รอบรับสมัคร |
+| สถานะใดเป็น friction หลักใน funnel | `mart_status_friction` | ลด drop-off และปรับ process |
+| ปี 2569 เปลี่ยนจาก 2568 อย่างไร | `mart_admissions_year_change` | วางแผนปีถัดไป |
+| ข้อมูลพร้อมใช้ตัดสินใจหรือยัง | `vw_dw_refresh_health` | approve/block dashboard หรือ report |
+
 ## Dashboard Snapshot Contract
 
 The public dashboard does not connect directly to Neon from the browser. It uses an exported snapshot so database credentials are not shipped to the client.

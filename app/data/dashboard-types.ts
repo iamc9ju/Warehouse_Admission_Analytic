@@ -79,4 +79,48 @@ export type DashboardSnapshot = {
     object: string;
     sql: string;
   }[];
+  businessQuestions: {
+    id: string;
+    question: string;
+    martObject: string;
+    metrics: string[];
+    decisionOwner: string;
+    decisionUse: string;
+    qualityGate: string;
+  }[];
+  decisionInsights: {
+    id: string;
+    businessQuestionId: string;
+    priority: number;
+    category: string;
+    title: string;
+    summary: string;
+    martObject: string;
+    metricLabel: string;
+    metricValue: string;
+    decision: string;
+    recommendedAction: string;
+    confidence: "High" | "Medium" | "Low";
+    qualityGate: string;
+  }[];
+  warehouseHealth: {
+    id: string;
+    status: "pass" | "warn" | "fail";
+    lastRefreshAt: string;
+    freshnessSlaHours: number;
+    sourceRows: number;
+    sourceFiles: number;
+    martCount: number;
+    qualityChecksPassed: number;
+    qualityChecksFailed: number;
+    piiExportedColumns: number;
+    artifactChecksum: string;
+    notes: string;
+  };
+  decisionMartContract: {
+    martObject: string;
+    grain: string;
+    sourceObjects: string;
+    purpose: string;
+  }[];
 };

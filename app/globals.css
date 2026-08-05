@@ -1098,6 +1098,194 @@ th {
   white-space: pre;
 }
 
+.insights-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.65fr);
+  gap: 22px;
+  margin-top: 24px;
+}
+
+.insights-panel {
+  grid-row: span 3;
+}
+
+.insight-grid,
+.business-question-list,
+.mart-contract-list {
+  display: grid;
+  gap: 12px;
+}
+
+.insight-card,
+.business-question-list section,
+.mart-contract-list section {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fffdf9;
+  padding: 15px;
+}
+
+.insight-card {
+  border-left: 4px solid var(--accent);
+}
+
+.insight-card.strategy {
+  border-left-color: var(--green);
+}
+
+.insight-card.risk {
+  border-left-color: var(--red);
+}
+
+.insight-card.quality {
+  border-left-color: var(--blue);
+}
+
+.insight-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.insight-card-head b,
+.health-status {
+  border-radius: 999px;
+  background: #e8f5e8;
+  color: var(--green);
+  font-family: var(--font-anuphan), Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  padding: 5px 8px;
+}
+
+.health-status.warn {
+  background: #fff1df;
+  color: var(--accent-dark);
+}
+
+.health-status.fail {
+  background: #ffebeb;
+  color: var(--red);
+}
+
+.insight-card h2 {
+  font-size: 16px;
+}
+
+.insight-card p,
+.business-question-list p,
+.health-panel p,
+.mart-contract-list p {
+  color: #5f6567;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.insight-card dl,
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.health-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.insight-card dl div,
+.health-grid div {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px;
+}
+
+.insight-card dt,
+.health-grid dt {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.insight-card dd,
+.health-grid dd {
+  margin: 4px 0 0;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 820;
+  line-height: 1.35;
+}
+
+.action-line {
+  color: var(--accent-dark);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.insight-card small,
+.business-question-list small,
+.mart-contract-list small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.business-question-list span {
+  width: fit-content;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  font-weight: 850;
+  padding: 5px 8px;
+}
+
+.business-question-list strong,
+.mart-contract-list strong {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.mart-contract-list span {
+  color: var(--muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.panel-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--accent-dark);
+}
+
+.health-inline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.health-inline strong,
+.health-inline span {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fffdf9;
+  color: #4f5658;
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1.4;
+  padding: 10px;
+}
+
 .detail-bar {
   position: sticky;
   bottom: 14px;
@@ -1123,6 +1311,7 @@ th {
 #scope,
 #majors,
 #quality,
+#insights,
 #reports,
 #settings {
   scroll-margin-top: 112px;
@@ -1194,7 +1383,7 @@ th {
   }
 
   .side-nav {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     margin-top: 24px;
   }
 
@@ -1229,6 +1418,14 @@ th {
     grid-template-columns: 1fr;
   }
 
+  .insights-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .insights-panel {
+    grid-row: auto;
+  }
+
   .catalog-card,
   .query-card {
     grid-column: auto;
@@ -1261,7 +1458,10 @@ th {
   .source-cards,
   .quality-grid,
   .warehouse-flow,
-  .warehouse-evidence {
+  .warehouse-evidence,
+  .insight-card dl,
+  .health-grid,
+  .health-inline {
     grid-template-columns: 1fr;
   }
 

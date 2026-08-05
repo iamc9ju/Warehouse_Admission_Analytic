@@ -54,6 +54,15 @@ function enrichQualityMetrics(
   });
 }
 
+async function optionalQuery(client: QueryClient, sql: string): Promise<Record<string, unknown>[] | undefined> {
+  try {
+    const result = await client.query<Record<string, unknown>>(sql);
+    return result.rows.length > 0 ? result.rows : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function loadLiveNeonSnapshot(databaseUrl: string): Promise<DashboardSnapshot> {
   const fallback = artifactSnapshot as DashboardSnapshot;
   const client = await connect(databaseUrl);
@@ -84,6 +93,32 @@ export async function loadLiveNeonSnapshot(databaseUrl: string): Promise<Dashboa
         select metric_name, metric_value, source_object, validation_rule
         from admissions_dw.vw_dw_quality_scorecard
         order by metric_name
+      `),
+    ]);
+
+    const [businessQuestionRows, insightRows, healthRows, decisionMartRows] = await Promise.all([
+      optionalQuery(client, `
+        select question_id, question, mart_object, metrics, decision_owner, decision_use, quality_gate
+        from admissions_dw.dw_business_question_catalog
+        order by question_id
+      `),
+      optionalQuery(client, `
+        select insight_id, business_question_id, priority, category, title, summary, mart_object, metric_label, metric_value,
+          decision, recommended_action, confidence, quality_gate
+        from admissions_dw.mart_decision_insight
+        order by priority, insight_id
+      `),
+      optionalQuery(client, `
+        select health_id, status, last_refresh_at, freshness_sla_hours, source_rows, source_files, mart_count,
+          quality_checks_passed, quality_checks_failed, pii_exported_columns, artifact_checksum, notes
+        from admissions_dw.vw_dw_refresh_health
+        order by last_refresh_at desc
+        limit 1
+      `),
+      optionalQuery(client, `
+        select mart_object, grain, source_objects, purpose
+        from admissions_dw.dw_decision_mart_contract
+        order by mart_object
       `),
     ]);
 
@@ -149,6 +184,58 @@ export async function loadLiveNeonSnapshot(databaseUrl: string): Promise<Dashboa
       majorRows,
       statuses,
       qualityMetricDefinitions: enrichQualityMetrics(qualityResult.rows, fallback.qualityMetricDefinitions),
+      businessQuestions: businessQuestionRows
+        ? businessQuestionRows.map((row) => ({
+          id: String(row.question_id),
+          question: String(row.question),
+          martObject: String(row.mart_object),
+          metrics: String(row.metrics).split(",").map((metric) => metric.trim()),
+          decisionOwner: String(row.decision_owner),
+          decisionUse: String(row.decision_use),
+          qualityGate: String(row.quality_gate),
+        }))
+        : fallback.businessQuestions,
+      decisionInsights: insightRows
+        ? insightRows.map((row) => ({
+          id: String(row.insight_id),
+          businessQuestionId: String(row.business_question_id),
+          priority: numberValue(row.priority, "priority"),
+          category: String(row.category),
+          title: String(row.title),
+          summary: String(row.summary),
+          martObject: String(row.mart_object),
+          metricLabel: String(row.metric_label),
+          metricValue: String(row.metric_value),
+          decision: String(row.decision),
+          recommendedAction: String(row.recommended_action),
+          confidence: String(row.confidence) as DashboardSnapshot["decisionInsights"][number]["confidence"],
+          qualityGate: String(row.quality_gate),
+        }))
+        : fallback.decisionInsights,
+      warehouseHealth: healthRows
+        ? {
+          id: String(healthRows[0].health_id),
+          status: String(healthRows[0].status) as DashboardSnapshot["warehouseHealth"]["status"],
+          lastRefreshAt: String(healthRows[0].last_refresh_at),
+          freshnessSlaHours: numberValue(healthRows[0].freshness_sla_hours, "freshness_sla_hours"),
+          sourceRows: numberValue(healthRows[0].source_rows, "source_rows"),
+          sourceFiles: numberValue(healthRows[0].source_files, "source_files"),
+          martCount: numberValue(healthRows[0].mart_count, "mart_count"),
+          qualityChecksPassed: numberValue(healthRows[0].quality_checks_passed, "quality_checks_passed"),
+          qualityChecksFailed: numberValue(healthRows[0].quality_checks_failed, "quality_checks_failed"),
+          piiExportedColumns: numberValue(healthRows[0].pii_exported_columns, "pii_exported_columns"),
+          artifactChecksum: String(healthRows[0].artifact_checksum),
+          notes: String(healthRows[0].notes),
+        }
+        : fallback.warehouseHealth,
+      decisionMartContract: decisionMartRows
+        ? decisionMartRows.map((row) => ({
+          martObject: String(row.mart_object),
+          grain: String(row.grain),
+          sourceObjects: String(row.source_objects),
+          purpose: String(row.purpose),
+        }))
+        : fallback.decisionMartContract,
     };
   } finally {
     await client.end();

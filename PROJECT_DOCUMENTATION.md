@@ -143,9 +143,10 @@ Current fetch status:
   - server-side Neon adapter สำหรับ query `admissions_dw` marts/views โดยไม่ expose credentials ไป client
 
 - `app/dashboard-page.tsx`
-  - Dashboard route pages สำหรับ Overview, Warehouse, Rounds, Majors และ Quality
+  - Dashboard route pages สำหรับ Overview, Warehouse, Rounds, Majors, Quality และ Insights
   - หน้า Warehouse แสดง data catalog, lineage edges, query contract และ ETL validation checks
   - หน้า Quality แสดง metric definitions, source object และ validation rule ของแต่ละ quality metric
+  - หน้า Insights แสดง business questions, decision insights, warehouse health และ decision mart contract
 
 - `app/globals.css`
   - Dashboard layout และ visual design
@@ -204,6 +205,11 @@ Active views and marts:
 - `mart_major_round_conversion`
 - `mart_admissions_executive_summary`
 - `mart_major_conversion`
+- `mart_major_opportunity`
+- `mart_round_efficiency`
+- `mart_status_friction`
+- `mart_admissions_year_change`
+- `vw_dw_refresh_health`
 
 Committed dashboard artifact:
 
@@ -214,6 +220,9 @@ Committed dashboard artifact:
   - `statuses` มาจาก `vw_admission_round_status_distribution`
   - `qualityMetricDefinitions` มาจาก quality scorecard contract
   - `dataCatalogRows` และ `lineageEdges` ใช้เป็น governance evidence สำหรับการตรวจโปรเจค
+  - `businessQuestions` มาจาก business question catalog
+  - `decisionInsights` มาจาก decision mart query results
+  - `warehouseHealth` มาจาก refresh/quality health contract
 
 ---
 
@@ -283,6 +292,12 @@ Fallback: generated warehouse artifact
 - ห้ามฝัง dashboard data เป็น static arrays/constants ใน `app/`
 - `npm test` ต้องรัน data build, validation, no-static-data check, app build และ rendered HTML checks
 - `docs/decisions/0009-ban-embedded-dashboard-data.md` คือ ADR ที่บังคับกฎนี้
+
+Business decision layer:
+
+- `docs/business-questions.md` map คำถามธุรกิจกับ mart/view และ quality gate
+- `/insights` แสดงคำตอบที่พร้อมใช้ตัดสินใจ ไม่ใช่กราฟลอย ๆ
+- ทุก insight ต้องมี `businessQuestionId`, `martObject`, `metricValue`, `decision`, `recommendedAction`, `confidence` และ `qualityGate`
 
 ---
 

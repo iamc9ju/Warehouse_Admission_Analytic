@@ -74,6 +74,9 @@ Allowed sources:
 |---|---|
 | `PROJECT_DOCUMENTATION.md` | Full project documentation, limitations and runbook |
 | `docs/data-warehouse-evidence.md` | Evidence pack for source scope, lineage, ETL validation, quality metrics and limitations |
+| `docs/business-questions.md` | Business questions mapped to decision marts, metrics and actions |
+| `docs/production-review-report.md` | Production review report for architecture, scope, quality gates and limitations |
+| `docs/production-data-warehouse-runbook.md` | Production refresh, validation and runtime runbook |
 | `docs/warehouse-query-contract.md` | SQL query contract for exporting dashboard snapshot from warehouse marts/views |
 | `docs/data-quality-metrics.md` | Data quality metric definitions, source objects and validation rules |
 | `docs/decisions/` | Architecture decision records |
@@ -110,6 +113,18 @@ Allowed sources:
 | Unique applicants, cross-round | 3,597 | 3,443 | -154 |
 | Confirmed applicants, TCAS1-4 | 528 | 545 | +17 |
 | Confirmed rate, cross-round | 14.68% | 15.83% | +1.15 pts |
+
+## Business Questions Answered
+
+| Question | Decision mart |
+|---|---|
+| Which majors have high demand but low confirmation conversion? | `mart_major_opportunity` |
+| Which TCAS round converts best? | `mart_round_efficiency` |
+| Which applicant status creates funnel friction? | `mart_status_friction` |
+| How did 2569 move against 2568? | `mart_admissions_year_change` |
+| Is the warehouse data ready for decision review? | `vw_dw_refresh_health` |
+
+The `/insights` route displays decision-ready insights with mart source, metric, recommended action, confidence and quality gate.
 
 ---
 

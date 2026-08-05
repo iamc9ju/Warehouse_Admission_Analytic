@@ -10,6 +10,7 @@ const files = [
   "app/rounds/page.tsx",
   "app/majors/page.tsx",
   "app/quality/page.tsx",
+  "app/insights/page.tsx",
 ];
 
 const forbiddenPatterns = [

@@ -103,6 +103,16 @@ DATABASE_URL missing or query fails
 | Round coverage | TCAS1-4 for 2568 and 2569 |
 | ETL checks | all `pass` |
 
+## Decision Insight Gates
+
+| Gate | Required result |
+|---|---|
+| Business questions | at least 5 mapped questions |
+| Decision insights | every insight maps to a business question |
+| Decision mart contract | every insight maps to a declared mart/view |
+| Recommended action | every insight includes an action |
+| Confidence | every insight declares High, Medium or Low |
+
 ## Monitoring Targets
 
 Production refresh should track:
@@ -115,6 +125,8 @@ Production refresh should track:
 - failed validation count
 - dashboard artifact checksum
 - mart row counts
+
+The dashboard `/insights` route also displays `vw_dw_refresh_health` values so reviewer can see freshness and validation readiness from the UI.
 
 ## CI Policy
 

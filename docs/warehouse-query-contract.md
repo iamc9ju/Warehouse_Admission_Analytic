@@ -124,6 +124,65 @@ Required checks:
 - `catalog_rows = 7`
 - `lineage_edges = 7`
 
+## Business Questions and Decision Insights
+
+ใช้กับหน้า Insights เพื่อ map business question กับ decision mart และ action
+
+```sql
+select
+  question_id,
+  question,
+  mart_object,
+  metrics,
+  decision_owner,
+  decision_use,
+  quality_gate
+from admissions_dw.dw_business_question_catalog
+order by question_id;
+```
+
+```sql
+select
+  insight_id,
+  business_question_id,
+  priority,
+  category,
+  title,
+  summary,
+  mart_object,
+  metric_label,
+  metric_value,
+  decision,
+  recommended_action,
+  confidence,
+  quality_gate
+from admissions_dw.mart_decision_insight
+order by priority, insight_id;
+```
+
+## Warehouse Health
+
+ใช้กับหน้า Insights และ Quality เพื่อบอก freshness, validation status และ report readiness
+
+```sql
+select
+  health_id,
+  status,
+  last_refresh_at,
+  freshness_sla_hours,
+  source_rows,
+  source_files,
+  mart_count,
+  quality_checks_passed,
+  quality_checks_failed,
+  pii_exported_columns,
+  artifact_checksum,
+  notes
+from admissions_dw.vw_dw_refresh_health
+order by last_refresh_at desc
+limit 1;
+```
+
 ## Export Rule
 
 หลัง query จาก Neon ให้ export query results เป็น TSV ใน:

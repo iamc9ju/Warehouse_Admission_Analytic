@@ -106,10 +106,59 @@ const warehouseQueries = (await readTsv("dashboard_query_contract.tsv")).map((ro
   sql: row.sql,
 }));
 
+const businessQuestions = (await readTsv("business_questions.tsv")).map((row) => ({
+  id: row.question_id,
+  question: row.question,
+  martObject: row.mart_object,
+  metrics: row.metrics.split(",").map((metric) => metric.trim()),
+  decisionOwner: row.decision_owner,
+  decisionUse: row.decision_use,
+  qualityGate: row.quality_gate,
+}));
+
+const decisionInsights = (await readTsv("decision_insights.tsv")).map((row) => ({
+  id: row.insight_id,
+  businessQuestionId: row.business_question_id,
+  priority: toNumber(row.priority, "priority"),
+  category: row.category,
+  title: row.title,
+  summary: row.summary,
+  martObject: row.mart_object,
+  metricLabel: row.metric_label,
+  metricValue: row.metric_value,
+  decision: row.decision,
+  recommendedAction: row.recommended_action,
+  confidence: row.confidence,
+  qualityGate: row.quality_gate,
+}));
+
+const [warehouseHealthRow] = await readTsv("warehouse_health.tsv");
+const warehouseHealth = {
+  id: warehouseHealthRow.health_id,
+  status: warehouseHealthRow.status,
+  lastRefreshAt: warehouseHealthRow.last_refresh_at,
+  freshnessSlaHours: toNumber(warehouseHealthRow.freshness_sla_hours, "freshness_sla_hours"),
+  sourceRows: toNumber(warehouseHealthRow.source_rows, "source_rows"),
+  sourceFiles: toNumber(warehouseHealthRow.source_files, "source_files"),
+  martCount: toNumber(warehouseHealthRow.mart_count, "mart_count"),
+  qualityChecksPassed: toNumber(warehouseHealthRow.quality_checks_passed, "quality_checks_passed"),
+  qualityChecksFailed: toNumber(warehouseHealthRow.quality_checks_failed, "quality_checks_failed"),
+  piiExportedColumns: toNumber(warehouseHealthRow.pii_exported_columns, "pii_exported_columns"),
+  artifactChecksum: warehouseHealthRow.artifact_checksum,
+  notes: warehouseHealthRow.notes,
+};
+
+const decisionMartContract = (await readTsv("decision_mart_contract.tsv")).map((row) => ({
+  martObject: row.mart_object,
+  grain: row.grain,
+  sourceObjects: row.source_objects,
+  purpose: row.purpose,
+}));
+
 const snapshot = {
   runtime: {
     source: "generated-artifact",
-    loadedAt: new Date().toISOString(),
+    loadedAt: `${metadataRow.exported_at}T00:00:00+07:00`,
   },
   warehouseSnapshot: {
     exportedAt: metadataRow.exported_at,
@@ -133,6 +182,10 @@ const snapshot = {
   lineageEdges,
   etlValidationChecks,
   warehouseQueries,
+  businessQuestions,
+  decisionInsights,
+  warehouseHealth,
+  decisionMartContract,
 };
 
 await mkdir(path.dirname(outputPath), { recursive: true });
