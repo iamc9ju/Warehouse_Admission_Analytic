@@ -131,6 +131,7 @@ Required checks:
 ```sql
 select
   question_id,
+  domain,
   question,
   mart_object,
   metrics,

@@ -117,8 +117,12 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.equal(insightsResponse.status, 200);
   const insightsHtml = await insightsResponse.text();
   assert.match(insightsHtml, /Business Questions and Decision Insights/);
+  assert.match(insightsHtml, /Executive action priorities/);
+  assert.match(insightsHtml, /Insight categories/);
   assert.match(insightsHtml, /Decision insights from governed marts/);
   assert.match(insightsHtml, /High demand but low conversion/);
+  assert.match(insightsHtml, /วิศวกรรมเครื่องกล-เกษตรเป็น demand drop risk/);
+  assert.match(insightsHtml, /Demand[\s\S]*Conversion[\s\S]*Round Strategy[\s\S]*Program Portfolio[\s\S]*Data Trust/);
   assert.match(insightsHtml, /Business question catalog/);
   assert.match(insightsHtml, /Warehouse health and freshness/);
   assert.match(insightsHtml, /Decision mart contract/);
@@ -135,6 +139,7 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   const qualityMetrics = await readFile(new URL("../docs/data-quality-metrics.md", import.meta.url), "utf8");
   const productionRunbook = await readFile(new URL("../docs/production-data-warehouse-runbook.md", import.meta.url), "utf8");
   const staticDataDecision = await readFile(new URL("../docs/decisions/0009-ban-embedded-dashboard-data.md", import.meta.url), "utf8");
+  const snapshotObject = JSON.parse(snapshot);
 
   assert.match(snapshot, /"choices": 4579/);
   assert.match(snapshot, /"source": "generated-artifact"/);
@@ -152,6 +157,10 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(snapshot, /decisionInsights/);
   assert.match(snapshot, /warehouseHealth/);
   assert.match(snapshot, /decisionMartContract/);
+  assert.equal(snapshotObject.businessQuestions.length, 15);
+  assert.equal(snapshotObject.decisionInsights.length, 12);
+  assert(snapshotObject.businessQuestions.some((question) => question.domain === "Program Portfolio"));
+  assert(snapshotObject.decisionInsights.some((insight) => insight.category === "Data Trust"));
 
   assert.match(loader, /warehouse-dashboard-snapshot\.json/);
   assert.match(loader, /DATABASE_URL/);

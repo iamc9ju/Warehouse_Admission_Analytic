@@ -81,6 +81,7 @@ export type DashboardSnapshot = {
   }[];
   businessQuestions: {
     id: string;
+    domain: string;
     question: string;
     martObject: string;
     metrics: string[];

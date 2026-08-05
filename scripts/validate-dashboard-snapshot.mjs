@@ -32,8 +32,8 @@ assert(lineage.length === snapshot.warehouseSnapshot.lineageEdges, "lineage edge
 assert(quality.some((metric) => metric.label === "Missing score" && metric.value === "0"), "missing score quality metric must be zero");
 assert(quality.some((metric) => metric.label === "PII exported" && metric.value === "0 columns"), "PII quality metric must be zero columns");
 assert(snapshot.etlValidationChecks.every((check) => check[2] === "pass"), "all ETL checks must pass");
-assert(businessQuestions.length >= 5, "expected at least five business questions");
-assert(decisionInsights.length >= 5, "expected at least five decision insights");
+assert(businessQuestions.length >= 15, "expected at least fifteen business questions");
+assert(decisionInsights.length >= 10, "expected at least ten decision insights");
 assert(decisionMarts.length >= 5, "expected decision mart contract rows");
 assert(health.status === "pass", "warehouse health must be pass");
 assert(health.sourceRows === snapshot.warehouseSnapshot.sourceRows, "warehouse health source rows mismatch");
@@ -54,6 +54,11 @@ for (const round of ["TCAS1", "TCAS2", "TCAS3", "TCAS4"]) {
 
 const questionIds = new Set(businessQuestions.map((question) => question.id));
 const martObjects = new Set(decisionMarts.map((mart) => mart.martObject));
+const questionDomains = new Set(businessQuestions.map((question) => question.domain));
+
+for (const domain of ["Demand", "Conversion", "Round Strategy", "Program Portfolio", "Data Trust"]) {
+  assert(questionDomains.has(domain), `missing business question domain ${domain}`);
+}
 
 for (const insight of decisionInsights) {
   assert(questionIds.has(insight.businessQuestionId), `insight ${insight.id} has no business question mapping`);

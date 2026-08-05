@@ -108,6 +108,7 @@ const warehouseQueries = (await readTsv("dashboard_query_contract.tsv")).map((ro
 
 const businessQuestions = (await readTsv("business_questions.tsv")).map((row) => ({
   id: row.question_id,
+  domain: row.domain,
   question: row.question,
   martObject: row.mart_object,
   metrics: row.metrics.split(",").map((metric) => metric.trim()),

@@ -668,6 +668,7 @@
   "businessQuestions": [
     {
       "id": "BQ-001",
+      "domain": "Demand",
       "question": "สาขาไหน demand สูงแต่ยืนยันสิทธิ์ต่ำ",
       "martObject": "mart_major_opportunity",
       "metrics": [
@@ -680,6 +681,7 @@
     },
     {
       "id": "BQ-002",
+      "domain": "Round Strategy",
       "question": "รอบ TCAS ไหนมี conversion ดีที่สุด",
       "martObject": "mart_round_efficiency",
       "metrics": [
@@ -692,6 +694,7 @@
     },
     {
       "id": "BQ-003",
+      "domain": "Conversion",
       "question": "สถานะใดเป็น friction หลักใน funnel",
       "martObject": "mart_status_friction",
       "metrics": [
@@ -704,6 +707,7 @@
     },
     {
       "id": "BQ-004",
+      "domain": "Demand",
       "question": "ปี 2569 เปลี่ยนจาก 2568 อย่างไร",
       "martObject": "mart_admissions_year_change",
       "metrics": [
@@ -717,6 +721,7 @@
     },
     {
       "id": "BQ-005",
+      "domain": "Data Trust",
       "question": "ข้อมูลพร้อมใช้ตัดสินใจหรือยัง",
       "martObject": "vw_dw_refresh_health",
       "metrics": [
@@ -727,6 +732,141 @@
       "decisionOwner": "Data owner",
       "decisionUse": "อนุมัติหรือ block dashboard/report ก่อนใช้งานจริง",
       "qualityGate": "All quality checks pass"
+    },
+    {
+      "id": "BQ-006",
+      "domain": "Program Portfolio",
+      "question": "สาขาไหนควรตรวจ quota หรือ seat allocation ก่อนปีถัดไป",
+      "martObject": "mart_major_opportunity",
+      "metrics": [
+        "applicant_count",
+        "confirmed_count",
+        "confirmed_rate"
+      ],
+      "decisionOwner": "Faculty leadership",
+      "decisionUse": "ระบุสาขาที่ demand สูงแต่ seat/confirmation outcome อาจไม่สมดุล",
+      "qualityGate": "Missing major = 0"
+    },
+    {
+      "id": "BQ-007",
+      "domain": "Demand",
+      "question": "สาขาไหนผู้สมัครลดลงมากผิดปกติ",
+      "martObject": "mart_major_year_change",
+      "metrics": [
+        "applicant_delta",
+        "applicant_change_pct"
+      ],
+      "decisionOwner": "Admissions committee",
+      "decisionUse": "วางแผน recovery campaign หรือปรับ positioning ของสาขา",
+      "qualityGate": "Major mapping complete"
+    },
+    {
+      "id": "BQ-008",
+      "domain": "Demand",
+      "question": "สาขาไหนโตสวนภาพรวม",
+      "martObject": "mart_major_year_change",
+      "metrics": [
+        "applicant_delta",
+        "applicant_change_pct"
+      ],
+      "decisionOwner": "Faculty leadership",
+      "decisionUse": "หา program signal ที่ควรขยายเป็นจุดขายของปีหน้า",
+      "qualityGate": "Year coverage = 2568, 2569"
+    },
+    {
+      "id": "BQ-009",
+      "domain": "Conversion",
+      "question": "สาขาไหน confirmed rate สูงแต่ demand ต่ำ",
+      "martObject": "mart_major_opportunity",
+      "metrics": [
+        "applicant_count",
+        "confirmed_rate"
+      ],
+      "decisionOwner": "Admissions committee",
+      "decisionUse": "เลือกสาขาที่ควรเพิ่ม awareness เพราะ conversion quality ดี",
+      "qualityGate": "Missing score = 0"
+    },
+    {
+      "id": "BQ-010",
+      "domain": "Round Strategy",
+      "question": "รอบไหนมี volume สูงแต่ conversion ต่ำ",
+      "martObject": "mart_round_efficiency",
+      "metrics": [
+        "choices",
+        "unique_applicants",
+        "confirmed_rate"
+      ],
+      "decisionOwner": "Admissions operations",
+      "decisionUse": "ปรับ timing, communication และ follow-up สำหรับรอบที่มี leakage สูง",
+      "qualityGate": "Round coverage = TCAS1-4"
+    },
+    {
+      "id": "BQ-011",
+      "domain": "Round Strategy",
+      "question": "รอบไหนควรเป็น flagship recruitment round",
+      "martObject": "mart_round_efficiency",
+      "metrics": [
+        "confirmed_count",
+        "confirmed_rate",
+        "source_files"
+      ],
+      "decisionOwner": "Faculty leadership",
+      "decisionUse": "เลือก round ที่ควรใช้เป็นแกนสื่อสารและจัด resource",
+      "qualityGate": "Source files reconciled"
+    },
+    {
+      "id": "BQ-012",
+      "domain": "Conversion",
+      "question": "สถานะผ่านลำดับที่ดีกว่ากระทบ conversion แค่ไหน",
+      "martObject": "mart_status_friction",
+      "metrics": [
+        "choices",
+        "share_pct"
+      ],
+      "decisionOwner": "Admissions operations",
+      "decisionUse": "ปรับ expectation และ communication หลังประกาศผล",
+      "qualityGate": "Source rows reconciled"
+    },
+    {
+      "id": "BQ-013",
+      "domain": "Program Portfolio",
+      "question": "ภาคพิเศษต่างจากภาคปกติอย่างไร",
+      "martObject": "mart_program_type_mix",
+      "metrics": [
+        "applicant_count",
+        "confirmed_count",
+        "confirmed_rate"
+      ],
+      "decisionOwner": "Curriculum planning",
+      "decisionUse": "ประเมิน portfolio ของหลักสูตรและ positioning ของ program type",
+      "qualityGate": "Major mapping complete"
+    },
+    {
+      "id": "BQ-014",
+      "domain": "Data Trust",
+      "question": "quality gate ไหนควร block การรายงาน",
+      "martObject": "vw_dw_quality_scorecard",
+      "metrics": [
+        "metric_value",
+        "validation_rule"
+      ],
+      "decisionOwner": "Data owner",
+      "decisionUse": "กำหนด go/no-go ก่อนส่งรายงานให้ผู้บริหาร",
+      "qualityGate": "All critical gates pass"
+    },
+    {
+      "id": "BQ-015",
+      "domain": "Data Trust",
+      "question": "ข้อมูล refresh ล่าสุดยังอยู่ใน SLA ไหม",
+      "martObject": "vw_dw_refresh_health",
+      "metrics": [
+        "last_refresh_at",
+        "freshness_sla_hours",
+        "status"
+      ],
+      "decisionOwner": "Data owner",
+      "decisionUse": "ตัดสินใจใช้ live dashboard หรือ fallback artifact",
+      "qualityGate": "Freshness SLA satisfied"
     }
   ],
   "decisionInsights": [
@@ -734,7 +874,7 @@
       "id": "INS-001",
       "businessQuestionId": "BQ-001",
       "priority": 1,
-      "category": "opportunity",
+      "category": "Demand",
       "title": "High demand but low conversion: วิศวกรรมโยธา-โครงสร้างพื้นฐาน",
       "summary": "ปี 2569 มีผู้สมัคร 825 คน แต่อัตรายืนยันสิทธิ์ 7.64% ต่ำกว่าสาขา demand สูงอื่น",
       "martObject": "mart_major_opportunity",
@@ -749,7 +889,7 @@
       "id": "INS-002",
       "businessQuestionId": "BQ-002",
       "priority": 2,
-      "category": "strategy",
+      "category": "Round Strategy",
       "title": "TCAS3 เป็นรอบที่สร้าง confirmed มากที่สุด",
       "summary": "ปี 2569 TCAS3 มี confirmed 283 คน และ rate 17.47% สูงกว่าปี 2568",
       "martObject": "mart_round_efficiency",
@@ -764,7 +904,7 @@
       "id": "INS-003",
       "businessQuestionId": "BQ-003",
       "priority": 3,
-      "category": "risk",
+      "category": "Conversion",
       "title": "สถานะไม่ผ่านการคัดเลือกเป็น share สูงสุด",
       "summary": "ปี 2569 มี choices ไม่ผ่านการคัดเลือก 2,552 รายการ คิดเป็น 55.73%",
       "martObject": "mart_status_friction",
@@ -779,7 +919,7 @@
       "id": "INS-004",
       "businessQuestionId": "BQ-004",
       "priority": 4,
-      "category": "trend",
+      "category": "Demand",
       "title": "ผู้สมัครรวมลดลงแต่ confirmed เพิ่มขึ้น",
       "summary": "ปี 2569 unique applicants ลดลง 154 คน แต่ confirmed เพิ่มขึ้น 17 คน",
       "martObject": "mart_admissions_year_change",
@@ -794,7 +934,7 @@
       "id": "INS-005",
       "businessQuestionId": "BQ-005",
       "priority": 5,
-      "category": "quality",
+      "category": "Data Trust",
       "title": "Dashboard data is decision-ready",
       "summary": "quality gate ปัจจุบันผ่านทุกข้อ: missing score 0, missing major 0, PII exported 0 columns",
       "martObject": "vw_dw_refresh_health",
@@ -804,6 +944,111 @@
       "recommendedAction": "Proceed with report review while keeping source refresh evidence",
       "confidence": "High",
       "qualityGate": "All quality checks pass"
+    },
+    {
+      "id": "INS-006",
+      "businessQuestionId": "BQ-007",
+      "priority": 6,
+      "category": "Demand",
+      "title": "วิศวกรรมเครื่องกล-เกษตรเป็น demand drop risk",
+      "summary": "ปี 2569 applicants ลดลง 197 คนจากปี 2568 ในสาขาวิศวกรรมเครื่องกล-เกษตร",
+      "martObject": "mart_major_year_change",
+      "metricLabel": "applicant_delta",
+      "metricValue": "-197 applicants",
+      "decision": "ต้องหาเหตุผล demand drop และปรับ positioning ก่อนรอบรับปีหน้า",
+      "recommendedAction": "Run program messaging review and compare competitor positioning",
+      "confidence": "Medium",
+      "qualityGate": "Major mapping complete"
+    },
+    {
+      "id": "INS-007",
+      "businessQuestionId": "BQ-008",
+      "priority": 7,
+      "category": "Demand",
+      "title": "วิศวกรรมอุตสาหการ-โลจิสติกส์โตสวนภาพรวม",
+      "summary": "ปี 2569 applicants เพิ่มขึ้น 157 คน แม้ภาพรวม unique applicants ลดลง",
+      "martObject": "mart_major_year_change",
+      "metricLabel": "applicant_delta",
+      "metricValue": "+157 applicants",
+      "decision": "ใช้ signal นี้เป็นจุดขายและขยาย communication ในปีถัดไป",
+      "recommendedAction": "Promote logistics outcome stories and retain high-performing funnel messages",
+      "confidence": "High",
+      "qualityGate": "Year coverage = 2568, 2569"
+    },
+    {
+      "id": "INS-008",
+      "businessQuestionId": "BQ-009",
+      "priority": 8,
+      "category": "Program Portfolio",
+      "title": "วิศวกรรมนวัตกรรมเพื่อการเกษตรและอุตสาหกรรม conversion สูงแต่ demand ต่ำ",
+      "summary": "ปี 2569 มี applicants 108 คน แต่ confirmed rate 33.33% สูงที่สุดในกลุ่มสาขา",
+      "martObject": "mart_major_opportunity",
+      "metricLabel": "applicants / confirmed_rate",
+      "metricValue": "108 applicants / 33.33% confirmed",
+      "decision": "สาขานี้ควรเพิ่ม awareness เพราะผู้สมัครที่สนใจมีแนวโน้มยืนยันสูง",
+      "recommendedAction": "Increase targeted awareness while preserving applicant-fit messaging",
+      "confidence": "Medium",
+      "qualityGate": "Missing score = 0"
+    },
+    {
+      "id": "INS-009",
+      "businessQuestionId": "BQ-010",
+      "priority": 9,
+      "category": "Round Strategy",
+      "title": "TCAS1 มี volume สูงแต่ conversion ต่ำ",
+      "summary": "ปี 2569 TCAS1 มี applicants 1,324 คน แต่ confirmed rate 12.31% ต่ำกว่า TCAS3",
+      "martObject": "mart_round_efficiency",
+      "metricLabel": "applicants / confirmed_rate",
+      "metricValue": "1,324 applicants / 12.31% confirmed",
+      "decision": "ควรปรับ follow-up และ expectation ในรอบ Portfolio",
+      "recommendedAction": "Strengthen post-shortlist communication and reduce uncertainty before confirmation",
+      "confidence": "Medium",
+      "qualityGate": "Round coverage = TCAS1-4"
+    },
+    {
+      "id": "INS-010",
+      "businessQuestionId": "BQ-012",
+      "priority": 10,
+      "category": "Conversion",
+      "title": "ผ่านการคัดเลือกในลำดับที่ดีกว่ายังเป็น friction ใหญ่",
+      "summary": "ปี 2569 status นี้มี 1,191 choices หรือ 26.01% ของทั้งหมด",
+      "martObject": "mart_status_friction",
+      "metricLabel": "choices / share",
+      "metricValue": "1,191 choices / 26.01%",
+      "decision": "ต้องสื่อสาร value proposition ของหลักสูตรเร็วขึ้นก่อนผู้สมัครย้ายลำดับ",
+      "recommendedAction": "Move program-fit messaging earlier in the admissions journey",
+      "confidence": "Medium",
+      "qualityGate": "Source rows reconciled"
+    },
+    {
+      "id": "INS-011",
+      "businessQuestionId": "BQ-013",
+      "priority": 11,
+      "category": "Program Portfolio",
+      "title": "ภาคพิเศษต้องติดตาม conversion แยกจากภาคปกติ",
+      "summary": "สาขาภาคพิเศษบางกลุ่มมี demand กลางแต่ confirmed rate ใกล้หรือสูงกว่าภาคปกติ",
+      "martObject": "mart_program_type_mix",
+      "metricLabel": "program_type conversion",
+      "metricValue": "ภาคพิเศษ requires separate tracking",
+      "decision": "ควรทำ view แยก program type ใน planning review",
+      "recommendedAction": "Add program-type filter to mart review and compare price/time positioning",
+      "confidence": "Medium",
+      "qualityGate": "Major mapping complete"
+    },
+    {
+      "id": "INS-012",
+      "businessQuestionId": "BQ-015",
+      "priority": 12,
+      "category": "Data Trust",
+      "title": "Generated artifact ยังอยู่ใน freshness SLA สำหรับ review",
+      "summary": "artifact ล่าสุดอ้างอิง refresh 2026-07-21 และ SLA ตั้งไว้ 168 ชั่วโมงสำหรับ demo/review",
+      "martObject": "vw_dw_refresh_health",
+      "metricLabel": "last_refresh / SLA",
+      "metricValue": "2026-07-21 / 168h",
+      "decision": "ใช้ได้สำหรับ review แต่ production จริงควรมี scheduled refresh",
+      "recommendedAction": "Before operational use, automate refresh and alert when SLA is missed",
+      "confidence": "Medium",
+      "qualityGate": "Freshness SLA satisfied"
     }
   ],
   "warehouseHealth": {
@@ -850,6 +1095,24 @@
       "grain": "refresh_run_id + artifact",
       "sourceObjects": "vw_dw_quality_scorecard + dw_refresh_run",
       "purpose": "Confirm freshness, quality gates, PII boundary and artifact readiness"
+    },
+    {
+      "martObject": "mart_major_year_change",
+      "grain": "academic_year pair + major_code + major_name",
+      "sourceObjects": "mart_major_conversion",
+      "purpose": "Detect major-level demand growth and decline against overall trend"
+    },
+    {
+      "martObject": "mart_program_type_mix",
+      "grain": "academic_year + program_type + major_code",
+      "sourceObjects": "mart_major_conversion",
+      "purpose": "Compare normal and special program tracks for portfolio planning"
+    },
+    {
+      "martObject": "vw_dw_quality_scorecard",
+      "grain": "metric_name + source_object",
+      "sourceObjects": "admission_round_source_data_quality + dw_dataset_catalog",
+      "purpose": "Block or approve reporting based on critical data quality gates"
     }
   ]
 }

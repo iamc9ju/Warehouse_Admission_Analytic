@@ -26,13 +26,15 @@ Admissions source files
 
 ## Business Questions
 
-The production dashboard answers:
+The production dashboard answers 15 business questions across 5 decision domains:
 
-- Which majors have high demand but low conversion?
-- Which TCAS round converts best?
-- Which applicant status creates funnel friction?
-- How did 2569 move against 2568?
-- Is the data ready for decision review?
+| Domain | Examples |
+|---|---|
+| Demand | demand drop, demand growth, high-demand low-conversion majors |
+| Conversion | funnel friction, status share, high-fit low-awareness programs |
+| Round Strategy | best converting round, high-volume low-conversion round, flagship round |
+| Program Portfolio | quota review, normal vs special program mix |
+| Data Trust | report readiness, critical quality gates, freshness SLA |
 
 ## Decision Outputs
 
@@ -43,6 +45,11 @@ The production dashboard answers:
 | Status friction is concentrated in not-selected choices | Review capacity, criteria and expectation setting |
 | Applicants decreased while confirmed increased | Separate demand-generation actions from conversion actions |
 | Dashboard data is decision-ready | Approve executive review artifact while preserving source evidence |
+| วิศวกรรมเครื่องกล-เกษตร demand drop risk | Run recovery campaign and positioning review |
+| วิศวกรรมอุตสาหการ-โลจิสติกส์ grows against trend | Expand high-performing logistics messaging |
+| High conversion but low demand program | Increase targeted awareness |
+| TCAS1 high volume but weak conversion | Strengthen post-shortlist communication |
+| Special program tracking needed | Add program-type planning view |
 
 ## Quality Gates
 

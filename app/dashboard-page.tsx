@@ -85,6 +85,10 @@ function deltaClass(value?: number) {
   return value > 0 ? "positive" : "negative";
 }
 
+function slug(value: string) {
+  return value.toLowerCase().replaceAll(" ", "-");
+}
+
 function Icon({ name }: { name: string }) {
   const icons: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
     home: HomeIcon,
@@ -154,6 +158,10 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
     ["confirmed", years[1].confirmed - years[0].confirmed],
     ["rate", years[1].rate - years[0].rate],
   ] as const;
+  const sortedInsights = decisionInsights.slice().sort((a, b) => a.priority - b.priority);
+  const executivePriorities = sortedInsights.slice(0, 3);
+  const insightCategories = Array.from(new Set(sortedInsights.map((insight) => insight.category)));
+  const questionDomains = Array.from(new Set(businessQuestions.map((question) => question.domain)));
 
   const statCards = [
     {
@@ -455,17 +463,51 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
 
         {showInsightsPanel && (
           <section className="insights-layout" aria-label="Business decision insights">
+            <article className="panel executive-priority-panel">
+              <div className="panel-title">
+                <h2>Executive action priorities</h2>
+                <span className="mini-pill">top {executivePriorities.length}</span>
+              </div>
+              <div className="priority-strip">
+                {executivePriorities.map((insight) => (
+                  <section key={insight.id}>
+                    <span>{insight.category}</span>
+                    <strong>{insight.title}</strong>
+                    <p>{insight.recommendedAction}</p>
+                    <small>{insight.metricValue} · {insight.martObject}</small>
+                  </section>
+                ))}
+              </div>
+            </article>
+
+            <article className="panel insight-category-panel">
+              <div className="panel-title">
+                <h2>Insight categories</h2>
+                <span className="mini-pill">{insightCategories.length} groups</span>
+              </div>
+              <div className="category-filter-list" aria-label="Insight category filters">
+                {insightCategories.map((category) => (
+                  <a href={`#insight-${slug(category)}`} key={category}>
+                    {category}
+                    <strong>{decisionInsights.filter((insight) => insight.category === category).length}</strong>
+                  </a>
+                ))}
+              </div>
+            </article>
+
             <article className="panel insights-panel">
               <div className="panel-title">
                 <h2>Decision insights from governed marts</h2>
                 <span className="mini-pill">{decisionInsights.length} insights</span>
               </div>
               <div className="insight-grid">
-                {decisionInsights
-                  .slice()
-                  .sort((a, b) => a.priority - b.priority)
-                  .map((insight) => (
-                    <section className={`insight-card ${insight.category}`} key={insight.id}>
+                {insightCategories.map((category) => (
+                  <div className="insight-category-group" id={`insight-${slug(category)}`} key={category}>
+                    <h2>{category}</h2>
+                    {sortedInsights
+                      .filter((insight) => insight.category === category)
+                      .map((insight) => (
+                    <section className={`insight-card ${slug(insight.category)}`} key={insight.id}>
                       <div className="insight-card-head">
                         <span>{insight.id}</span>
                         <b>{insight.confidence}</b>
@@ -489,7 +531,9 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
                       <strong className="action-line">{insight.recommendedAction}</strong>
                       <small>{insight.qualityGate}</small>
                     </section>
-                  ))}
+                      ))}
+                  </div>
+                ))}
               </div>
             </article>
 
@@ -499,13 +543,20 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
                 <span className="mini-pill">{businessQuestions.length} questions</span>
               </div>
               <div className="business-question-list">
-                {businessQuestions.map((question) => (
-                  <section key={question.id}>
-                    <span>{question.id}</span>
-                    <strong>{question.question}</strong>
-                    <p>{question.decisionUse}</p>
-                    <small>{question.martObject} · {question.qualityGate}</small>
-                  </section>
+                {questionDomains.map((domain) => (
+                  <div className="question-domain-group" key={domain}>
+                    <h2>{domain}</h2>
+                    {businessQuestions
+                      .filter((question) => question.domain === domain)
+                      .map((question) => (
+                        <section key={question.id}>
+                          <span>{question.id}</span>
+                          <strong>{question.question}</strong>
+                          <p>{question.decisionUse}</p>
+                          <small>{question.martObject} · {question.qualityGate}</small>
+                        </section>
+                      ))}
+                  </div>
                 ))}
               </div>
             </article>

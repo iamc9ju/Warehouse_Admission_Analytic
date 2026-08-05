@@ -98,7 +98,7 @@ export async function loadLiveNeonSnapshot(databaseUrl: string): Promise<Dashboa
 
     const [businessQuestionRows, insightRows, healthRows, decisionMartRows] = await Promise.all([
       optionalQuery(client, `
-        select question_id, question, mart_object, metrics, decision_owner, decision_use, quality_gate
+        select question_id, domain, question, mart_object, metrics, decision_owner, decision_use, quality_gate
         from admissions_dw.dw_business_question_catalog
         order by question_id
       `),
@@ -187,6 +187,7 @@ export async function loadLiveNeonSnapshot(databaseUrl: string): Promise<Dashboa
       businessQuestions: businessQuestionRows
         ? businessQuestionRows.map((row) => ({
           id: String(row.question_id),
+          domain: String(row.domain),
           question: String(row.question),
           martObject: String(row.mart_object),
           metrics: String(row.metrics).split(",").map((metric) => metric.trim()),

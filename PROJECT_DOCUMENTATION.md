@@ -146,7 +146,7 @@ Current fetch status:
   - Dashboard route pages สำหรับ Overview, Warehouse, Rounds, Majors, Quality และ Insights
   - หน้า Warehouse แสดง data catalog, lineage edges, query contract และ ETL validation checks
   - หน้า Quality แสดง metric definitions, source object และ validation rule ของแต่ละ quality metric
-  - หน้า Insights แสดง business questions, decision insights, warehouse health และ decision mart contract
+  - หน้า Insights แสดง 15 business questions, 12 decision insights, executive priorities, category grouping, warehouse health และ decision mart contract
 
 - `app/globals.css`
   - Dashboard layout และ visual design

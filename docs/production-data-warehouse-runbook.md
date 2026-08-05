@@ -107,8 +107,8 @@ DATABASE_URL missing or query fails
 
 | Gate | Required result |
 |---|---|
-| Business questions | at least 5 mapped questions |
-| Decision insights | every insight maps to a business question |
+| Business questions | at least 15 mapped questions across 5 domains |
+| Decision insights | at least 10 insights and every insight maps to a business question |
 | Decision mart contract | every insight maps to a declared mart/view |
 | Recommended action | every insight includes an action |
 | Confidence | every insight declares High, Medium or Low |

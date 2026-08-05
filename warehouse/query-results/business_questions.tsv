@@ -1,6 +1,16 @@
-question_id	question	mart_object	metrics	decision_owner	decision_use	quality_gate
-BQ-001	สาขาไหน demand สูงแต่ยืนยันสิทธิ์ต่ำ	mart_major_opportunity	applicant_count, confirmed_rate	Admissions committee	จัดลำดับสาขาที่ต้องปรับ communication, quota หรือ offer strategy	Missing major = 0
-BQ-002	รอบ TCAS ไหนมี conversion ดีที่สุด	mart_round_efficiency	confirmed_rate, unique_applicants	Curriculum and admissions planning	วางกลยุทธ์รอบรับสมัครและ allocation ของ seat/communication	Round coverage = TCAS1-4
-BQ-003	สถานะใดเป็น friction หลักใน funnel	mart_status_friction	status_share, choices	Admissions operations	หาจุด drop-off และปรับ process ติดตามผู้สมัคร	Source rows reconciled
-BQ-004	ปี 2569 เปลี่ยนจาก 2568 อย่างไร	mart_admissions_year_change	applicant_delta, confirmed_delta, rate_delta	Faculty leadership	ใช้สรุปภาพรวมแนวโน้มและความเสี่ยงก่อนวางแผนปีถัดไป	Year coverage = 2568, 2569
-BQ-005	ข้อมูลพร้อมใช้ตัดสินใจหรือยัง	vw_dw_refresh_health	freshness_status, validation_status, pii_exported_columns	Data owner	อนุมัติหรือ block dashboard/report ก่อนใช้งานจริง	All quality checks pass
+question_id	domain	question	mart_object	metrics	decision_owner	decision_use	quality_gate
+BQ-001	Demand	สาขาไหน demand สูงแต่ยืนยันสิทธิ์ต่ำ	mart_major_opportunity	applicant_count, confirmed_rate	Admissions committee	จัดลำดับสาขาที่ต้องปรับ communication, quota หรือ offer strategy	Missing major = 0
+BQ-002	Round Strategy	รอบ TCAS ไหนมี conversion ดีที่สุด	mart_round_efficiency	confirmed_rate, unique_applicants	Curriculum and admissions planning	วางกลยุทธ์รอบรับสมัครและ allocation ของ seat/communication	Round coverage = TCAS1-4
+BQ-003	Conversion	สถานะใดเป็น friction หลักใน funnel	mart_status_friction	status_share, choices	Admissions operations	หาจุด drop-off และปรับ process ติดตามผู้สมัคร	Source rows reconciled
+BQ-004	Demand	ปี 2569 เปลี่ยนจาก 2568 อย่างไร	mart_admissions_year_change	applicant_delta, confirmed_delta, rate_delta	Faculty leadership	ใช้สรุปภาพรวมแนวโน้มและความเสี่ยงก่อนวางแผนปีถัดไป	Year coverage = 2568, 2569
+BQ-005	Data Trust	ข้อมูลพร้อมใช้ตัดสินใจหรือยัง	vw_dw_refresh_health	freshness_status, validation_status, pii_exported_columns	Data owner	อนุมัติหรือ block dashboard/report ก่อนใช้งานจริง	All quality checks pass
+BQ-006	Program Portfolio	สาขาไหนควรตรวจ quota หรือ seat allocation ก่อนปีถัดไป	mart_major_opportunity	applicant_count, confirmed_count, confirmed_rate	Faculty leadership	ระบุสาขาที่ demand สูงแต่ seat/confirmation outcome อาจไม่สมดุล	Missing major = 0
+BQ-007	Demand	สาขาไหนผู้สมัครลดลงมากผิดปกติ	mart_major_year_change	applicant_delta, applicant_change_pct	Admissions committee	วางแผน recovery campaign หรือปรับ positioning ของสาขา	Major mapping complete
+BQ-008	Demand	สาขาไหนโตสวนภาพรวม	mart_major_year_change	applicant_delta, applicant_change_pct	Faculty leadership	หา program signal ที่ควรขยายเป็นจุดขายของปีหน้า	Year coverage = 2568, 2569
+BQ-009	Conversion	สาขาไหน confirmed rate สูงแต่ demand ต่ำ	mart_major_opportunity	applicant_count, confirmed_rate	Admissions committee	เลือกสาขาที่ควรเพิ่ม awareness เพราะ conversion quality ดี	Missing score = 0
+BQ-010	Round Strategy	รอบไหนมี volume สูงแต่ conversion ต่ำ	mart_round_efficiency	choices, unique_applicants, confirmed_rate	Admissions operations	ปรับ timing, communication และ follow-up สำหรับรอบที่มี leakage สูง	Round coverage = TCAS1-4
+BQ-011	Round Strategy	รอบไหนควรเป็น flagship recruitment round	mart_round_efficiency	confirmed_count, confirmed_rate, source_files	Faculty leadership	เลือก round ที่ควรใช้เป็นแกนสื่อสารและจัด resource	Source files reconciled
+BQ-012	Conversion	สถานะผ่านลำดับที่ดีกว่ากระทบ conversion แค่ไหน	mart_status_friction	choices, share_pct	Admissions operations	ปรับ expectation และ communication หลังประกาศผล	Source rows reconciled
+BQ-013	Program Portfolio	ภาคพิเศษต่างจากภาคปกติอย่างไร	mart_program_type_mix	applicant_count, confirmed_count, confirmed_rate	Curriculum planning	ประเมิน portfolio ของหลักสูตรและ positioning ของ program type	Major mapping complete
+BQ-014	Data Trust	quality gate ไหนควร block การรายงาน	vw_dw_quality_scorecard	metric_value, validation_rule	Data owner	กำหนด go/no-go ก่อนส่งรายงานให้ผู้บริหาร	All critical gates pass
+BQ-015	Data Trust	ข้อมูล refresh ล่าสุดยังอยู่ใน SLA ไหม	vw_dw_refresh_health	last_refresh_at, freshness_sla_hours, status	Data owner	ตัดสินใจใช้ live dashboard หรือ fallback artifact	Freshness SLA satisfied

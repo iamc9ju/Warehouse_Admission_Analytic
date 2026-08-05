@@ -4,3 +4,6 @@ mart_round_efficiency	academic_year + tcas_round_code	vw_admission_round_overvie
 mart_status_friction	academic_year + status_label	vw_admission_round_status_distribution	Identify funnel statuses that explain applicant loss or operational friction
 mart_admissions_year_change	academic_year pair	mart_admissions_executive_summary	Explain year-over-year movement in demand and conversion
 vw_dw_refresh_health	refresh_run_id + artifact	vw_dw_quality_scorecard + dw_refresh_run	Confirm freshness, quality gates, PII boundary and artifact readiness
+mart_major_year_change	academic_year pair + major_code + major_name	mart_major_conversion	Detect major-level demand growth and decline against overall trend
+mart_program_type_mix	academic_year + program_type + major_code	mart_major_conversion	Compare normal and special program tracks for portfolio planning
+vw_dw_quality_scorecard	metric_name + source_object	admission_round_source_data_quality + dw_dataset_catalog	Block or approve reporting based on critical data quality gates

@@ -102,7 +102,7 @@ Lineage edges used in the UI:
 
 ## Business Decision Layer
 
-หน้า Insights ใช้ decision marts เพื่อเปลี่ยน warehouse จาก “รายงานตัวเลข” เป็น “คำตอบเพื่อการตัดสินใจ”
+หน้า Insights ใช้ decision marts เพื่อเปลี่ยน warehouse จาก “รายงานตัวเลข” เป็น “คำตอบเพื่อการตัดสินใจ” โดยมี 15 business questions และ 12 decision insights
 
 | Business Question | Mart/View | Decision output |
 |---|---|---|

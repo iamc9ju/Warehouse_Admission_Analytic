@@ -116,15 +116,17 @@ Allowed sources:
 
 ## Business Questions Answered
 
-| Question | Decision mart |
-|---|---|
-| Which majors have high demand but low confirmation conversion? | `mart_major_opportunity` |
-| Which TCAS round converts best? | `mart_round_efficiency` |
-| Which applicant status creates funnel friction? | `mart_status_friction` |
-| How did 2569 move against 2568? | `mart_admissions_year_change` |
-| Is the warehouse data ready for decision review? | `vw_dw_refresh_health` |
+The production dashboard maps 15 business questions into 5 decision domains:
 
-The `/insights` route displays decision-ready insights with mart source, metric, recommended action, confidence and quality gate.
+| Domain | Example decision mart |
+|---|---|
+| Demand | `mart_major_opportunity`, `mart_major_year_change` |
+| Conversion | `mart_status_friction` |
+| Round Strategy | `mart_round_efficiency` |
+| Program Portfolio | `mart_program_type_mix` |
+| Data Trust | `vw_dw_refresh_health`, `vw_dw_quality_scorecard` |
+
+The `/insights` route displays 12 decision-ready insights with executive priorities, category grouping, mart source, metric, recommended action, confidence and quality gate.
 
 ---
 
