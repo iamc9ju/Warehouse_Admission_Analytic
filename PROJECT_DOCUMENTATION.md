@@ -15,7 +15,7 @@ Excel Admissions Data
   -> Neon PostgreSQL
   -> Core Facts / Dimensions
   -> Governance Metadata / Data Marts
-  -> Exported Dashboard Snapshot
+  -> Generated Dashboard Artifact
   -> Web Dashboard
 ```
 
@@ -122,9 +122,20 @@ Current fetch status:
 
 ### Web Dashboard
 
-- `app/data/warehouse-snapshot.ts`
-  - typed snapshot ที่ export จาก Neon warehouse marts/views สำหรับ dashboard
-  - ระบุ `sourceSystem`, `schema`, `dashboardMode`, `exportedAt` และ `sourceQuery`
+- `warehouse/query-results/*.tsv`
+  - query-result contract ที่ export จาก Neon warehouse marts/views
+
+- `scripts/build-dashboard-snapshot.mjs`
+  - สร้าง `app/data/generated/warehouse-dashboard-snapshot.json` จาก warehouse query results
+
+- `scripts/validate-dashboard-snapshot.mjs`
+  - ตรวจ source rows, source files, round coverage, PII boundary, quality metrics และ social exclusion
+
+- `scripts/check-no-embedded-dashboard-data.mjs`
+  - fail ทันทีถ้า dashboard route/component ฝัง admissions data เป็น static arrays
+
+- `app/data/load-dashboard-snapshot.ts`
+  - loader จุดเดียวที่ route pages ใช้ส่ง generated artifact เข้า dashboard
 
 - `app/dashboard-page.tsx`
   - Dashboard route pages สำหรับ Overview, Warehouse, Rounds, Majors และ Quality
@@ -189,9 +200,9 @@ Active views and marts:
 - `mart_admissions_executive_summary`
 - `mart_major_conversion`
 
-Committed dashboard snapshot:
+Committed dashboard artifact:
 
-- `app/data/warehouse-snapshot.ts`
+- `app/data/generated/warehouse-dashboard-snapshot.json`
   - `years` มาจาก `mart_admissions_executive_summary`
   - `rounds` มาจาก `vw_admission_round_overview`
   - `majorRows` มาจาก `mart_major_conversion`
@@ -252,8 +263,14 @@ Important interpretation:
 
 - ไม่ส่ง database credentials ไป browser
 - ลดความเสี่ยง credential leak ใน public/private deployed site
-- ทำให้การตรวจโปรเจค reproducible ด้วย committed snapshot
-- หากข้อมูล warehouse เปลี่ยน ให้ export snapshot ใหม่ตาม query contract
+- ทำให้การตรวจโปรเจค reproducible ด้วย pipeline-generated artifact
+- หากข้อมูล warehouse เปลี่ยน ให้ export query results ใหม่และรัน `npm run data:build`
+
+กฎ production ใหม่:
+
+- ห้ามฝัง dashboard data เป็น static arrays/constants ใน `app/`
+- `npm test` ต้องรัน data build, validation, no-static-data check, app build และ rendered HTML checks
+- `docs/decisions/0009-ban-embedded-dashboard-data.md` คือ ADR ที่บังคับกฎนี้
 
 ---
 

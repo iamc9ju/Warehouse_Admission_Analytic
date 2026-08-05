@@ -45,7 +45,8 @@ Excel admissions files
   -> fact_admission_round_major_summary
   -> admission_round_source_data_quality
   -> mart_admissions_executive_summary
-  -> app/data/warehouse-snapshot.ts
+  -> warehouse/query-results/*.tsv
+  -> app/data/generated/warehouse-dashboard-snapshot.json
   -> dashboard routes
 ```
 
@@ -59,7 +60,8 @@ Lineage edges used in the UI:
 | PII-free processed aggregates | major conversion load | fact_admission_round_major_summary |
 | PII-free processed aggregates | source validation load | admission_round_source_data_quality |
 | Core facts + quality facts | presentation mart build | mart_admissions_executive_summary |
-| Presentation marts | exported dashboard snapshot | app/data/warehouse-snapshot.ts |
+| Presentation marts | export governed query results | warehouse/query-results/*.tsv |
+| warehouse/query-results/*.tsv | build generated dashboard artifact | app/data/generated/warehouse-dashboard-snapshot.json |
 
 ## ETL and Cleaning Contract
 
@@ -83,7 +85,8 @@ Lineage edges used in the UI:
 - Load PII-free aggregates into `admissions_dw`
 - Upsert by natural grain to make reruns idempotent
 - Build presentation marts/views for dashboard
-- Export dashboard snapshot into `app/data/warehouse-snapshot.ts`
+- Export warehouse query results into `warehouse/query-results/*.tsv`
+- Build generated dashboard artifact with `npm run data:build`
 
 ## Validation Checks
 
@@ -100,10 +103,10 @@ Lineage edges used in the UI:
 
 The public dashboard does not connect directly to Neon from the browser. It uses an exported snapshot so database credentials are not shipped to the client.
 
-Snapshot file:
+Generated artifact:
 
 ```text
-app/data/warehouse-snapshot.ts
+app/data/generated/warehouse-dashboard-snapshot.json
 ```
 
 Snapshot metadata:
@@ -111,12 +114,12 @@ Snapshot metadata:
 ```text
 sourceSystem: Neon PostgreSQL
 schema: admissions_dw
-dashboardMode: exported warehouse snapshot
+dashboardMode: generated warehouse mart artifact
 exportedAt: 2026-07-21
 sourceQuery: mart_admissions_executive_summary + mart_major_conversion + vw_admission_round_overview
 ```
 
-This improves the older static-data design because the numbers are now separated from the UI component and include explicit warehouse provenance.
+Production rule: dashboard route/component source must not contain admissions data arrays or hardcoded KPI values. `npm run data:check-static` enforces this rule.
 
 ## Known Limitations
 
@@ -124,7 +127,7 @@ This improves the older static-data design because the numbers are now separated
 - The project does not include interview outcome, enrolled outcome, province or applicant-level timeline facts.
 - GA4/owned website analytics remains a permitted future source, but it is not used as an active dashboard source unless a valid owned property returns useful aggregate rows.
 - Social media ingestion is intentionally excluded from active scope.
-- Dashboard is not real-time; if the warehouse changes, export the snapshot again.
+- Dashboard is not real-time; if the warehouse changes, export query results again and rebuild the generated artifact.
 
 ## How This Addresses Grading Risks
 
@@ -133,6 +136,6 @@ This improves the older static-data design because the numbers are now separated
 | Source หลักยังแคบ | Clarified source scope and explained why one authoritative source is acceptable |
 | Data catalog/lineage ยังไม่ชัด | Added catalog rows and lineage edges in docs and UI |
 | ETL/validation evidence ยังไม่เป็นระบบ | Added ETL contract and validation checks |
-| Dashboard ดู static | Moved values into a warehouse snapshot with source query contract |
+| Dashboard ดู static | Removed embedded app data and added generated warehouse artifact + no-static-data CI gate |
 | Quality metric ไม่ได้นิยาม | Added metric definitions, source objects and validation rules |
 | README/report ยังไม่ครบ | Added this evidence pack and updated project docs |

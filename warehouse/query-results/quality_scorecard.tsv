@@ -1,0 +1,9 @@
+metric_name	metric_value	source_object	definition	validation_rule
+Source rows	9,432	admission_round_source_data_quality.source_rows	จำนวนแถวจาก Excel admissions source ทั้งหมดที่ ETL อ่านก่อน aggregate	sum(source_rows) across 11 files must equal loaded staging row count
+Missing score	0	admission_round_source_data_quality.missing_score_rows	จำนวนแถวที่ field คะแนนหรือ score ที่ใช้คำนวณ summary เป็นค่าว่าง	missing_score_rows = 0 for every source file in the active snapshot
+Missing major	0	admission_round_source_data_quality.missing_major_rows	จำนวนแถวที่ไม่สามารถ map ไปยังรหัส/ชื่อสาขาวิชาใน dim_major	missing_major_rows = 0 before loading major-level facts
+PII exported	0 columns	processed aggregate CSV column audit	จำนวน column ส่วนบุคคลที่ถูกส่งออกจาก ETL ไป processed CSV, Neon หรือ dashboard	source-only applicant identifiers must not appear in processed outputs
+Active source groups	1	dw_dataset_catalog.source_group	จำนวนกลุ่ม source ที่อยู่ใน active scope หลังตัด social ingestion	only admissions_excel is active; social sources are excluded
+Source files	11	admission_round_source_data_quality.source_file	จำนวน Excel admissions files ของ TCAS รอบ 1-4 ปี 2568 และ 2569	source_file count must reconcile to TCAS1-4 coverage for both years
+Catalog rows	7	dw_dataset_catalog	จำนวน dataset catalog records ที่อธิบาย source, staging, core facts, marts และ dashboard snapshot	every dashboard-facing table/view must have catalog metadata
+Lineage edges	7	dw_lineage_edge	จำนวน dependency edges จาก source ไป staging, core facts, marts และ dashboard	every mart used by UI must trace back to source/staging

@@ -13,18 +13,9 @@ import {
   Squares2X2Icon,
 } from "@heroicons/react/24/outline";
 import {
-  dataCatalogRows,
-  etlValidationChecks,
-  lineageEdges,
-  majorRows,
-  qualityMetricDefinitions,
-  rounds,
-  statuses,
-  warehouseQueries,
-  warehouseSnapshot,
-  years,
+  type DashboardSnapshot,
   type Year,
-} from "./data/warehouse-snapshot";
+} from "./data/dashboard-types";
 
 export type PageName =
   | "Overview"
@@ -97,12 +88,24 @@ function Icon({ name }: { name: string }) {
   return <HeroIcon className={`ui-icon ui-icon-${name}`} aria-hidden="true" />;
 }
 
-export function DashboardPage({ activePage }: { activePage: PageName }) {
+export function DashboardPage({ activePage, snapshot }: { activePage: PageName; snapshot: DashboardSnapshot }) {
   const router = useRouter();
   const [selectedYear, setSelectedYear] = useState<Year>(2569);
   const [majorQuery, setMajorQuery] = useState("");
   const [detail, setDetail] = useState("Dashboard พร้อมใช้งานจาก admissions warehouse ที่ตัด PII แล้ว");
   const meta = pageMeta[activePage];
+  const {
+    dataCatalogRows,
+    etlValidationChecks,
+    lineageEdges,
+    majorRows,
+    qualityMetricDefinitions,
+    rounds,
+    statuses,
+    warehouseQueries,
+    warehouseSnapshot,
+    years,
+  } = snapshot;
 
   const current = years.find((year) => year.year === selectedYear) ?? years[1];
   const previous = years.find((year) => year.year !== selectedYear) ?? years[0];
@@ -120,7 +123,7 @@ export function DashboardPage({ activePage }: { activePage: PageName }) {
         return `${major.code} ${major.name} ${major.type}`.toLowerCase().includes(normalizedQuery);
       })
       .sort((a, b) => b.applicants - a.applicants);
-  }, [majorQuery, selectedYear]);
+  }, [majorQuery, majorRows, selectedYear]);
 
   const visibleMajors = filteredMajors;
   const maxApplicants = Math.max(...filteredMajors.map((major) => major.applicants), 1);

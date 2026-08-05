@@ -114,24 +114,33 @@ test("renders separate route pages instead of anchor-only sections", async () =>
 test("keeps dashboard copy tied to real warehouse data", async () => {
   const page = await readFile(new URL("../app/dashboard-page.tsx", import.meta.url), "utf8");
   const styles = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
-  const snapshot = await readFile(new URL("../app/data/warehouse-snapshot.ts", import.meta.url), "utf8");
+  const snapshot = await readFile(new URL("../app/data/generated/warehouse-dashboard-snapshot.json", import.meta.url), "utf8");
+  const loader = await readFile(new URL("../app/data/load-dashboard-snapshot.ts", import.meta.url), "utf8");
   const evidence = await readFile(new URL("../docs/data-warehouse-evidence.md", import.meta.url), "utf8");
   const queryContract = await readFile(new URL("../docs/warehouse-query-contract.md", import.meta.url), "utf8");
   const qualityMetrics = await readFile(new URL("../docs/data-quality-metrics.md", import.meta.url), "utf8");
+  const productionRunbook = await readFile(new URL("../docs/production-data-warehouse-runbook.md", import.meta.url), "utf8");
+  const staticDataDecision = await readFile(new URL("../docs/decisions/0009-ban-embedded-dashboard-data.md", import.meta.url), "utf8");
 
-  assert.match(snapshot, /choices:\s*4579/);
-  assert.match(snapshot, /applicants:\s*3443/);
-  assert.match(snapshot, /confirmed:\s*545/);
-  assert.match(snapshot, /sourceFiles:\s*5/);
-  assert.match(snapshot, /sourceRows:\s*9432/);
-  assert.match(snapshot, /sourceFiles:\s*11/);
+  assert.match(snapshot, /"choices": 4579/);
+  assert.match(snapshot, /"applicants": 3443/);
+  assert.match(snapshot, /"confirmed": 545/);
+  assert.match(snapshot, /"sourceFiles": 5/);
+  assert.match(snapshot, /"sourceRows": 9432/);
+  assert.match(snapshot, /"sourceFiles": 11/);
   assert.match(snapshot, /mart_admissions_executive_summary/);
   assert.match(snapshot, /vw_admission_round_overview/);
   assert.match(snapshot, /qualityMetricDefinitions/);
   assert.match(snapshot, /dataCatalogRows/);
   assert.match(snapshot, /lineageEdges/);
 
-  assert.match(page, /warehouseSnapshot/);
+  assert.match(loader, /warehouse-dashboard-snapshot\.json/);
+  assert.match(page, /snapshot/);
+  assert.doesNotMatch(page, /from "\.\/data\/warehouse-snapshot"/);
+  assert.doesNotMatch(page, /const\s+years\s*=\s*\[/);
+  assert.doesNotMatch(page, /const\s+majorRows\s*=\s*\[/);
+  assert.doesNotMatch(page, /const\s+statuses\s*=\s*\[/);
+  assert.doesNotMatch(page, /const\s+rounds\s*=\s*\[/);
   assert.match(styles, /tcas-dw-cartoon-logo\.png/);
   assert.doesNotMatch(page, /next\/image/);
   assert.doesNotMatch(page, /<span className="brand-mark">DW<\/span>/);
@@ -149,8 +158,11 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(evidence, /Dashboard Snapshot Contract/);
   assert.match(queryContract, /Warehouse Query Contract/);
   assert.match(queryContract, /admissions_dw\.mart_admissions_executive_summary/);
+  assert.match(queryContract, /app\/data\/generated\/warehouse-dashboard-snapshot\.json/);
   assert.match(qualityMetrics, /Data Quality Metrics/);
   assert.match(qualityMetrics, /Missing score/);
+  assert.match(productionRunbook, /Production Data Warehouse Runbook/);
+  assert.match(staticDataDecision, /Ban embedded dashboard data/);
 
   assert.doesNotMatch(page, /mock|synthetic|sample platform|TikTok|Pantip|YouTube API|Facebook public search/i);
   assert.doesNotMatch(page, /Your site is taking shape|Codex is working/i);

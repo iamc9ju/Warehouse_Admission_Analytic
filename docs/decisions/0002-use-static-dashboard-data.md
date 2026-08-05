@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by [ADR 0009](0009-ban-embedded-dashboard-data.md)
 
 ## Context
 
@@ -10,7 +10,15 @@ Accepted
 
 ## Decision
 
-ใช้ข้อมูล aggregate ที่ export จาก Neon แล้วเก็บเป็น typed dashboard snapshot ใน `app/data/warehouse-snapshot.ts`
+แนวทางเดิมใช้ข้อมูล aggregate ที่ export จาก Neon แล้วเก็บเป็น typed dashboard snapshot ใน `app/data/warehouse-snapshot.ts`
+
+กฎ production ปัจจุบันยกเลิกแนวทางนี้แล้ว ห้ามฝัง dashboard data ใน TypeScript source และต้องใช้ generated warehouse artifact เท่านั้น:
+
+```text
+warehouse/query-results/*.tsv
+  -> npm run data:build
+  -> app/data/generated/warehouse-dashboard-snapshot.json
+```
 
 snapshot ต้องระบุ provenance อย่างน้อย:
 
@@ -36,7 +44,7 @@ snapshot ต้องระบุ provenance อย่างน้อย:
 
 - หากข้อมูลใน Neon เปลี่ยน ต้อง export/update dashboard ใหม่
 - ยังไม่ใช่ real-time dashboard
-- ต้องรักษา `app/data/warehouse-snapshot.ts` ให้ตรงกับ query contract ทุกครั้งที่ refresh ข้อมูล
+- ต้องรักษา `warehouse/query-results/*.tsv` และ generated artifact ให้ตรงกับ query contract ทุกครั้งที่ refresh ข้อมูล
 
 แนวทางขยายในอนาคต:
 

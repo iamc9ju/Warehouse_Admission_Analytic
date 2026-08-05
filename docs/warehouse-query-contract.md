@@ -1,6 +1,6 @@
 # Warehouse Query Contract
 
-เอกสารนี้ระบุ query contract ที่ dashboard snapshot ต้องอ้างอิงเมื่อ export ข้อมูลจาก Neon PostgreSQL schema `admissions_dw`
+เอกสารนี้ระบุ query contract ที่ dashboard artifact ต้องอ้างอิงเมื่อ export ข้อมูลจาก Neon PostgreSQL schema `admissions_dw`
 
 ## KPI Snapshot
 
@@ -126,13 +126,26 @@ Required checks:
 
 ## Export Rule
 
-หลัง query จาก Neon ให้ export เป็น typed snapshot ใน:
+หลัง query จาก Neon ให้ export query results เป็น TSV ใน:
 
 ```text
-app/data/warehouse-snapshot.ts
+warehouse/query-results/*.tsv
 ```
 
-ห้าม export fields ต่อไปนี้ลง snapshot:
+จากนั้นสร้าง dashboard artifact ด้วย:
+
+```bash
+npm run data:build
+npm run data:validate
+```
+
+Generated artifact:
+
+```text
+app/data/generated/warehouse-dashboard-snapshot.json
+```
+
+ห้าม export fields ต่อไปนี้ลง query results หรือ generated artifact:
 
 - citizen_id
 - national_id
