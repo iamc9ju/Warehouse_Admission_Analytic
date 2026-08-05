@@ -121,6 +121,7 @@ Allowed sources:
 - Website analytics support is limited to GA4 aggregate reports from an owned property.
 - Because there are only two academic years in the current dataset, correlation should be presented as a capability demo, not causal proof.
 - The dashboard is not allowed to contain embedded/static data in component source. It reads a pipeline-generated warehouse artifact so no database credentials are shipped to the browser.
+- In production, the server-side loader uses `DATABASE_URL` to query Neon marts first. If `DATABASE_URL` is missing or the live query fails, it falls back to the generated artifact.
 - The current grading evidence lives in `docs/data-warehouse-evidence.md`, `docs/warehouse-query-contract.md` and `docs/data-quality-metrics.md`.
 
 ---
@@ -150,6 +151,21 @@ npm test
 ```
 
 `npm test` rebuilds the dashboard artifact, validates data quality gates, checks that app source has no embedded dashboard data, builds the site and runs rendered HTML tests.
+
+Live Neon runtime:
+
+```bash
+DATABASE_URL="postgresql://..." npm run dev
+```
+
+Runtime source policy:
+
+```text
+Primary: admissions_dw marts/views through server-side Neon adapter
+Fallback: app/data/generated/warehouse-dashboard-snapshot.json
+```
+
+The adapter is server-only and must never expose `DATABASE_URL` to client components.
 
 ---
 

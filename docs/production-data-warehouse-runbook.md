@@ -6,6 +6,8 @@
 
 - ห้ามใช้ embedded/static dashboard data ใน `app/`
 - Dashboard data ต้องมาจาก generated warehouse artifact หรือ live warehouse adapter เท่านั้น
+- Production runtime ต้องใช้ server-side Neon adapter เป็น primary เมื่อมี `DATABASE_URL`
+- Generated artifact เป็น fallback สำหรับ local/demo หรือช่วง Neon query fail
 - Source active scope คือ admissions warehouse data ที่ไม่มี PII ใน output
 - Social media ingestion ไม่อยู่ใน active production scope
 - ทุก refresh ต้องผ่าน validation gate ก่อน build
@@ -20,7 +22,7 @@ Admissions Excel source files
   -> governed marts and quality views
   -> warehouse/query-results/*.tsv
   -> app/data/generated/warehouse-dashboard-snapshot.json
-  -> route-level loader
+  -> route-level loader with live Neon primary / artifact fallback
   -> dashboard UI
 ```
 
@@ -65,6 +67,28 @@ npm run data:check-static
 ```bash
 npm test
 ```
+
+## Live Neon Runtime
+
+Set a server-only database URL in the runtime environment:
+
+```bash
+DATABASE_URL="postgresql://..." npm run dev
+```
+
+Loader behavior:
+
+```text
+DATABASE_URL exists
+  -> query admissions_dw marts/views server-side
+  -> dashboard runtime source = live-neon
+
+DATABASE_URL missing or query fails
+  -> use generated artifact
+  -> dashboard runtime source = generated-artifact
+```
+
+`DATABASE_URL` must never be imported into client components or exposed in rendered HTML.
 
 ## Quality Gates
 

@@ -47,6 +47,7 @@ Excel admissions files
   -> mart_admissions_executive_summary
   -> warehouse/query-results/*.tsv
   -> app/data/generated/warehouse-dashboard-snapshot.json
+  -> server-side dashboard loader
   -> dashboard routes
 ```
 
@@ -109,6 +110,19 @@ Generated artifact:
 app/data/generated/warehouse-dashboard-snapshot.json
 ```
 
+Live adapter:
+
+```text
+app/data/live-neon-dashboard-adapter.ts
+```
+
+Runtime policy:
+
+```text
+Primary: server-side Neon mart query when DATABASE_URL is configured
+Fallback: generated warehouse artifact when DATABASE_URL is absent or the live query fails
+```
+
 Snapshot metadata:
 
 ```text
@@ -119,7 +133,7 @@ exportedAt: 2026-07-21
 sourceQuery: mart_admissions_executive_summary + mart_major_conversion + vw_admission_round_overview
 ```
 
-Production rule: dashboard route/component source must not contain admissions data arrays or hardcoded KPI values. `npm run data:check-static` enforces this rule.
+Production rule: dashboard route/component source must not contain admissions data arrays or hardcoded KPI values. `npm run data:check-static` enforces this rule. `DATABASE_URL` must remain server-only.
 
 ## Known Limitations
 
@@ -136,6 +150,6 @@ Production rule: dashboard route/component source must not contain admissions da
 | Source หลักยังแคบ | Clarified source scope and explained why one authoritative source is acceptable |
 | Data catalog/lineage ยังไม่ชัด | Added catalog rows and lineage edges in docs and UI |
 | ETL/validation evidence ยังไม่เป็นระบบ | Added ETL contract and validation checks |
-| Dashboard ดู static | Removed embedded app data and added generated warehouse artifact + no-static-data CI gate |
+| Dashboard ดู static | Added server-side Neon adapter, generated artifact fallback and no-static-data CI gate |
 | Quality metric ไม่ได้นิยาม | Added metric definitions, source objects and validation rules |
 | README/report ยังไม่ครบ | Added this evidence pack and updated project docs |

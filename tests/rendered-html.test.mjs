@@ -52,6 +52,7 @@ test("server-renders the admissions warehouse dashboard", async () => {
   const html = await response.text();
   assert.match(html, /<title>TCAS Admissions Data Warehouse<\/title>/i);
   assert.match(html, /TCAS Admissions Data Warehouse/);
+  assert.match(html, /generated-artifact|live-neon/);
   assert.match(html, /aria-label="Dashboard sidebar"/);
   assert.match(html, /aria-label="Section navigation"/);
   assert.doesNotMatch(html, /Warehouse status|Last sync|2 นาทีที่แล้ว/);
@@ -123,6 +124,7 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   const staticDataDecision = await readFile(new URL("../docs/decisions/0009-ban-embedded-dashboard-data.md", import.meta.url), "utf8");
 
   assert.match(snapshot, /"choices": 4579/);
+  assert.match(snapshot, /"source": "generated-artifact"/);
   assert.match(snapshot, /"applicants": 3443/);
   assert.match(snapshot, /"confirmed": 545/);
   assert.match(snapshot, /"sourceFiles": 5/);
@@ -135,6 +137,9 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(snapshot, /lineageEdges/);
 
   assert.match(loader, /warehouse-dashboard-snapshot\.json/);
+  assert.match(loader, /DATABASE_URL/);
+  assert.match(loader, /loadLiveNeonSnapshot/);
+  assert.match(loader, /fallbackReason/);
   assert.match(page, /snapshot/);
   assert.doesNotMatch(page, /from "\.\/data\/warehouse-snapshot"/);
   assert.doesNotMatch(page, /const\s+years\s*=\s*\[/);

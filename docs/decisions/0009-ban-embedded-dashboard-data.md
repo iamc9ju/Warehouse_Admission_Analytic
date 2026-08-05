@@ -11,12 +11,19 @@ Accepted
 Dashboard ต้องอ่านข้อมูลผ่าน production data contract เท่านั้น:
 
 ```text
-warehouse/query-results/*.tsv
-  -> npm run data:build
-  -> app/data/generated/warehouse-dashboard-snapshot.json
-  -> app/data/load-dashboard-snapshot.ts
-  -> route page
-  -> DashboardPage
+Primary:
+  DATABASE_URL
+    -> app/data/live-neon-dashboard-adapter.ts
+    -> admissions_dw marts/views
+    -> DashboardPage
+
+Fallback:
+  warehouse/query-results/*.tsv
+    -> npm run data:build
+    -> app/data/generated/warehouse-dashboard-snapshot.json
+    -> app/data/load-dashboard-snapshot.ts
+    -> route page
+    -> DashboardPage
 ```
 
 ## Rationale
@@ -46,4 +53,4 @@ node --test tests/rendered-html.test.mjs
 
 - การแก้ตัวเลข dashboard ต้องแก้ที่ warehouse query result หรือ pipeline เท่านั้น
 - `app/dashboard-page.tsx` ทำหน้าที่ render และ interaction ไม่ใช่แหล่งข้อมูล
-- ถ้าเชื่อม Neon production โดยตรงในอนาคต loader เดิมต้องเป็นจุดเปลี่ยน source เดียว ไม่กระจาย query ใน component
+- Neon production query ต้องอยู่หลัง server-side loader/adapter เท่านั้น ไม่กระจาย query ใน component

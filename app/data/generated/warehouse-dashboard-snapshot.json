@@ -1,4 +1,8 @@
 {
+  "runtime": {
+    "source": "generated-artifact",
+    "loadedAt": "2026-08-05T17:11:30.281Z"
+  },
   "warehouseSnapshot": {
     "exportedAt": "2026-07-21",
     "sourceSystem": "Neon PostgreSQL",

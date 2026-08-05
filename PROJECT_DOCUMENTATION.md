@@ -135,7 +135,12 @@ Current fetch status:
   - fail ทันทีถ้า dashboard route/component ฝัง admissions data เป็น static arrays
 
 - `app/data/load-dashboard-snapshot.ts`
-  - loader จุดเดียวที่ route pages ใช้ส่ง generated artifact เข้า dashboard
+  - loader จุดเดียวที่ route pages ใช้ส่ง dashboard data เข้า dashboard
+  - ถ้า `DATABASE_URL` พร้อม จะอ่านจาก Neon marts/views ฝั่ง server ก่อน
+  - ถ้า live query ไม่พร้อม จะ fallback ไป generated artifact
+
+- `app/data/live-neon-dashboard-adapter.ts`
+  - server-side Neon adapter สำหรับ query `admissions_dw` marts/views โดยไม่ expose credentials ไป client
 
 - `app/dashboard-page.tsx`
   - Dashboard route pages สำหรับ Overview, Warehouse, Rounds, Majors และ Quality
@@ -265,6 +270,13 @@ Important interpretation:
 - ลดความเสี่ยง credential leak ใน public/private deployed site
 - ทำให้การตรวจโปรเจค reproducible ด้วย pipeline-generated artifact
 - หากข้อมูล warehouse เปลี่ยน ให้ export query results ใหม่และรัน `npm run data:build`
+
+Runtime architecture ปัจจุบันเป็น hybrid:
+
+```text
+Primary: server-side Neon mart query via DATABASE_URL
+Fallback: generated warehouse artifact
+```
 
 กฎ production ใหม่:
 

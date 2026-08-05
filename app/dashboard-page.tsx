@@ -105,6 +105,7 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
     warehouseQueries,
     warehouseSnapshot,
     years,
+    runtime,
   } = snapshot;
 
   const current = years.find((year) => year.year === selectedYear) ?? years[1];
@@ -233,6 +234,7 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
             <div className="snapshot-meta" aria-label="Warehouse snapshot metadata">
               <span>{warehouseSnapshot.dashboardMode}</span>
               <span>{warehouseSnapshot.schema}</span>
+              <span>{runtime.source}</span>
               <span>exported {warehouseSnapshot.exportedAt}</span>
             </div>
           </div>

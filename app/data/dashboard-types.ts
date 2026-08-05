@@ -42,6 +42,11 @@ export type RoundRow = {
 };
 
 export type DashboardSnapshot = {
+  runtime: {
+    source: "live-neon" | "generated-artifact";
+    loadedAt: string;
+    fallbackReason?: string;
+  };
   warehouseSnapshot: {
     exportedAt: string;
     sourceSystem: string;

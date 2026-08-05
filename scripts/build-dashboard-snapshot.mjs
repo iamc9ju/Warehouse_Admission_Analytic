@@ -107,6 +107,10 @@ const warehouseQueries = (await readTsv("dashboard_query_contract.tsv")).map((ro
 }));
 
 const snapshot = {
+  runtime: {
+    source: "generated-artifact",
+    loadedAt: new Date().toISOString(),
+  },
   warehouseSnapshot: {
     exportedAt: metadataRow.exported_at,
     sourceSystem: metadataRow.source_system,

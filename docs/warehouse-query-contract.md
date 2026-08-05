@@ -145,6 +145,19 @@ Generated artifact:
 app/data/generated/warehouse-dashboard-snapshot.json
 ```
 
+Production runtime:
+
+```text
+DATABASE_URL configured
+  -> app/data/live-neon-dashboard-adapter.ts
+  -> server-side query against admissions_dw marts/views
+  -> DashboardPage
+
+DATABASE_URL missing or query fails
+  -> app/data/generated/warehouse-dashboard-snapshot.json
+  -> DashboardPage
+```
+
 ห้าม export fields ต่อไปนี้ลง query results หรือ generated artifact:
 
 - citizen_id

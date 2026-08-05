@@ -16,6 +16,7 @@ const quality = snapshot.qualityMetricDefinitions;
 const catalog = snapshot.dataCatalogRows;
 const lineage = snapshot.lineageEdges;
 
+assert(snapshot.runtime.source === "generated-artifact", "generated artifact must declare generated-artifact runtime source");
 assert(snapshot.warehouseSnapshot.dashboardMode === "generated warehouse mart artifact", "dashboard must use generated warehouse artifact mode");
 assert(snapshot.warehouseSnapshot.activeSourceGroups === 1, "only one active source group is allowed");
 assert(snapshot.warehouseSnapshot.piiExportedColumns === 0, "PII columns must never be exported");
