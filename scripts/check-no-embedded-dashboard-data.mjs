@@ -7,6 +7,7 @@ const files = [
   "app/dashboard-page.tsx",
   "app/page.tsx",
   "app/warehouse/page.tsx",
+  "app/technical/page.tsx",
   "app/rounds/page.tsx",
   "app/majors/page.tsx",
   "app/quality/page.tsx",

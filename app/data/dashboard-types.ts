@@ -1,4 +1,4 @@
-export type Year = 2568 | 2569;
+export type Year = number;
 
 export type YearOverview = {
   year: Year;
@@ -41,6 +41,15 @@ export type RoundRow = {
   files: number;
 };
 
+export type RoundStatusRow = {
+  year: Year;
+  code: string;
+  name: string;
+  label: string;
+  choices: number;
+  applicants: number;
+};
+
 export type DashboardSnapshot = {
   runtime: {
     source: "live-neon" | "generated-artifact";
@@ -64,6 +73,7 @@ export type DashboardSnapshot = {
   majorRows: MajorRow[];
   statuses: StatusRow[];
   rounds: RoundRow[];
+  roundStatuses: RoundStatusRow[];
   qualityMetricDefinitions: {
     label: string;
     value: string;

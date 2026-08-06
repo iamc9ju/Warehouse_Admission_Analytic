@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admissions Data Warehouse Star Schema</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f5ef;
+        --ink: #162120;
+        --muted: #65716d;
+        --line: #d5ddd5;
+        --panel: #ffffff;
+        --teal: #0f766e;
+        --blue: #285cc4;
+        --amber: #a15c08;
+        --green: #2f7d32;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          linear-gradient(180deg, rgba(15, 118, 110, 0.08), rgba(247, 245, 239, 0) 340px),
+          var(--bg);
+        color: var(--ink);
+        font-family: Anuphan, Arial, Helvetica, sans-serif;
+      }
+
+      header {
+        display: flex;
+        gap: 18px;
+        align-items: end;
+        justify-content: space-between;
+        padding: 24px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 48px);
+        line-height: 1;
+      }
+
+      p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .toolbar {
+        position: sticky;
+        top: 12px;
+        z-index: 3;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 8px;
+        box-shadow: 0 14px 32px rgba(22, 33, 32, 0.08);
+        backdrop-filter: blur(16px);
+      }
+
+      button {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+        color: var(--ink);
+        cursor: pointer;
+        font: inherit;
+        font-weight: 760;
+        padding: 9px 12px;
+      }
+
+      button:hover {
+        border-color: #afc7c0;
+        background: #eef8f5;
+      }
+
+      .zoom-value {
+        min-width: 58px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 760;
+        text-align: center;
+      }
+
+      .canvas-shell {
+        height: calc(100vh - 126px);
+        margin: 0 24px 24px;
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.68);
+        box-shadow: 0 18px 42px rgba(22, 33, 32, 0.06);
+      }
+
+      .canvas {
+        width: 1800px;
+        height: 1180px;
+        transform-origin: top left;
+      }
+
+      svg {
+        display: block;
+        width: 1800px;
+        height: 1180px;
+      }
+
+      .box {
+        fill: var(--panel);
+        stroke: var(--line);
+        stroke-width: 2;
+        rx: 10;
+      }
+
+      .dimension .box {
+        fill: #f2f8f6;
+        stroke: #b8d6ce;
+      }
+
+      .fact .box {
+        fill: #ffffff;
+        stroke: #b7c3df;
+      }
+
+      .quality .box {
+        fill: #fff8ec;
+        stroke: #dfc99e;
+      }
+
+      .mart .box {
+        fill: #f4f7ff;
+        stroke: #b9c8ec;
+      }
+
+      .title {
+        fill: var(--ink);
+        font-size: 22px;
+        font-weight: 820;
+      }
+
+      .subtitle {
+        fill: var(--muted);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .field {
+        fill: #34403d;
+        font-size: 14px;
+      }
+
+      .key {
+        fill: var(--teal);
+        font-weight: 820;
+      }
+
+      .measure {
+        fill: var(--blue);
+        font-weight: 760;
+      }
+
+      .relationship {
+        fill: none;
+        stroke: #7b8f8a;
+        stroke-width: 2.3;
+        marker-end: url(#arrow);
+      }
+
+      .mart-line {
+        fill: none;
+        stroke: #90a0c9;
+        stroke-dasharray: 8 8;
+        stroke-width: 2.2;
+        marker-end: url(#arrow-blue);
+      }
+
+      .legend {
+        fill: #ffffff;
+        stroke: var(--line);
+        stroke-width: 1.5;
+        rx: 8;
+      }
+
+      @media (max-width: 900px) {
+        header {
+          display: grid;
+        }
+
+        .toolbar {
+          width: fit-content;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Admissions Data Warehouse: Fact & Dimension</h1>
+        <p>
+          ซูมได้ด้วยปุ่มด้านขวา หรือใช้ browser zoom / trackpad ได้ ภาพนี้แสดง star schema หลักของ
+          schema <strong>admissions_dw</strong>
+        </p>
+      </div>
+      <div class="toolbar" aria-label="Zoom controls">
+        <button type="button" id="zoom-out">-</button>
+        <span class="zoom-value" id="zoom-value">100%</span>
+        <button type="button" id="zoom-in">+</button>
+        <button type="button" id="reset">Reset</button>
+      </div>
+    </header>
+
+    <main class="canvas-shell" aria-label="Scrollable diagram canvas">
+      <div class="canvas" id="canvas">
+        <svg viewBox="0 0 1800 1180" role="img" aria-label="Admissions data warehouse star schema">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L9,3 z" fill="#7b8f8a"></path>
+            </marker>
+            <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L9,3 z" fill="#90a0c9"></path>
+            </marker>
+          </defs>
+
+          <rect x="24" y="24" width="420" height="118" class="legend"></rect>
+          <text x="48" y="62" class="title">Legend</text>
+          <text x="48" y="92" class="subtitle">Dimension = มุมมองที่ใช้ตัดข้อมูล</text>
+          <text x="48" y="118" class="subtitle">Fact = ตัวเลข/มาตรวัดที่ใช้วิเคราะห์</text>
+
+          <g class="dimension">
+            <rect x="80" y="220" width="300" height="190" class="box"></rect>
+            <text x="104" y="258" class="title">dim_tcas_round</text>
+            <text x="104" y="286" class="subtitle">รอบ TCAS</text>
+            <text x="104" y="326" class="field key">PK round_key</text>
+            <text x="104" y="352" class="field">tcas_round_code</text>
+            <text x="104" y="378" class="field">tcas_round_name</text>
+          </g>
+
+          <g class="dimension">
+            <rect x="80" y="500" width="300" height="190" class="box"></rect>
+            <text x="104" y="538" class="title">dim_faculty</text>
+            <text x="104" y="566" class="subtitle">คณะ</text>
+            <text x="104" y="606" class="field key">PK faculty_key</text>
+            <text x="104" y="632" class="field">fac_id</text>
+            <text x="104" y="658" class="field">fac_name</text>
+          </g>
+
+          <g class="dimension">
+            <rect x="80" y="780" width="300" height="218" class="box"></rect>
+            <text x="104" y="818" class="title">dim_major</text>
+            <text x="104" y="846" class="subtitle">สาขาวิชา</text>
+            <text x="104" y="886" class="field key">PK major_key</text>
+            <text x="104" y="912" class="field">major_id</text>
+            <text x="104" y="938" class="field">major_name</text>
+            <text x="104" y="964" class="field">major_type</text>
+          </g>
+
+          <g class="dimension">
+            <rect x="1420" y="310" width="300" height="198" class="box"></rect>
+            <text x="1444" y="348" class="title">dim_tcas_status</text>
+            <text x="1444" y="376" class="subtitle">สถานะผู้สมัคร</text>
+            <text x="1444" y="416" class="field key">PK status_key</text>
+            <text x="1444" y="442" class="field">tcas_status</text>
+            <text x="1444" y="468" class="field">applicant_status</text>
+          </g>
+
+          <g class="fact">
+            <rect x="590" y="72" width="460" height="222" class="box"></rect>
+            <text x="614" y="110" class="title">fact_admission_year_overview</text>
+            <text x="614" y="138" class="subtitle">grain: academic_year</text>
+            <text x="614" y="178" class="field key">PK academic_year</text>
+            <text x="614" y="204" class="field measure">application_choices</text>
+            <text x="614" y="230" class="field measure">unique_applicants</text>
+            <text x="614" y="256" class="field measure">confirmed_unique_applicants</text>
+          </g>
+
+          <g class="fact">
+            <rect x="540" y="350" width="520" height="252" class="box"></rect>
+            <text x="564" y="388" class="title">fact_admission_round_overview</text>
+            <text x="564" y="416" class="subtitle">grain: academic_year + round</text>
+            <text x="564" y="456" class="field key">FK round_key</text>
+            <text x="564" y="482" class="field">academic_year</text>
+            <text x="564" y="508" class="field measure">application_choices</text>
+            <text x="564" y="534" class="field measure">unique_applicants</text>
+            <text x="564" y="560" class="field measure">confirmed_unique_applicants</text>
+          </g>
+
+          <g class="fact">
+            <rect x="520" y="680" width="560" height="310" class="box"></rect>
+            <text x="544" y="718" class="title">fact_admission_round_major_summary</text>
+            <text x="544" y="746" class="subtitle">grain: year + round + faculty + major</text>
+            <text x="544" y="786" class="field key">FK round_key</text>
+            <text x="544" y="812" class="field key">FK faculty_key</text>
+            <text x="544" y="838" class="field key">FK major_key</text>
+            <text x="544" y="864" class="field">project_id</text>
+            <text x="544" y="890" class="field measure">application_choices</text>
+            <text x="544" y="916" class="field measure">unique_applicants</text>
+            <text x="544" y="942" class="field measure">confirmed_unique_applicants</text>
+            <text x="544" y="968" class="field measure">avg_score / min_score / max_score</text>
+          </g>
+
+          <g class="fact">
+            <rect x="1130" y="305" width="250" height="250" class="box"></rect>
+            <text x="1154" y="342" class="title">fact_status</text>
+            <text x="1154" y="370" class="subtitle">year + round + status</text>
+            <text x="1154" y="410" class="field key">FK round_key</text>
+            <text x="1154" y="436" class="field key">FK status_key</text>
+            <text x="1154" y="462" class="field measure">application_choices</text>
+            <text x="1154" y="488" class="field measure">unique_applicants</text>
+            <text x="1154" y="514" class="field measure">unique_majors</text>
+          </g>
+
+          <g class="quality">
+            <rect x="1130" y="640" width="360" height="242" class="box"></rect>
+            <text x="1154" y="678" class="title">source_data_quality</text>
+            <text x="1154" y="706" class="subtitle">grain: year + round + source_file</text>
+            <text x="1154" y="746" class="field key">FK round_key</text>
+            <text x="1154" y="772" class="field">source_file</text>
+            <text x="1154" y="798" class="field measure">source_rows</text>
+            <text x="1154" y="824" class="field measure">missing_score_rows</text>
+            <text x="1154" y="850" class="field measure">pii_columns_removed</text>
+          </g>
+
+          <g class="mart">
+            <rect x="1260" y="965" width="430" height="164" class="box"></rect>
+            <text x="1284" y="1003" class="title">Presentation Marts</text>
+            <text x="1284" y="1038" class="field">mart_tcas_year_summary</text>
+            <text x="1284" y="1064" class="field">mart_tcas_round_summary</text>
+            <text x="1284" y="1090" class="field">mart_major_round_conversion</text>
+          </g>
+
+          <path d="M380 310 C450 310, 480 430, 540 456" class="relationship"></path>
+          <path d="M380 310 C450 310, 480 760, 520 786" class="relationship"></path>
+          <path d="M380 310 C960 250, 1050 380, 1130 410" class="relationship"></path>
+          <path d="M380 310 C940 500, 1030 700, 1130 746" class="relationship"></path>
+          <path d="M380 595 C450 610, 480 800, 520 812" class="relationship"></path>
+          <path d="M380 890 C450 890, 480 840, 520 838" class="relationship"></path>
+          <path d="M1420 416 C1390 416, 1400 436, 1380 436" class="relationship"></path>
+
+          <path d="M820 294 C930 920, 1120 1000, 1260 1014" class="mart-line"></path>
+          <path d="M800 602 C890 890, 1110 1030, 1260 1048" class="mart-line"></path>
+          <path d="M850 990 C990 1050, 1120 1080, 1260 1084" class="mart-line"></path>
+          <path d="M1380 555 C1430 780, 1390 900, 1320 965" class="mart-line"></path>
+        </svg>
+      </div>
+    </main>
+
+    <script>
+      const canvas = document.getElementById("canvas");
+      const zoomValue = document.getElementById("zoom-value");
+      let zoom = 1;
+
+      function applyZoom() {
+        canvas.style.transform = `scale(${zoom})`;
+        canvas.style.width = `${1800 * zoom}px`;
+        canvas.style.height = `${1180 * zoom}px`;
+        zoomValue.textContent = `${Math.round(zoom * 100)}%`;
+      }
+
+      document.getElementById("zoom-in").addEventListener("click", () => {
+        zoom = Math.min(2.5, zoom + 0.15);
+        applyZoom();
+      });
+
+      document.getElementById("zoom-out").addEventListener("click", () => {
+        zoom = Math.max(0.45, zoom - 0.15);
+        applyZoom();
+      });
+
+      document.getElementById("reset").addEventListener("click", () => {
+        zoom = 1;
+        applyZoom();
+      });
+    </script>
+  </body>
+</html>

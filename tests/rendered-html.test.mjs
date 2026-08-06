@@ -45,6 +45,8 @@ async function renderPath(pathname) {
 }
 
 test("server-renders the admissions warehouse dashboard", async () => {
+  const snapshot = JSON.parse(await readFile(new URL("../app/data/generated/warehouse-dashboard-snapshot.json", import.meta.url), "utf8"));
+  const latestYear = [...snapshot.years].sort((first, second) => second.year - first.year)[0];
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
@@ -59,25 +61,51 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.match(html, /class="page-transition"/);
   assert.doesNotMatch(html, /Warehouse pipeline|active warehouse stage|role="dialog"|กลับสู่ dashboard/);
   assert.match(html, /href="\/warehouse"/);
+  assert.match(html, /href="\/dashboard"/);
+  assert.match(html, /href="\/technical"/);
   assert.match(html, /href="\/rounds"/);
   assert.match(html, /href="\/majors"/);
   assert.match(html, /href="\/quality"/);
   assert.match(html, /href="\/insights"/);
-  assert.doesNotMatch(html, /href="\/(?:social|marts|dashboard|reports|data-catalog|settings)"/);
+  assert.doesNotMatch(html, /href="\/(?:social|marts|reports|data-catalog|settings)"/);
   assert.match(html, /TCAS รอบ 1-4/);
-  assert.match(html, /3,443/);
-  assert.match(html, /4,579/);
-  assert.match(html, /545/);
+  assert.match(html, new RegExp(latestYear.applicants.toLocaleString("en-US")));
+  assert.match(html, new RegExp(latestYear.choices.toLocaleString("en-US")));
+  assert.match(html, new RegExp(latestYear.confirmed.toLocaleString("en-US")));
   assert.match(html, /TCAS1/);
   assert.match(html, /TCAS4/);
   assert.match(html, /round rows/);
-  assert.match(html, /Year over year summary/);
-  assert.match(html, /คุณภาพข้อมูล/);
+  assert.match(html, new RegExp(`เฉพาะปี ${latestYear.year}`));
+  assert.doesNotMatch(html, /Year over year summary|compare-summary|คุณภาพข้อมูล/);
   assert.match(html, /ทุกสาขาวิชา/);
   assert.doesNotMatch(html, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี|ดูการเปรียบเทียบราย round/);
 });
 
 test("renders separate route pages instead of anchor-only sections", async () => {
+  const dashboardResponse = await renderPath("/dashboard");
+  assert.equal(dashboardResponse.status, 200);
+  const dashboardHtml = await dashboardResponse.text();
+  assert.match(dashboardHtml, /Admissions Analytics Dashboard/);
+  assert.match(dashboardHtml, /kpi-sparkline/);
+  assert.match(dashboardHtml, /แนวโน้ม/);
+  assert.match(dashboardHtml, /ปีล่าสุด/);
+  assert.match(dashboardHtml, /Year Comparison/);
+  assert.match(dashboardHtml, /Status &amp; Round Comparison/);
+  assert.match(dashboardHtml, /vertical-round-chart/);
+  assert.match(dashboardHtml, /TCAS Status/);
+  assert.match(dashboardHtml, /TCAS Round/);
+  assert.match(dashboardHtml, /single-series/);
+  assert.match(dashboardHtml, /1,320/);
+  assert.match(dashboardHtml, /1,324/);
+  assert.doesNotMatch(dashboardHtml, /Opportunity Matrix|Block Quadrant/);
+  assert.match(dashboardHtml, /6-axis Radar Profile/);
+  assert.match(dashboardHtml, /Status Distribution/);
+  assert.match(dashboardHtml, /Major Ranking/);
+  assert.match(dashboardHtml, /All-year comparison/);
+  assert.match(dashboardHtml, /เปรียบเทียบทุกปี/);
+  assert.match(dashboardHtml, /vertical-round-chart/);
+  assert.match(dashboardHtml, /major-comparison-chart/);
+
   const warehouseResponse = await renderPath("/warehouse");
   assert.equal(warehouseResponse.status, 200);
   const warehouseHtml = await warehouseResponse.text();
@@ -96,6 +124,20 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.match(roundsHtml, /2569[\s\S]*TCAS4/);
   assert.doesNotMatch(roundsHtml, /ทุกสาขาวิชา/);
   assert.doesNotMatch(roundsHtml, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี|ดูการเปรียบเทียบราย round/);
+
+  const technicalResponse = await renderPath("/technical");
+  assert.equal(technicalResponse.status, 200);
+  const technicalHtml = await technicalResponse.text();
+  assert.match(technicalHtml, /Project Technical Overview/);
+  assert.match(technicalHtml, /End-to-End Data Architecture/);
+  assert.match(technicalHtml, /technical-data-architecture-flow\.png/);
+  assert.match(technicalHtml, /Excel[\s\S]*ETL[\s\S]*PII-free CSV[\s\S]*Neon PostgreSQL[\s\S]*Fact \+ Dimension[\s\S]*Data Mart[\s\S]*Dashboard/);
+  assert.match(technicalHtml, /Production Runtime/);
+  assert.match(technicalHtml, /Server-side Neon query/);
+  assert.match(technicalHtml, /Generated warehouse artifact/);
+  assert.match(technicalHtml, /Data Hierarchy/);
+  assert.match(technicalHtml, /Presentation[\s\S]*Semantic[\s\S]*Warehouse[\s\S]*Integration[\s\S]*Source/);
+  assert.match(technicalHtml, /Academic Year[\s\S]*TCAS Round[\s\S]*Faculty \/ Major[\s\S]*Applicant Status/);
 
   const majorsResponse = await renderPath("/majors");
   assert.equal(majorsResponse.status, 200);
@@ -131,6 +173,9 @@ test("renders separate route pages instead of anchor-only sections", async () =>
 
 test("keeps dashboard copy tied to real warehouse data", async () => {
   const page = await readFile(new URL("../app/dashboard-page.tsx", import.meta.url), "utf8");
+  const analyticsPage = await readFile(new URL("../app/analytics-dashboard.tsx", import.meta.url), "utf8");
+  const dashboardTypes = await readFile(new URL("../app/data/dashboard-types.ts", import.meta.url), "utf8");
+  const validator = await readFile(new URL("../scripts/validate-dashboard-snapshot.mjs", import.meta.url), "utf8");
   const styles = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
   const snapshot = await readFile(new URL("../app/data/generated/warehouse-dashboard-snapshot.json", import.meta.url), "utf8");
   const loader = await readFile(new URL("../app/data/load-dashboard-snapshot.ts", import.meta.url), "utf8");
@@ -158,7 +203,10 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(snapshot, /warehouseHealth/);
   assert.match(snapshot, /decisionMartContract/);
   assert.equal(snapshotObject.businessQuestions.length, 15);
-  assert.equal(snapshotObject.decisionInsights.length, 12);
+  assert.equal(snapshotObject.decisionInsights.length, 15);
+  assert(snapshotObject.businessQuestions.every((question) =>
+    snapshotObject.decisionInsights.some((insight) => insight.businessQuestionId === question.id)
+  ));
   assert(snapshotObject.businessQuestions.some((question) => question.domain === "Program Portfolio"));
   assert(snapshotObject.decisionInsights.some((insight) => insight.category === "Data Trust"));
 
@@ -172,6 +220,16 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.doesNotMatch(page, /const\s+majorRows\s*=\s*\[/);
   assert.doesNotMatch(page, /const\s+statuses\s*=\s*\[/);
   assert.doesNotMatch(page, /const\s+rounds\s*=\s*\[/);
+  assert.match(page, /selectableYears\.map/);
+  assert.doesNotMatch(page, /<option value=\{256[0-9]\}>/);
+  assert.match(dashboardTypes, /export type Year = number/);
+  assert.match(analyticsPage, /hasManyYears/);
+  assert.match(analyticsPage, /roundStatuses\.find/);
+  assert.match(analyticsPage, /status\.code === selectedRoundCode/);
+  assert.match(analyticsPage, /data-year-count/);
+  assert.match(styles, /analytics-chart-grid\.many-years/);
+  assert.match(validator, /const academicYears/);
+  assert.doesNotMatch(validator, /\[2568, 2569\]/);
   assert.doesNotMatch(page, /-154<\/strong> applicants|\+17<\/strong> confirmed|\+1\.15 pts<\/strong> rate/);
   assert.match(styles, /tcas-dw-cartoon-logo\.png/);
   assert.doesNotMatch(page, /next\/image/);
@@ -179,9 +237,9 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(page, /Data catalog evidence/);
   assert.match(page, /Dashboard query contract/);
   assert.match(page, /ETL validation checks/);
-  assert.match(page, /startViewTransition/);
+  assert.match(page, /SidebarNavigation/);
   assert.match(page, /round-table-wrap/);
-  assert.match(page, /compare-summary/);
+  assert.doesNotMatch(page, /compare-summary/);
   assert.doesNotMatch(page, /openInsight|InsightDialog|setDialog|dialog-backdrop|dialog-success-icon|active warehouse stage|Warehouse pipeline/);
   assert.doesNotMatch(page, /showAll|setShowAll|slice\(0,\s*10\)|ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี|ดูการเปรียบเทียบราย round/);
 
@@ -203,4 +261,5 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
 
 test("ships the generated cartoon logo asset", async () => {
   await access(new URL("../public/tcas-dw-cartoon-logo.png", import.meta.url));
+  await access(new URL("../public/technical-data-architecture-flow.png", import.meta.url));
 });

@@ -1,51 +1,58 @@
 "use client";
 
-import type { ComponentType, MouseEvent, SVGProps } from "react";
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
-  AcademicCapIcon,
   ChartBarSquareIcon,
-  CheckCircleIcon,
-  CircleStackIcon,
-  HomeIcon,
-  LightBulbIcon,
-  ShieldCheckIcon,
-  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
 import {
   type DashboardSnapshot,
   type Year,
 } from "./data/dashboard-types";
+import { AdmissionsDecisionCenter } from "./admissions-decision-center";
+import { AdmissionsAnalyticsDashboard } from "./analytics-dashboard";
+import { SidebarNavigation } from "./sidebar-navigation";
 
 export type PageName =
   | "Overview"
+  | "Dashboard"
   | "Warehouse"
+  | "Technical"
   | "Rounds"
   | "Majors"
   | "Quality"
   | "Insights";
 
-const sideLinks = [
-  ["Overview", "home", "/"],
-  ["Warehouse", "stack", "/warehouse"],
-  ["Rounds", "check", "/rounds"],
-  ["Majors", "bars", "/majors"],
-  ["Quality", "shield", "/quality"],
-  ["Insights", "insights", "/insights"],
-] as const;
+const pageHref: Record<PageName, string> = {
+  Overview: "/",
+  Dashboard: "/dashboard",
+  Warehouse: "/warehouse",
+  Technical: "/technical",
+  Rounds: "/rounds",
+  Majors: "/majors",
+  Quality: "/quality",
+  Insights: "/insights",
+};
 
 const pageMeta: Record<PageName, { eyebrow: string; title: string; copy: string }> = {
   Overview: {
     eyebrow: "Engineering Admissions Analytics",
     title: "TCAS Admissions Data Warehouse",
-    copy: "ภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน ครบ TCAS รอบ 1-4 ปี 2568 และ 2569 จาก server-side warehouse loader หรือ generated mart artifact ที่ trace กลับไปยัง Neon PostgreSQL marts, dimensional facts และ governed lineage ได้",
+    copy: "ดูภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน แยกตามปีการศึกษาที่เลือก ครบ TCAS รอบ 1-4 โดยข้อมูล trace กลับไปยัง Neon PostgreSQL marts, dimensional facts และ governed lineage ได้",
+  },
+  Dashboard: {
+    eyebrow: "Visual Analytics",
+    title: "Admissions Analytics Dashboard",
+    copy: "สำรวจแนวโน้ม เปรียบเทียบผลลัพธ์ และวิเคราะห์ความสัมพันธ์ของข้อมูลรับสมัครผ่านกราฟแบบ interactive",
   },
   Warehouse: {
     eyebrow: "Warehouse Architecture",
     title: "Warehouse, Lineage และ Core Model",
     copy: "ตรวจสอบเส้นทางข้อมูลตั้งแต่ Excel source, staging CSV, core facts, governed marts, query contract และ dashboard-ready snapshot",
+  },
+  Technical: {
+    eyebrow: "Technical Architecture",
+    title: "Project Technical Overview",
+    copy: "อธิบายเส้นทางข้อมูลตั้งแต่ Excel ผ่าน ETL, privacy boundary, dimensional warehouse และ governed marts จนเป็น Dashboard พร้อม production runtime, quality gates และหลักฐานที่ตรวจสอบย้อนกลับได้",
   },
   Rounds: {
     eyebrow: "Round Performance",
@@ -89,24 +96,26 @@ function slug(value: string) {
   return value.toLowerCase().replaceAll(" ", "-");
 }
 
-function Icon({ name }: { name: string }) {
-  const icons: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
-    home: HomeIcon,
-    stack: CircleStackIcon,
-    check: CheckCircleIcon,
-    bars: AcademicCapIcon,
-    shield: ShieldCheckIcon,
-    insights: LightBulbIcon,
-  };
-  const HeroIcon = icons[name] ?? Squares2X2Icon;
-  return <HeroIcon className={`ui-icon ui-icon-${name}`} aria-hidden="true" />;
+export function DashboardPage({ activePage, snapshot }: { activePage: PageName; snapshot: DashboardSnapshot }) {
+  if (activePage === "Dashboard") {
+    return <AdmissionsAnalyticsDashboard snapshot={snapshot} />;
+  }
+
+  if (activePage === "Insights") {
+    return <AdmissionsDecisionCenter snapshot={snapshot} />;
+  }
+
+  return <StandardDashboardPage activePage={activePage} snapshot={snapshot} />;
 }
 
-export function DashboardPage({ activePage, snapshot }: { activePage: PageName; snapshot: DashboardSnapshot }) {
-  const router = useRouter();
-  const [selectedYear, setSelectedYear] = useState<Year>(2569);
+function StandardDashboardPage({ activePage, snapshot }: { activePage: PageName; snapshot: DashboardSnapshot }) {
+  const selectableYears = useMemo(
+    () => [...snapshot.years].sort((first, second) => second.year - first.year),
+    [snapshot.years],
+  );
+  const [selectedYear, setSelectedYear] = useState<Year>(() => selectableYears[0]?.year ?? 0);
   const [majorQuery, setMajorQuery] = useState("");
-  const [detail, setDetail] = useState("Dashboard พร้อมใช้งานจาก admissions warehouse ที่ตัด PII แล้ว");
+  const detail = "Dashboard พร้อมใช้งานจาก admissions warehouse ที่ตัด PII แล้ว";
   const meta = pageMeta[activePage];
   const {
     dataCatalogRows,
@@ -126,13 +135,7 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
     decisionMartContract,
   } = snapshot;
 
-  const current = years.find((year) => year.year === selectedYear) ?? years[1];
-  const previous = years.find((year) => year.year !== selectedYear) ?? years[0];
-  const applicantChange = current.applicants - previous.applicants;
-  const confirmedChange = current.confirmed - previous.confirmed;
-  const choicesChange = current.choices - previous.choices;
-  const rateChange = current.rate - previous.rate;
-
+  const current = years.find((year) => year.year === selectedYear) ?? selectableYears[0];
   const filteredMajors = useMemo(() => {
     const normalizedQuery = majorQuery.trim().toLowerCase();
     return majorRows
@@ -147,17 +150,9 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
   const visibleMajors = filteredMajors;
   const maxApplicants = Math.max(...filteredMajors.map((major) => major.applicants), 1);
   const visibleStatuses = statuses.filter((status) => status.year === selectedYear);
-  const visibleRounds = rounds;
-  const compareMetrics = [
-    ["ผู้สมัครไม่ซ้ำ", years[0].applicants, years[1].applicants, 3600],
-    ["ยืนยันสิทธิ์", years[0].confirmed, years[1].confirmed, 600],
-    ["อัตราการยืนยัน", years[0].rate, years[1].rate, 20],
-  ] as const;
-  const compareSummary = [
-    ["applicants", years[1].applicants - years[0].applicants],
-    ["confirmed", years[1].confirmed - years[0].confirmed],
-    ["rate", years[1].rate - years[0].rate],
-  ] as const;
+  const visibleRounds = activePage === "Overview"
+    ? rounds.filter((round) => round.year === selectedYear)
+    : rounds;
   const sortedInsights = decisionInsights.slice().sort((a, b) => a.priority - b.priority);
   const executivePriorities = sortedInsights.slice(0, 3);
   const insightCategories = Array.from(new Set(sortedInsights.map((insight) => insight.category)));
@@ -167,26 +162,26 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
     {
       name: `ผู้สมัครไม่ซ้ำ (${selectedYear})`,
       value: formatNumber(current.applicants),
-      change: `${formatSigned(applicantChange)} vs ${previous.year}`,
-      changeType: deltaClass(applicantChange),
+      change: `เฉพาะปี ${selectedYear}`,
+      changeType: "neutral",
     },
     {
       name: `ผู้ยืนยันสิทธิ์ (${selectedYear})`,
       value: formatNumber(current.confirmed),
-      change: `${formatSigned(confirmedChange)} vs ${previous.year}`,
-      changeType: deltaClass(confirmedChange),
+      change: `เฉพาะปี ${selectedYear}`,
+      changeType: "neutral",
     },
     {
       name: `อัตราการยืนยัน (${selectedYear})`,
       value: `${current.rate.toFixed(2)}%`,
-      change: `${rateChange > 0 ? "+" : ""}${rateChange.toFixed(2)} pts`,
-      changeType: deltaClass(rateChange),
+      change: `เฉพาะปี ${selectedYear}`,
+      changeType: "neutral",
     },
     {
       name: `จำนวนตัวเลือก (${selectedYear})`,
       value: formatNumber(current.choices),
-      change: `${formatSigned(choicesChange)} vs ${previous.year}`,
-      changeType: deltaClass(choicesChange),
+      change: `เฉพาะปี ${selectedYear}`,
+      changeType: "neutral",
     },
   ];
 
@@ -195,62 +190,17 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
   const showKpiStrip = isOverview;
   const showStatusPanel = isOverview || activePage === "Quality";
   const showMajorsPanel = isOverview || activePage === "Majors";
-  const showQualityPanel = isOverview || activePage === "Quality";
+  const showQualityPanel = activePage === "Quality";
   const showRoundsPanel = isOverview || activePage === "Rounds";
-  const showComparePanel = isOverview;
   const showInsightsPanel = activePage === "Insights";
-  const showDashboardGrid = showStatusPanel || showMajorsPanel || showQualityPanel || showRoundsPanel || showComparePanel;
-  const showWarehousePanel = isOverview || activePage === "Warehouse";
+  const showDashboardGrid = showStatusPanel || showMajorsPanel || showQualityPanel || showRoundsPanel;
+  const showWarehousePanel = activePage === "Warehouse";
+  const showTechnicalPanel = activePage === "Technical";
   const isFocusedPage = !isOverview;
-
-  function navigateWithTransition(event: MouseEvent<HTMLAnchorElement>, label: string, href: string) {
-    setDetail(`${label} panel is ready`);
-
-    if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
-      return;
-    }
-
-    event.preventDefault();
-    if (window.location.pathname === href) return;
-
-    const navigate = () => router.push(href);
-    const transitionDocument = document as Document & {
-      startViewTransition?: (callback: () => void) => void;
-    };
-
-    if (transitionDocument.startViewTransition) {
-      transitionDocument.startViewTransition(navigate);
-      return;
-    }
-
-    navigate();
-  }
 
   return (
     <main className="app-frame">
-      <aside className="sidebar" aria-label="Dashboard sidebar">
-        <Link className="brand" href="/" onClick={() => setDetail("กลับสู่ภาพรวม TCAS Admissions Data Warehouse")}>
-          <span className="brand-mark" aria-hidden="true" />
-          <span>
-            <strong>TCAS DW</strong>
-            <small>Engineering Admissions</small>
-          </span>
-        </Link>
-
-        <nav className="side-nav" aria-label="Section navigation">
-          {sideLinks.map(([label, icon, href]) => (
-            <Link
-              className={activePage === label ? "active" : ""}
-              href={href}
-              key={label}
-              onClick={(event) => navigateWithTransition(event, label, href)}
-            >
-              <Icon name={icon} />
-              <span>{label}</span>
-            </Link>
-          ))}
-        </nav>
-      </aside>
+      <SidebarNavigation activeHref={pageHref[activePage]} />
 
       <section className="workspace" data-page={activePage}>
         <div className="page-transition" key={activePage}>
@@ -266,16 +216,162 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
               <span>exported {warehouseSnapshot.exportedAt}</span>
             </div>
           </div>
-          <div className="hero-controls">
+          {activePage !== "Technical" && <div className="hero-controls">
             <label className="year-select">
               <span>ปีการศึกษา</span>
               <select value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value) as Year)}>
-                <option value={2569}>2569</option>
-                <option value={2568}>2568</option>
+                {selectableYears.map((year) => (
+                  <option value={year.year} key={year.year}>{year.year}</option>
+                ))}
               </select>
             </label>
-          </div>
+          </div>}
         </section>
+
+        {showTechnicalPanel && (
+          <section id="technical" className="technical-layout" aria-label="Project technical architecture">
+            <article className="panel technical-flow-panel">
+              <div className="panel-title">
+                <div>
+                  <p className="technical-kicker">Architecture walkthrough</p>
+                  <h2>End-to-End Data Architecture</h2>
+                </div>
+                <span className="mini-pill">7 connected layers</span>
+              </div>
+              <figure className="technical-flow-figure">
+                {/* eslint-disable-next-line @next/next/no-img-element -- static generated architecture asset is served by the current runtime */}
+                <img
+                  alt="Flow จาก Excel ผ่าน ETL, PII-free CSV, Neon PostgreSQL, Fact และ Dimension, Data Mart ไปยัง Dashboard"
+                  src="/technical-data-architecture-flow.png"
+                />
+                <figcaption>
+                  ข้อมูลจะถูกทำให้สะอาด ปลอด PII และมีโครงสร้างมากขึ้นในแต่ละชั้น ก่อนกลายเป็นข้อมูลพร้อมตัดสินใจบน Dashboard
+                </figcaption>
+              </figure>
+              <div className="technical-stage-grid">
+                {[
+                  ["01", "Excel", "Source", "ไฟล์รับสมัครต้นทางระดับผู้สมัคร ใช้เป็นหลักฐานดิบและยังมี PII"],
+                  ["02", "ETL", "Transform", "อ่าน ทำความสะอาด normalize, deduplicate และ aggregate ข้อมูล"],
+                  ["03", "PII-free CSV", "Privacy boundary", "เก็บเฉพาะข้อมูลสรุป โดยไม่ส่งชื่อ เลขบัตร โทรศัพท์ หรืออีเมลออกจาก source"],
+                  ["04", "Neon PostgreSQL", "Warehouse storage", "รวมข้อมูลใน schema admissions_dw เพื่อ query, audit และรันซ้ำได้"],
+                  ["05", "Fact + Dimension", "Core model", "แยกค่าที่วัดได้ออกจากมิติ ปี รอบ สาขา และสถานะ พร้อมกำหนด grain"],
+                  ["06", "Data Mart", "Decision layer", "สรุป metric ตามคำถาม เช่น year summary, conversion และ round efficiency"],
+                  ["07", "Dashboard", "Presentation", "แสดงข้อมูลจาก governed mart ผ่าน server-side loader โดย UI ไม่เป็นแหล่งเก็บตัวเลข"],
+                ].map(([number, title, layer, copy]) => (
+                  <section key={number}>
+                    <span>{number}</span>
+                    <div>
+                      <small>{layer}</small>
+                      <strong>{title}</strong>
+                      <p>{copy}</p>
+                    </div>
+                  </section>
+                ))}
+              </div>
+            </article>
+
+            <article className="panel technical-hierarchy-panel">
+              <div className="panel-title">
+                <div>
+                  <p className="technical-kicker">Layered system view</p>
+                  <h2>Data Hierarchy</h2>
+                </div>
+                <span className="mini-pill">5 levels</span>
+              </div>
+              <p className="technical-hierarchy-intro">
+                แต่ละชั้นใช้ผลลัพธ์ที่ผ่านการควบคุมจากชั้นด้านล่าง ทำให้แยกหน้าที่ ตรวจสอบ lineage และเปลี่ยนแปลงระบบได้โดยไม่ผูกทุกส่วนเข้าด้วยกัน
+              </p>
+              <ol className="technical-hierarchy" aria-label="Data platform hierarchy from presentation to source">
+                {([
+                  ["05", "Presentation", "Decision experience", ["Dashboard", "Insights", "Reports"]],
+                  ["04", "Semantic", "Business-ready metrics", ["Executive mart", "Major conversion", "Decision insights"]],
+                  ["03", "Warehouse", "Governed dimensional model", ["Fact tables", "Conformed dimensions", "Quality & lineage"]],
+                  ["02", "Integration", "Clean and privacy-safe data", ["ETL", "Normalized staging", "PII boundary"]],
+                  ["01", "Source", "Owned raw evidence", ["Admissions Excel", "GA4 aggregate reports"]],
+                ] as const).map(([level, title, description, items]) => (
+                  <li className={`technical-hierarchy-level level-${level}`} key={level}>
+                    <span className="technical-hierarchy-number">L{level}</span>
+                    <div className="technical-hierarchy-copy">
+                      <strong>{title}</strong>
+                      <small>{description}</small>
+                    </div>
+                    <div className="technical-hierarchy-items">
+                      {items.map((item) => <span key={item}>{item}</span>)}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              <div className="technical-drilldown" aria-label="Admissions analytical drill-down hierarchy">
+                <strong>Analytical drill-down</strong>
+                <div>
+                  {[
+                    ["01", "Academic Year"],
+                    ["02", "TCAS Round"],
+                    ["03", "Faculty / Major"],
+                    ["04", "Applicant Status"],
+                  ].map(([number, label]) => (
+                    <span key={number}><b>{number}</b>{label}</span>
+                  ))}
+                </div>
+              </div>
+            </article>
+
+            <article className="panel technical-runtime-panel">
+              <div className="panel-title">
+                <h2>Production Runtime</h2>
+                <span className={`health-status ${warehouseHealth.status}`}>{warehouseHealth.status}</span>
+              </div>
+              <div className="runtime-paths">
+                <section>
+                  <span>Primary</span>
+                  <strong>Server-side Neon query</strong>
+                  <code>DATABASE_URL → adapter → admissions_dw marts</code>
+                  <p>Credential อยู่ฝั่ง Server และไม่ถูกส่งไปยัง Browser</p>
+                </section>
+                <section>
+                  <span>Fallback</span>
+                  <strong>Generated warehouse artifact</strong>
+                  <code>query results → validated JSON → Dashboard</code>
+                  <p>ใช้เมื่อ live query ไม่พร้อม โดยยังคง trace กลับไปยัง query contract ได้</p>
+                </section>
+              </div>
+            </article>
+
+            <article className="panel technical-evidence-panel">
+              <div className="panel-title">
+                <h2>Current Technical Evidence</h2>
+                <span className="mini-pill">warehouse snapshot</span>
+              </div>
+              <dl>
+                <div><dt>Source rows</dt><dd>{formatNumber(warehouseSnapshot.sourceRows)}</dd></div>
+                <div><dt>Source files</dt><dd>{warehouseSnapshot.sourceFiles}</dd></div>
+                <div><dt>PII exported</dt><dd>{warehouseSnapshot.piiExportedColumns}</dd></div>
+                <div><dt>Lineage edges</dt><dd>{warehouseSnapshot.lineageEdges}</dd></div>
+              </dl>
+            </article>
+
+            <article className="panel technical-topics-panel">
+              <div className="panel-title">
+                <h2>Technical Talking Points</h2>
+                <span className="mini-pill">presentation ready</span>
+              </div>
+              <div className="technical-topic-list">
+                {[
+                  ["ETL & Privacy", "ใช้ applicant identifier เฉพาะใน memory เพื่อหา unique applicants แล้วตัด PII ก่อน export"],
+                  ["Star Schema & Grain", "Fact เก็บค่าที่วัดได้ ส่วน Dimension ทำให้ group ตามปี รอบ สาขา และสถานะได้สม่ำเสมอ"],
+                  ["Marts & Query Contract", "Dashboard ใช้ metric ที่นิยามจาก mart/view เดียวกัน จึงไม่คำนวณซ้ำใน UI"],
+                  ["Quality & Lineage", "ตรวจ missing values, source coverage, PII boundary และ trace จาก Dashboard กลับถึง source"],
+                  ["Repeatable Delivery", "Load แบบ upsert และทดสอบ data build, validation, static-data policy และ rendered output ก่อน publish"],
+                ].map(([title, copy], index) => (
+                  <section key={title}>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <div><strong>{title}</strong><p>{copy}</p></div>
+                  </section>
+                ))}
+              </div>
+            </article>
+          </section>
+        )}
 
         {showKpiStrip && (
           <section className="kpi-strip" aria-label="Key metrics">
@@ -335,7 +431,7 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
                 <span>ผู้สมัคร</span>
                 <span>ยืนยันสิทธิ์</span>
                 <span>อัตรา</span>
-                <span>Δ vs 2568</span>
+                <span>{isOverview ? "ประเภท" : "Δ เทียบปีก่อน"}</span>
               </div>
               {visibleMajors.map((major, index) => (
                 <div className="major-row" role="row" key={`${major.year}-${major.code}-${major.name}`}>
@@ -347,7 +443,9 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
                   </span>
                   <span>{formatNumber(major.confirmed)}</span>
                   <span>{major.rate.toFixed(2)}%</span>
-                  <span className={`change-chip ${deltaClass(major.applicantChange)}`}>{formatSigned(major.applicantChange)}</span>
+                  {isOverview
+                    ? <span>{major.type}</span>
+                    : <span className={`change-chip ${deltaClass(major.applicantChange)}`}>{formatSigned(major.applicantChange)}</span>}
                 </div>
               ))}
             </div>
@@ -393,7 +491,7 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
           {showRoundsPanel && (
           <article id="rounds" className="panel rounds-panel">
             <div className="panel-title">
-              <h2>ภาพรวม TCAS รอบ 1-4 ทุกปีที่โหลดเข้า warehouse</h2>
+              <h2>ภาพรวม TCAS รอบ 1-4 ปี {selectedYear}</h2>
               <span className="mini-pill">{visibleRounds.length} round rows</span>
             </div>
             <div className="round-table-wrap">
@@ -429,35 +527,6 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
           </article>
           )}
 
-          {showComparePanel && (
-          <article className="panel compare-panel">
-            <div className="panel-title">
-              <h2>เปรียบเทียบ TCAS ปี 2568 vs 2569</h2>
-            </div>
-            <div className="legend">
-              <span><i className="year-68" />2568</span>
-              <span><i className="year-69" />2569</span>
-            </div>
-            <div className="compare-summary" aria-label="Year over year summary">
-              {compareSummary.map(([label, value]) => (
-                <span key={label}>
-                  <strong>{label === "rate" ? `${value > 0 ? "+" : ""}${value.toFixed(2)} pts` : formatSigned(value)}</strong> {label}
-                </span>
-              ))}
-            </div>
-            <div className="compare-chart">
-              {compareMetrics.map(([label, first, second, max]) => (
-                <div className="chart-group" key={label}>
-                  <div className="bars">
-                    <span className="year-68" style={{ height: `${(Number(first) / Number(max)) * 100}%` }}><b>{typeof first === "number" && first < 100 ? `${first}%` : formatNumber(Number(first))}</b></span>
-                    <span className="year-69" style={{ height: `${(Number(second) / Number(max)) * 100}%` }}><b>{typeof second === "number" && second < 100 ? `${second}%` : formatNumber(Number(second))}</b></span>
-                  </div>
-                  <small>{label}</small>
-                </div>
-              ))}
-            </div>
-          </article>
-          )}
         </section>
         )}
 
