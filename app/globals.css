@@ -2241,42 +2241,160 @@ th {
   line-height: 1;
 }
 
-.comparison-kpis article {
+.comparison-kpis .kpi-trend-card {
   align-content: start;
-}
-
-.kpi-year-values {
-  display: grid;
-  gap: 5px;
-  margin: 2px 0;
-}
-
-.kpi-year-values > div {
-  display: flex;
   gap: 12px;
+  min-height: 270px;
+  padding: 18px;
+}
+
+.kpi-trend-header {
+  display: flex;
+  gap: 10px;
   align-items: center;
   justify-content: space-between;
 }
 
-.kpi-year-values span {
+.kpi-trend-header > span {
+  color: #676767;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.kpi-trend-header b {
   display: inline-flex;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
-  color: #6a6a6a;
-  font-size: 13px;
-  font-weight: 720;
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
 }
 
-.kpi-year-values span i {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+.kpi-trend-header b.up {
+  background: #eaf5e7;
+  color: #328044;
 }
 
-.kpi-year-values strong {
+.kpi-trend-header b.down {
+  background: #fff0ed;
+  color: #c3483e;
+}
+
+.kpi-trend-header b i {
+  font-size: 14px;
+  font-style: normal;
+}
+
+.kpi-latest-value {
+  display: grid;
+  gap: 3px;
+}
+
+.kpi-latest-value span {
+  color: #89837d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.kpi-latest-value strong {
   color: #1b1b1b;
-  font-size: 27px;
+  font-size: clamp(30px, 2.5vw, 39px);
   font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.kpi-sparkline-wrap {
+  min-width: 0;
+}
+
+.kpi-sparkline {
+  display: block;
+  width: 100%;
+  height: 70px;
+  overflow: visible;
+}
+
+.kpi-sparkline-baseline {
+  stroke: #ece4dc;
+  stroke-dasharray: 3 5;
+  stroke-width: 1;
+}
+
+.kpi-sparkline-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.kpi-sparkline-line.up {
+  stroke: #328044;
+}
+
+.kpi-sparkline-line.down {
+  stroke: #c3483e;
+}
+
+.kpi-sparkline-point {
+  fill: #fff;
+  stroke-width: 3;
+}
+
+.kpi-sparkline-point.up {
+  stroke: #328044;
+}
+
+.kpi-sparkline-point.down {
+  stroke: #c3483e;
+}
+
+.kpi-trend-years {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-top: -8px;
+  color: #8a847e;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.kpi-trend-years span {
+  display: grid;
+  gap: 1px;
+}
+
+.kpi-trend-years span:last-child {
+  text-align: right;
+}
+
+.kpi-trend-years strong {
+  color: #5f5b57;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-trend-card footer {
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+  padding-top: 10px;
+  border-top: 1px solid #eee6df;
+  font-size: 12px;
+}
+
+.kpi-trend-card footer strong {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-trend-card footer.up {
+  color: #328044;
+}
+
+.kpi-trend-card footer.down {
+  color: #c3483e;
 }
 
 .analytics-kpis small {

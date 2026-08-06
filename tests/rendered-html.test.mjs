@@ -86,6 +86,9 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.equal(dashboardResponse.status, 200);
   const dashboardHtml = await dashboardResponse.text();
   assert.match(dashboardHtml, /Admissions Analytics Dashboard/);
+  assert.match(dashboardHtml, /kpi-sparkline/);
+  assert.match(dashboardHtml, /แนวโน้ม/);
+  assert.match(dashboardHtml, /ปีล่าสุด/);
   assert.match(dashboardHtml, /Year Comparison/);
   assert.match(dashboardHtml, /Status &amp; Round Comparison/);
   assert.match(dashboardHtml, /vertical-round-chart/);

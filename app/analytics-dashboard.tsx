@@ -186,20 +186,59 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
         <section className={`analytics-kpis comparison-kpis ${hasManyYears ? "many-years" : ""}`} aria-label="ตัวชี้วัดเปรียบเทียบทุกปี">
           {comparisonKpis.map((kpi) => {
             const delta = yearDelta(kpi.key);
+            const values = sortedOverviews.map((overview) => overview[kpi.key]);
+            const firstValue = values[0] ?? 0;
+            const latestValue = values[values.length - 1] ?? 0;
+            const percentChange = firstValue === 0 ? 0 : (delta / firstValue) * 100;
+            const minimum = Math.min(...values);
+            const maximum = Math.max(...values);
+            const range = maximum - minimum || 1;
+            const trendPoints = values.map((value, index) => {
+              const x = values.length === 1 ? 110 : 12 + (index * 196) / (values.length - 1);
+              const y = maximum === minimum ? 35 : 55 - ((value - minimum) / range) * 38;
+              return { x, y, value, year: sortedOverviews[index]?.year };
+            });
+            const directionClass = delta >= 0 ? "up" : "down";
+            const directionLabel = delta > 0 ? "เพิ่มขึ้น" : delta < 0 ? "ลดลง" : "ทรงตัว";
             return (
-              <article key={kpi.label}>
-                <span>{kpi.label}</span>
-                <div className="kpi-year-values">
-                  {sortedOverviews.map((overview) => (
-                    <div key={overview.year}>
-                      <span><i style={{ background: colorForYear(overview.year, availableYears) }} />{overview.year}</span>
-                      <strong>{kpi.format(overview[kpi.key])}</strong>
-                    </div>
-                  ))}
+              <article className="kpi-trend-card" key={kpi.label}>
+                <header className="kpi-trend-header">
+                  <span>{kpi.label}</span>
+                  <b className={directionClass} aria-label={`แนวโน้ม${directionLabel}`}>
+                    <i aria-hidden="true">{delta > 0 ? "↗" : delta < 0 ? "↘" : "→"}</i>
+                    {directionLabel}
+                  </b>
+                </header>
+                <div className="kpi-latest-value">
+                  <span>ปีล่าสุด {lastYear}</span>
+                  <strong>{kpi.format(latestValue)}</strong>
                 </div>
-                <small className={delta >= 0 ? "up" : "down"}>
-                  {delta > 0 ? "+" : ""}{kpi.key === "rate" ? `${delta.toFixed(2)} จุด` : formatNumber(delta)} จาก {firstYear} ถึง {lastYear}
-                </small>
+                <div className="kpi-sparkline-wrap">
+                  <svg className="kpi-sparkline" viewBox="0 0 220 70" role="img" aria-label={`แนวโน้ม${kpi.label}ตั้งแต่ปี ${firstYear} ถึง ${lastYear}`}>
+                    <line className="kpi-sparkline-baseline" x1="12" y1="55" x2="208" y2="55" />
+                    <polyline
+                      className={`kpi-sparkline-line ${directionClass}`}
+                      points={trendPoints.map((point) => `${point.x},${point.y}`).join(" ")}
+                    />
+                    {trendPoints.map((point) => (
+                      <circle
+                        className={`kpi-sparkline-point ${directionClass}`}
+                        cx={point.x}
+                        cy={point.y}
+                        key={point.year}
+                        r="4"
+                      />
+                    ))}
+                  </svg>
+                  <div className="kpi-trend-years" aria-hidden="true">
+                    <span>{firstYear}<strong>{kpi.format(firstValue)}</strong></span>
+                    <span>{lastYear}<strong>{kpi.format(latestValue)}</strong></span>
+                  </div>
+                </div>
+                <footer className={directionClass}>
+                  <strong>{delta > 0 ? "+" : ""}{kpi.key === "rate" ? `${delta.toFixed(2)} จุด` : formatNumber(delta)}</strong>
+                  <span>{percentChange > 0 ? "+" : ""}{percentChange.toFixed(1)}% จากปี {firstYear}</span>
+                </footer>
               </article>
             );
           })}
