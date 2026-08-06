@@ -72,6 +72,15 @@ const rounds = (await readTsv("round_overview.tsv")).map((row) => ({
   files: toNumber(row.source_files, "source_files"),
 }));
 
+const roundStatuses = (await readTsv("round_status_distribution.tsv")).map((row) => ({
+  year: toNumber(row.academic_year, "academic_year"),
+  code: row.tcas_round_code,
+  name: row.tcas_round_name,
+  label: row.status_label,
+  choices: toNumber(row.choices, "choices"),
+  applicants: toNumber(row.unique_applicants, "unique_applicants"),
+}));
+
 const qualityMetricDefinitions = (await readTsv("quality_scorecard.tsv")).map((row) => ({
   label: row.metric_name,
   value: row.metric_value,
@@ -178,6 +187,7 @@ const snapshot = {
   majorRows,
   statuses,
   rounds,
+  roundStatuses,
   qualityMetricDefinitions,
   dataCatalogRows,
   lineageEdges,

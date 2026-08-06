@@ -221,8 +221,8 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.doesNotMatch(page, /<option value=\{256[0-9]\}>/);
   assert.match(dashboardTypes, /export type Year = number/);
   assert.match(analyticsPage, /hasManyYears/);
-  assert.match(analyticsPage, /round-status-empty-state/);
-  assert.match(analyticsPage, /เลือก “ผู้สมัคร” หรือ “ยืนยันสิทธิ์”/);
+  assert.match(analyticsPage, /roundStatuses\.find/);
+  assert.match(analyticsPage, /status\.code === selectedRoundCode/);
   assert.match(analyticsPage, /data-year-count/);
   assert.match(styles, /analytics-chart-grid\.many-years/);
   assert.match(validator, /const academicYears/);

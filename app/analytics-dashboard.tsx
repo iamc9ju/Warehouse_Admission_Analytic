@@ -61,15 +61,18 @@ function radarPolygon(values: number[], radius = 112) {
 }
 
 export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: DashboardSnapshot }) {
-  const { majorRows, rounds, statuses, warehouseHealth, years } = snapshot;
+  const { majorRows, rounds, roundStatuses, statuses, warehouseHealth, years } = snapshot;
   const sortedOverviews = [...years].sort((first, second) => first.year - second.year);
   const availableYears = sortedOverviews.map((overview) => overview.year);
   const firstYear = availableYears[0];
   const lastYear = availableYears[availableYears.length - 1];
   const [analysisYear, setAnalysisYear] = useState<Year>(() => lastYear);
-  const statusLabels = Array.from(new Set(statuses.map((status) => status.label)));
+  const statusLabels = [
+    "ผู้สมัคร",
+    ...Array.from(new Set(roundStatuses.map((status) => status.label))).filter((label) => label !== "ผู้สมัคร"),
+  ];
   const roundCodes = Array.from(new Set(rounds.map((round) => round.code))).sort();
-  const defaultStatus = statusLabels.includes("ผู้สมัคร") ? "ผู้สมัคร" : statusLabels[0];
+  const defaultStatus = "ผู้สมัคร";
   const [selectedStatus, setSelectedStatus] = useState(() => defaultStatus);
   const [selectedRoundCode, setSelectedRoundCode] = useState(() => roundCodes[0]);
   const hasManyYears = availableYears.length > 4;
@@ -82,13 +85,17 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
   ] as const;
 
   const selectedRound = rounds.find((round) => round.code === selectedRoundCode);
-  const supportedRoundStatus = selectedStatus === "ผู้สมัคร" || selectedStatus === "ยืนยันสิทธิ์";
   const roundStatusValues = availableYears.map((year) => {
     const round = rounds.find((item) => item.year === year && item.code === selectedRoundCode);
-    if (!round || !supportedRoundStatus) return undefined;
-    return selectedStatus === "ผู้สมัคร" ? round.applicants : round.confirmed;
+    if (!round) return 0;
+    if (selectedStatus === "ผู้สมัคร") return round.applicants;
+    return roundStatuses.find((status) => (
+      status.year === year
+      && status.code === selectedRoundCode
+      && status.label === selectedStatus
+    ))?.choices ?? 0;
   });
-  const maxRoundChartValue = Math.max(...roundStatusValues.map((value) => value ?? 0), 1);
+  const maxRoundChartValue = Math.max(...roundStatusValues, 1);
 
   const majorGroups = [...groupRows(majorRows, (major) => `${major.code}-${major.name}`).entries()]
     .sort(([, firstRows], [, secondRows]) => (
@@ -251,37 +258,27 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
             <div className="vertical-round-chart" aria-label={`${selectedStatus} และ ${selectedRoundCode} เปรียบเทียบตามปี`}>
               <div className="vertical-chart-heading">
                 <strong>{selectedRoundCode} · {selectedRound?.name} — {selectedStatus}</strong>
-                <span>{supportedRoundStatus ? `${selectedStatus}ของรอบที่เลือก เปรียบเทียบตามปีการศึกษา` : "สถานะนี้ยังไม่มีข้อมูลแยกตามรอบในคลังข้อมูล"}</span>
+                <span>{selectedStatus}ของรอบที่เลือก เปรียบเทียบตามปีการศึกษา</span>
               </div>
-              {supportedRoundStatus ? (
-                <>
-                  <div className="vertical-series-legend" aria-label="คำอธิบายชุดข้อมูล">
-                    <span><i className="round-series" />{selectedRoundCode}: {selectedStatus}</span>
-                  </div>
-                  <div className="vertical-chart-plot">
-                    <div className="vertical-grid-lines" aria-hidden="true"><i /><i /><i /><i /></div>
-                    {availableYears.map((year, index) => {
-                      const value = roundStatusValues[index] ?? 0;
-                      const barHeight = Math.max((value / maxRoundChartValue) * 82, value > 0 ? 4 : 0);
-                      return (
-                        <div className="vertical-bar-column" key={year}>
-                          <div className="vertical-bar-track single-series">
-                            <strong style={{ bottom: `calc(${barHeight}% + 7px)` }}>{formatNumber(value)}</strong>
-                            <i style={{ height: `${barHeight}%`, background: "#477ca8" }} />
-                          </div>
-                          <span>{year}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              ) : (
-                <div className="round-status-empty-state" role="status">
-                  <strong>ยังแสดงตัวเลขไม่ได้</strong>
-                  <p>คลังข้อมูลปัจจุบันมี “{selectedStatus}” ในระดับปี แต่ยังไม่มีรายละเอียดแยกเป็น {selectedRoundCode}</p>
-                  <small>เลือก “ผู้สมัคร” หรือ “ยืนยันสิทธิ์” เพื่อดูข้อมูลที่แยกตามรอบได้</small>
-                </div>
-              )}
+              <div className="vertical-series-legend" aria-label="คำอธิบายชุดข้อมูล">
+                <span><i className="round-series" />{selectedRoundCode}: {selectedStatus}</span>
+              </div>
+              <div className="vertical-chart-plot">
+                <div className="vertical-grid-lines" aria-hidden="true"><i /><i /><i /><i /></div>
+                {availableYears.map((year, index) => {
+                  const value = roundStatusValues[index];
+                  const barHeight = Math.max((value / maxRoundChartValue) * 82, value > 0 ? 4 : 0);
+                  return (
+                    <div className="vertical-bar-column" key={year}>
+                      <div className="vertical-bar-track single-series">
+                        <strong style={{ bottom: `calc(${barHeight}% + 7px)` }}>{formatNumber(value)}</strong>
+                        <i style={{ height: `${barHeight}%`, background: "#477ca8" }} />
+                      </div>
+                      <span>{year}</span>
+                    </div>
+                  );
+                })}
+              </div>
               <div className="vertical-chart-footer"><span>ปีการศึกษา</span><small>หน่วย: คน/รายการตามระดับข้อมูลในคลัง</small></div>
             </div>
           </article>

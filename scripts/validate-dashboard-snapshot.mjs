@@ -12,6 +12,7 @@ function assert(condition, message) {
 
 const years = snapshot.years;
 const rounds = snapshot.rounds;
+const roundStatuses = snapshot.roundStatuses;
 const quality = snapshot.qualityMetricDefinitions;
 const catalog = snapshot.dataCatalogRows;
 const lineage = snapshot.lineageEdges;
@@ -27,6 +28,7 @@ assert(snapshot.warehouseSnapshot.piiExportedColumns === 0, "PII columns must ne
 assert(snapshot.warehouseSnapshot.sourceRows > 0, "source row count must be greater than zero");
 assert(years.length > 0, "expected at least one academic year row");
 assert(rounds.length >= years.length * 4, "expected TCAS1-4 rows for every academic year");
+assert(roundStatuses.length > 0, "expected status rows split by academic year and TCAS round");
 assert(catalog.length === snapshot.warehouseSnapshot.catalogRows, "catalog row count mismatch");
 assert(lineage.length === snapshot.warehouseSnapshot.lineageEdges, "lineage edge count mismatch");
 assert(quality.some((metric) => metric.label === "Missing score" && metric.value === "0"), "missing score quality metric must be zero");
@@ -52,6 +54,12 @@ for (const round of ["TCAS1", "TCAS2", "TCAS3", "TCAS4"]) {
   for (const year of academicYears) {
     assert(rounds.some((row) => row.year === year && row.code === round), `missing ${year} ${round}`);
   }
+}
+
+for (const status of roundStatuses) {
+  assert(academicYears.includes(status.year), `unexpected round status year ${status.year}`);
+  assert(["TCAS1", "TCAS2", "TCAS3", "TCAS4"].includes(status.code), `unexpected round status code ${status.code}`);
+  assert(status.label && status.choices >= 0 && status.applicants >= 0, "invalid round status row");
 }
 
 const questionIds = new Set(businessQuestions.map((question) => question.id));

@@ -1,5 +1,5 @@
 import artifactSnapshot from "./generated/warehouse-dashboard-snapshot.json";
-import type { DashboardSnapshot, MajorRow, RoundRow, StatusRow, YearOverview } from "./dashboard-types";
+import type { DashboardSnapshot, MajorRow, RoundRow, RoundStatusRow, StatusRow, YearOverview } from "./dashboard-types";
 
 type QueryClient = {
   query<T extends Record<string, unknown>>(sql: string): Promise<{ rows: T[] }>;
@@ -108,7 +108,7 @@ export async function loadLiveNeonSnapshot(databaseUrl: string): Promise<Dashboa
       `),
     ]);
 
-    const [businessQuestionRows, insightRows, healthRows, decisionMartRows] = await Promise.all([
+    const [businessQuestionRows, insightRows, healthRows, decisionMartRows, roundStatusRows] = await Promise.all([
       optionalQuery(client, `
         select question_id, domain, question, mart_object, metrics, decision_owner, decision_use, quality_gate
         from admissions_dw.dw_business_question_catalog
@@ -131,6 +131,11 @@ export async function loadLiveNeonSnapshot(databaseUrl: string): Promise<Dashboa
         select mart_object, grain, source_objects, purpose
         from admissions_dw.dw_decision_mart_contract
         order by mart_object
+      `),
+      optionalQuery(client, `
+        select academic_year, tcas_round_code, tcas_round_name, tcas_status, application_choices, unique_applicants
+        from admissions_dw.vw_admission_round_status_distribution
+        order by academic_year, tcas_round_code, tcas_status
       `),
     ]);
 
@@ -195,6 +200,16 @@ export async function loadLiveNeonSnapshot(databaseUrl: string): Promise<Dashboa
       rounds,
       majorRows,
       statuses,
+      roundStatuses: roundStatusRows
+        ? roundStatusRows.map((row) => ({
+          year: numberValue(row.academic_year, "academic_year") as RoundStatusRow["year"],
+          code: String(row.tcas_round_code),
+          name: String(row.tcas_round_name),
+          label: String(row.tcas_status),
+          choices: numberValue(row.application_choices, "application_choices"),
+          applicants: numberValue(row.unique_applicants, "unique_applicants"),
+        }))
+        : fallback.roundStatuses,
       qualityMetricDefinitions: enrichQualityMetrics(qualityResult.rows, fallback.qualityMetricDefinitions),
       businessQuestions: businessQuestionRows
         ? businessQuestionRows.map((row) => ({

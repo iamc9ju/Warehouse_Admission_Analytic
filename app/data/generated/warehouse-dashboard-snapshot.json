@@ -465,6 +465,392 @@
       "files": 1
     }
   ],
+  "roundStatuses": [
+    {
+      "year": 2568,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ยืนยันที่อื่นแล้ว",
+      "choices": 170,
+      "applicants": 170
+    },
+    {
+      "year": 2568,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ยืนยันสิทธิ์",
+      "choices": 191,
+      "applicants": 191
+    },
+    {
+      "year": 2568,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "สละสิทธิ์",
+      "choices": 1,
+      "applicants": 1
+    },
+    {
+      "year": 2568,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "สละสิทธิ์ในรอบ 2",
+      "choices": 8,
+      "applicants": 8
+    },
+    {
+      "year": 2568,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ไม่ผ่านการคัดเลือก",
+      "choices": 988,
+      "applicants": 943
+    },
+    {
+      "year": 2568,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ไม่เข้าระบบมาดำเนินการใดๆ",
+      "choices": 22,
+      "applicants": 22
+    },
+    {
+      "year": 2568,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ไม่ใช้สิทธิ์",
+      "choices": 5,
+      "applicants": 5
+    },
+    {
+      "year": 2568,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ยืนยันที่อื่นแล้ว",
+      "choices": 17,
+      "applicants": 17
+    },
+    {
+      "year": 2568,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ยืนยันสิทธิ์",
+      "choices": 112,
+      "applicants": 112
+    },
+    {
+      "year": 2568,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "สละสิทธิ์",
+      "choices": 1,
+      "applicants": 1
+    },
+    {
+      "year": 2568,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ไม่ผ่านการคัดเลือก",
+      "choices": 372,
+      "applicants": 372
+    },
+    {
+      "year": 2568,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ไม่เข้าระบบมาดำเนินการใดๆ",
+      "choices": 8,
+      "applicants": 8
+    },
+    {
+      "year": 2568,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ไม่ใช้สิทธิ์",
+      "choices": 9,
+      "applicants": 9
+    },
+    {
+      "year": 2568,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ผู้สมัคร",
+      "choices": 400,
+      "applicants": 315
+    },
+    {
+      "year": 2568,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2",
+      "choices": 1,
+      "applicants": 1
+    },
+    {
+      "year": 2568,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ผ่านการคัดเลือกในลำดับที่ดีกว่า",
+      "choices": 1097,
+      "applicants": 862
+    },
+    {
+      "year": 2568,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ยืนยันสิทธิ์",
+      "choices": 214,
+      "applicants": 214
+    },
+    {
+      "year": 2568,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "สละสิทธิ์",
+      "choices": 22,
+      "applicants": 22
+    },
+    {
+      "year": 2568,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ไม่ผ่านการคัดเลือก",
+      "choices": 971,
+      "applicants": 667
+    },
+    {
+      "year": 2568,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ไม่เข้าระบบมาดำเนินการใดๆ",
+      "choices": 4,
+      "applicants": 4
+    },
+    {
+      "year": 2568,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ไม่ใช้สิทธิ์",
+      "choices": 2,
+      "applicants": 2
+    },
+    {
+      "year": 2568,
+      "code": "TCAS4",
+      "name": "Direct Admission",
+      "label": "ผ่านการคัดเลือก",
+      "choices": 1,
+      "applicants": 1
+    },
+    {
+      "year": 2568,
+      "code": "TCAS4",
+      "name": "Direct Admission",
+      "label": "ยืนยันที่อื่นแล้ว",
+      "choices": 4,
+      "applicants": 4
+    },
+    {
+      "year": 2568,
+      "code": "TCAS4",
+      "name": "Direct Admission",
+      "label": "ยืนยันสิทธิ์",
+      "choices": 11,
+      "applicants": 11
+    },
+    {
+      "year": 2568,
+      "code": "TCAS4",
+      "name": "Direct Admission",
+      "label": "ไม่ผ่านการคัดเลือก",
+      "choices": 220,
+      "applicants": 220
+    },
+    {
+      "year": 2568,
+      "code": "TCAS4",
+      "name": "Direct Admission",
+      "label": "ไม่ใช้สิทธิ์",
+      "choices": 2,
+      "applicants": 2
+    },
+    {
+      "year": 2569,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ยืนยันที่อื่นแล้ว",
+      "choices": 187,
+      "applicants": 187
+    },
+    {
+      "year": 2569,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ยืนยันสิทธิ์",
+      "choices": 163,
+      "applicants": 163
+    },
+    {
+      "year": 2569,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "สละสิทธิ์ในรอบ 2",
+      "choices": 6,
+      "applicants": 6
+    },
+    {
+      "year": 2569,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ไม่ผ่านการคัดเลือก",
+      "choices": 1012,
+      "applicants": 957
+    },
+    {
+      "year": 2569,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ไม่เข้าระบบมาดำเนินการใดๆ",
+      "choices": 9,
+      "applicants": 9
+    },
+    {
+      "year": 2569,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ไม่ใช้สิทธิ์",
+      "choices": 14,
+      "applicants": 14
+    },
+    {
+      "year": 2569,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ยืนยันที่อื่นแล้ว",
+      "choices": 18,
+      "applicants": 18
+    },
+    {
+      "year": 2569,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ยืนยันสิทธิ์",
+      "choices": 90,
+      "applicants": 90
+    },
+    {
+      "year": 2569,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ไม่ผ่านการคัดเลือก",
+      "choices": 490,
+      "applicants": 490
+    },
+    {
+      "year": 2569,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ไม่เข้าระบบมาดำเนินการใดๆ",
+      "choices": 5,
+      "applicants": 5
+    },
+    {
+      "year": 2569,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ไม่ใช้สิทธิ์",
+      "choices": 11,
+      "applicants": 11
+    },
+    {
+      "year": 2569,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2",
+      "choices": 1,
+      "applicants": 1
+    },
+    {
+      "year": 2569,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ผ่านการคัดเลือกในลำดับที่ดีกว่า",
+      "choices": 1191,
+      "applicants": 896
+    },
+    {
+      "year": 2569,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ยืนยันสิทธิ์",
+      "choices": 283,
+      "applicants": 283
+    },
+    {
+      "year": 2569,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "สละสิทธิ์",
+      "choices": 26,
+      "applicants": 26
+    },
+    {
+      "year": 2569,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ไม่ผ่านการคัดเลือก",
+      "choices": 870,
+      "applicants": 637
+    },
+    {
+      "year": 2569,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ไม่เข้าระบบมาดำเนินการใดๆ",
+      "choices": 3,
+      "applicants": 3
+    },
+    {
+      "year": 2569,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ไม่ใช้สิทธิ์",
+      "choices": 5,
+      "applicants": 5
+    },
+    {
+      "year": 2569,
+      "code": "TCAS4",
+      "name": "Direct Admission",
+      "label": "ยืนยันที่อื่นแล้ว",
+      "choices": 5,
+      "applicants": 5
+    },
+    {
+      "year": 2569,
+      "code": "TCAS4",
+      "name": "Direct Admission",
+      "label": "ยืนยันสิทธิ์",
+      "choices": 9,
+      "applicants": 9
+    },
+    {
+      "year": 2569,
+      "code": "TCAS4",
+      "name": "Direct Admission",
+      "label": "ไม่ผ่านการคัดเลือก",
+      "choices": 180,
+      "applicants": 180
+    },
+    {
+      "year": 2569,
+      "code": "TCAS4",
+      "name": "Direct Admission",
+      "label": "ไม่เข้าระบบมาดำเนินการใดๆ",
+      "choices": 1,
+      "applicants": 1
+    }
+  ],
   "qualityMetricDefinitions": [
     {
       "label": "Source rows",
