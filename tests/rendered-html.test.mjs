@@ -91,7 +91,9 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.match(dashboardHtml, /vertical-round-chart/);
   assert.match(dashboardHtml, /TCAS Status/);
   assert.match(dashboardHtml, /TCAS Round/);
-  assert.match(dashboardHtml, /vertical-bar-pair/);
+  assert.match(dashboardHtml, /single-series/);
+  assert.match(dashboardHtml, /1,320/);
+  assert.match(dashboardHtml, /1,324/);
   assert.doesNotMatch(dashboardHtml, /Opportunity Matrix|Block Quadrant/);
   assert.match(dashboardHtml, /6-axis Radar Profile/);
   assert.match(dashboardHtml, /Status Distribution/);
@@ -219,6 +221,8 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.doesNotMatch(page, /<option value=\{256[0-9]\}>/);
   assert.match(dashboardTypes, /export type Year = number/);
   assert.match(analyticsPage, /hasManyYears/);
+  assert.match(analyticsPage, /round-status-empty-state/);
+  assert.match(analyticsPage, /เลือก “ผู้สมัคร” หรือ “ยืนยันสิทธิ์”/);
   assert.match(analyticsPage, /data-year-count/);
   assert.match(styles, /analytics-chart-grid\.many-years/);
   assert.match(validator, /const academicYears/);

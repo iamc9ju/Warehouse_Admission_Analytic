@@ -82,13 +82,13 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
   ] as const;
 
   const selectedRound = rounds.find((round) => round.code === selectedRoundCode);
-  const statusChartValues = availableYears.map((year) => (
-    statuses.find((status) => status.year === year && status.label === selectedStatus)?.choices ?? 0
-  ));
-  const roundChartValues = availableYears.map((year) => (
-    rounds.find((round) => round.year === year && round.code === selectedRoundCode)?.applicants ?? 0
-  ));
-  const maxRoundChartValue = Math.max(...statusChartValues, ...roundChartValues, 1);
+  const supportedRoundStatus = selectedStatus === "ผู้สมัคร" || selectedStatus === "ยืนยันสิทธิ์";
+  const roundStatusValues = availableYears.map((year) => {
+    const round = rounds.find((item) => item.year === year && item.code === selectedRoundCode);
+    if (!round || !supportedRoundStatus) return undefined;
+    return selectedStatus === "ผู้สมัคร" ? round.applicants : round.confirmed;
+  });
+  const maxRoundChartValue = Math.max(...roundStatusValues.map((value) => value ?? 0), 1);
 
   const majorGroups = [...groupRows(majorRows, (major) => `${major.code}-${major.name}`).entries()]
     .sort(([, firstRows], [, secondRows]) => (
@@ -250,38 +250,38 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
             </header>
             <div className="vertical-round-chart" aria-label={`${selectedStatus} และ ${selectedRoundCode} เปรียบเทียบตามปี`}>
               <div className="vertical-chart-heading">
-                <strong>{selectedStatus} × {selectedRoundCode} · {selectedRound?.name}</strong>
-                <span>เปรียบเทียบจำนวนรายการตามสถานะ กับผู้สมัครไม่ซ้ำของรอบที่เลือก</span>
+                <strong>{selectedRoundCode} · {selectedRound?.name} — {selectedStatus}</strong>
+                <span>{supportedRoundStatus ? `${selectedStatus}ของรอบที่เลือก เปรียบเทียบตามปีการศึกษา` : "สถานะนี้ยังไม่มีข้อมูลแยกตามรอบในคลังข้อมูล"}</span>
               </div>
-              <div className="vertical-series-legend" aria-label="คำอธิบายชุดข้อมูล">
-                <span><i className="status-series" />Status: {selectedStatus}</span>
-                <span><i className="round-series" />Round: {selectedRoundCode}</span>
-              </div>
-              <div className="vertical-chart-plot">
-                <div className="vertical-grid-lines" aria-hidden="true"><i /><i /><i /><i /></div>
-                {availableYears.map((year, index) => {
-                  const series = [
-                    { key: "status", value: statusChartValues[index], color: "#c56100" },
-                    { key: "round", value: roundChartValues[index], color: "#477ca8" },
-                  ];
-                  return (
-                    <div className="vertical-bar-column" key={year}>
-                      <div className="vertical-bar-pair">
-                        {series.map(({ key, value, color }) => {
-                          const barHeight = Math.max((value / maxRoundChartValue) * 82, value > 0 ? 4 : 0);
-                          return (
-                            <div className="vertical-bar-track" key={key}>
-                              <strong style={{ bottom: `calc(${barHeight}% + 7px)` }}>{formatNumber(value)}</strong>
-                              <i style={{ height: `${barHeight}%`, background: color }} />
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <span>{year}</span>
-                    </div>
-                  );
-                })}
-              </div>
+              {supportedRoundStatus ? (
+                <>
+                  <div className="vertical-series-legend" aria-label="คำอธิบายชุดข้อมูล">
+                    <span><i className="round-series" />{selectedRoundCode}: {selectedStatus}</span>
+                  </div>
+                  <div className="vertical-chart-plot">
+                    <div className="vertical-grid-lines" aria-hidden="true"><i /><i /><i /><i /></div>
+                    {availableYears.map((year, index) => {
+                      const value = roundStatusValues[index] ?? 0;
+                      const barHeight = Math.max((value / maxRoundChartValue) * 82, value > 0 ? 4 : 0);
+                      return (
+                        <div className="vertical-bar-column" key={year}>
+                          <div className="vertical-bar-track single-series">
+                            <strong style={{ bottom: `calc(${barHeight}% + 7px)` }}>{formatNumber(value)}</strong>
+                            <i style={{ height: `${barHeight}%`, background: "#477ca8" }} />
+                          </div>
+                          <span>{year}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div className="round-status-empty-state" role="status">
+                  <strong>ยังแสดงตัวเลขไม่ได้</strong>
+                  <p>คลังข้อมูลปัจจุบันมี “{selectedStatus}” ในระดับปี แต่ยังไม่มีรายละเอียดแยกเป็น {selectedRoundCode}</p>
+                  <small>เลือก “ผู้สมัคร” หรือ “ยืนยันสิทธิ์” เพื่อดูข้อมูลที่แยกตามรอบได้</small>
+                </div>
+              )}
               <div className="vertical-chart-footer"><span>ปีการศึกษา</span><small>หน่วย: คน/รายการตามระดับข้อมูลในคลัง</small></div>
             </div>
           </article>
