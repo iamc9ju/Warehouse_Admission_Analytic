@@ -2456,14 +2456,21 @@ th {
 .round-chart-filters {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
   gap: 9px;
   width: 100%;
+  flex: 1.4 1 460px;
 }
 
 .round-performance-card > header {
-  display: grid;
-  gap: 14px;
-  align-items: start;
+  display: flex;
+  gap: 18px;
+  align-items: end;
+}
+
+.round-performance-card > header > div:first-child {
+  min-width: 220px;
+  flex: 1 1 285px;
 }
 
 .round-chart-select > span {
