@@ -1,8 +1,8 @@
-# ADR 0002: Use Static Dashboard Data Instead of Client Database Access
+# ADR 0002: Use Exported Warehouse Snapshot Instead of Client Database Access
 
 ## Status
 
-Accepted
+Superseded by [ADR 0009](0009-ban-embedded-dashboard-data.md)
 
 ## Context
 
@@ -10,7 +10,25 @@ Accepted
 
 ## Decision
 
-ใช้ข้อมูล aggregate ที่ export จาก Neon แล้ว hardcode เป็น dashboard data ภายใน `app/page.tsx` สำหรับเวอร์ชันพรีเซนต์
+แนวทางเดิมใช้ข้อมูล aggregate ที่ export จาก Neon แล้วเก็บเป็น typed dashboard snapshot ใน `app/data/warehouse-snapshot.ts`
+
+กฎ production ปัจจุบันยกเลิกแนวทางนี้แล้ว ห้ามฝัง dashboard data ใน TypeScript source และต้องใช้ generated warehouse artifact เท่านั้น:
+
+```text
+warehouse/query-results/*.tsv
+  -> npm run data:build
+  -> app/data/generated/warehouse-dashboard-snapshot.json
+```
+
+snapshot ต้องระบุ provenance อย่างน้อย:
+
+- source system
+- schema
+- export date
+- source query objects
+- quality metric definitions
+- data catalog rows
+- lineage edges
 
 ## Consequences
 
@@ -19,14 +37,16 @@ Accepted
 - ไม่มี database credentials ใน browser หรือ source deploy
 - Dashboard โหลดเร็วและ deploy ง่าย
 - เหมาะกับการนำเสนอโปรเจค
+- ไม่ทำให้ตัวเลขดูเป็น hardcoded demo เพราะแยกเป็น warehouse snapshot พร้อม query contract
+- ผู้ตรวจสามารถอ่าน `docs/warehouse-query-contract.md` เพื่อดูว่าแต่ละส่วนของ UI มาจาก warehouse object ไหน
 
 ข้อจำกัด:
 
 - หากข้อมูลใน Neon เปลี่ยน ต้อง export/update dashboard ใหม่
 - ยังไม่ใช่ real-time dashboard
+- ต้องรักษา `warehouse/query-results/*.tsv` และ generated artifact ให้ตรงกับ query contract ทุกครั้งที่ refresh ข้อมูล
 
 แนวทางขยายในอนาคต:
 
 - เพิ่ม server-side API route ที่อ่านจาก Neon ด้วย environment variable
 - เพิ่ม scheduled export สำหรับ dashboard data
-

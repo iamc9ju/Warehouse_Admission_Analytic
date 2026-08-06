@@ -1,0 +1,8 @@
+dataset	layer	grain	evidence	sensitivity
+admissions_excel_files	Source	source_file + year + round	11 files / 9,432 rows	PII at source only
+processed_admissions_aggregates	Staging	year + round + major/status	PII-free CSV aggregates	No PII
+fact_admission_year_overview	Core fact	academic_year	2 rows	No PII
+fact_admission_round_overview	Core fact	academic_year + tcas_round	8 rows	No PII
+fact_admission_round_major_summary	Core fact	academic_year + major	20 displayed rows	No PII
+admission_round_source_data_quality	Quality fact	source_file	11 quality records	No PII
+mart_admissions_executive_summary	Presentation mart	academic_year	dashboard-ready	No PII

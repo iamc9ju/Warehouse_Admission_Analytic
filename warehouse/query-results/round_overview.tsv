@@ -1,0 +1,9 @@
+academic_year	tcas_round_code	tcas_round_name	choices	unique_applicants	confirmed_applicants	confirmed_rate	source_files
+2568	TCAS1	Portfolio	1385	1320	191	14.47	2
+2568	TCAS2	Quota	519	518	112	21.62	2
+2568	TCAS3	Admission	2711	1810	214	11.82	1
+2568	TCAS4	Direct Admission	238	238	11	4.62	1
+2569	TCAS1	Portfolio	1391	1324	163	12.31	1
+2569	TCAS2	Quota	614	614	90	14.66	2
+2569	TCAS3	Admission	2379	1620	283	17.47	1
+2569	TCAS4	Direct Admission	195	195	9	4.62	1

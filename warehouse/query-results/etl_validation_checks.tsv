@@ -1,0 +1,7 @@
+check_name	evidence	result
+Row reconciliation	9,432 source rows read from 11 files	pass
+PII boundary	0 exported PII columns in processed CSV, Neon facts and dashboard artifact	pass
+Major mapping	0 missing major rows before major fact load	pass
+Score completeness	0 missing score rows in active snapshot	pass
+Round coverage	TCAS1-4 represented for both 2568 and 2569	pass
+Social exclusion	0 social media source groups in active warehouse scope	pass

@@ -1,0 +1,2 @@
+health_id	status	last_refresh_at	freshness_sla_hours	source_rows	source_files	mart_count	quality_checks_passed	quality_checks_failed	pii_exported_columns	artifact_checksum	notes
+WH-001	pass	2026-07-21T14:00:00+07:00	168	9432	11	5	6	0	0	warehouse-dashboard-snapshot-json-local	Generated artifact reconciles to active admissions warehouse query results

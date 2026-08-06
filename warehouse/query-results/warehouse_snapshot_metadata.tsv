@@ -1,0 +1,2 @@
+exported_at	source_system	schema	dashboard_mode	source_rows	active_source_groups	source_files	catalog_rows	lineage_edges	pii_exported_columns	source_query
+2026-07-21	Neon PostgreSQL	admissions_dw	generated warehouse mart artifact	9432	1	11	7	7	0	mart_admissions_executive_summary + mart_major_conversion + vw_admission_round_overview

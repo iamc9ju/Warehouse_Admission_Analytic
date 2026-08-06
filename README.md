@@ -23,6 +23,7 @@ Excel files
   -> Neon PostgreSQL schema admissions_dw
   -> dimensional facts, analytics views and marts
   -> markdown report
+  -> generated dashboard artifact
   -> web dashboard
 ```
 
@@ -42,7 +43,7 @@ core facts and dimensions
   -> dataset catalog + lineage + refresh log
   -> data quality scorecard
   -> presentation marts
-  -> dashboard warehouse architecture section
+  -> exported dashboard snapshot with query contract
 ```
 
 ---
@@ -72,8 +73,20 @@ Allowed sources:
 | Path | Purpose |
 |---|---|
 | `PROJECT_DOCUMENTATION.md` | Full project documentation, limitations and runbook |
+| `docs/data-warehouse-evidence.md` | Evidence pack for source scope, lineage, ETL validation, quality metrics and limitations |
+| `docs/business-questions.md` | Business questions mapped to decision marts, metrics and actions |
+| `docs/production-review-report.md` | Production review report for architecture, scope, quality gates and limitations |
+| `docs/production-data-warehouse-runbook.md` | Production refresh, validation and runtime runbook |
+| `docs/warehouse-query-contract.md` | SQL query contract for exporting dashboard snapshot from warehouse marts/views |
+| `docs/data-quality-metrics.md` | Data quality metric definitions, source objects and validation rules |
 | `docs/decisions/` | Architecture decision records |
-| `app/page.tsx` | Web dashboard content and data |
+| `warehouse/query-results/*.tsv` | Warehouse mart/query result exports used as the dashboard input contract |
+| `scripts/build-dashboard-snapshot.mjs` | Builds the dashboard artifact from warehouse query results |
+| `scripts/validate-dashboard-snapshot.mjs` | Validates row counts, PII boundary, source scope and mart coverage |
+| `scripts/check-no-embedded-dashboard-data.mjs` | Fails CI if dashboard data is embedded in app source |
+| `app/data/generated/warehouse-dashboard-snapshot.json` | Pipeline-generated dashboard artifact |
+| `app/data/load-dashboard-snapshot.ts` | Single route-level loader for dashboard data |
+| `app/dashboard-page.tsx` | Web dashboard UI and interactive route pages |
 | `app/globals.css` | Dashboard layout and styling |
 | `outputs/etl/aggregate_round3_admissions.py` | Aggregate Excel admissions files |
 | `outputs/etl/aggregate_admissions_all_rounds.py` | Aggregate TCAS round 1-4 Excel files without exporting PII |
@@ -88,7 +101,7 @@ Allowed sources:
 | `outputs/etl/apply_warehouse_governance_marts.cjs` | Idempotently apply base schemas plus governed mart layer to Neon |
 | `outputs/reports/` | Generated markdown analytics reports |
 
-`outputs/` is ignored by git because it contains generated artifacts and local deliverables.
+`outputs/` is ignored by git because it contains generated local deliverables. The committed dashboard must not embed data in UI code. It uses `warehouse/query-results/*.tsv` plus `npm run data:build` to generate `app/data/generated/warehouse-dashboard-snapshot.json`.
 
 ---
 
@@ -101,6 +114,20 @@ Allowed sources:
 | Confirmed applicants, TCAS1-4 | 528 | 545 | +17 |
 | Confirmed rate, cross-round | 14.68% | 15.83% | +1.15 pts |
 
+## Business Questions Answered
+
+The production dashboard maps 15 business questions into 5 decision domains:
+
+| Domain | Example decision mart |
+|---|---|
+| Demand | `mart_major_opportunity`, `mart_major_year_change` |
+| Conversion | `mart_status_friction` |
+| Round Strategy | `mart_round_efficiency` |
+| Program Portfolio | `mart_program_type_mix` |
+| Data Trust | `vw_dw_refresh_health`, `vw_dw_quality_scorecard` |
+
+The `/insights` route displays 12 decision-ready insights with executive priorities, category grouping, mart source, metric, recommended action, confidence and quality gate.
+
 ---
 
 ## Important Notes
@@ -110,6 +137,9 @@ Allowed sources:
 - Social media ingestion has been removed from the active project scope.
 - Website analytics support is limited to GA4 aggregate reports from an owned property.
 - Because there are only two academic years in the current dataset, correlation should be presented as a capability demo, not causal proof.
+- The dashboard is not allowed to contain embedded/static data in component source. It reads a pipeline-generated warehouse artifact so no database credentials are shipped to the browser.
+- In production, the server-side loader uses `DATABASE_URL` to query Neon marts first. If `DATABASE_URL` is missing or the live query fails, it falls back to the generated artifact.
+- The current grading evidence lives in `docs/data-warehouse-evidence.md`, `docs/warehouse-query-contract.md` and `docs/data-quality-metrics.md`.
 
 ---
 
@@ -123,9 +153,36 @@ Commands:
 
 ```bash
 npm install
+npm run data:build
+npm run data:validate
+npm run data:check-static
 npm run dev
 npm run build
 ```
+
+Full production-grade verification:
+
+```bash
+npm run lint
+npm test
+```
+
+`npm test` rebuilds the dashboard artifact, validates data quality gates, checks that app source has no embedded dashboard data, builds the site and runs rendered HTML tests.
+
+Live Neon runtime:
+
+```bash
+DATABASE_URL="postgresql://..." npm run dev
+```
+
+Runtime source policy:
+
+```text
+Primary: admissions_dw marts/views through server-side Neon adapter
+Fallback: app/data/generated/warehouse-dashboard-snapshot.json
+```
+
+The adapter is server-only and must never expose `DATABASE_URL` to client components.
 
 ---
 
@@ -142,4 +199,6 @@ GA4_PROPERTY_ID="..." GA4_SERVICE_ACCOUNT_FILE="/secure/path/service-account.jso
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/load_website_analytics_to_neon.cjs
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/apply_warehouse_governance_marts.cjs
 DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/export_round3_analytics_report.cjs
+npm run data:build
+npm run data:validate
 ```

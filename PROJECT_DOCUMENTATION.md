@@ -15,7 +15,7 @@ Excel Admissions Data
   -> Neon PostgreSQL
   -> Core Facts / Dimensions
   -> Governance Metadata / Data Marts
-  -> Markdown Report
+  -> Generated Dashboard Artifact
   -> Web Dashboard
 ```
 
@@ -122,8 +122,31 @@ Current fetch status:
 
 ### Web Dashboard
 
-- `app/page.tsx`
-  - Dashboard หน้าเดียวสำหรับพรีเซนต์ผล admissions analytics และ governed warehouse scope
+- `warehouse/query-results/*.tsv`
+  - query-result contract ที่ export จาก Neon warehouse marts/views
+
+- `scripts/build-dashboard-snapshot.mjs`
+  - สร้าง `app/data/generated/warehouse-dashboard-snapshot.json` จาก warehouse query results
+
+- `scripts/validate-dashboard-snapshot.mjs`
+  - ตรวจ source rows, source files, round coverage, PII boundary, quality metrics และ social exclusion
+
+- `scripts/check-no-embedded-dashboard-data.mjs`
+  - fail ทันทีถ้า dashboard route/component ฝัง admissions data เป็น static arrays
+
+- `app/data/load-dashboard-snapshot.ts`
+  - loader จุดเดียวที่ route pages ใช้ส่ง dashboard data เข้า dashboard
+  - ถ้า `DATABASE_URL` พร้อม จะอ่านจาก Neon marts/views ฝั่ง server ก่อน
+  - ถ้า live query ไม่พร้อม จะ fallback ไป generated artifact
+
+- `app/data/live-neon-dashboard-adapter.ts`
+  - server-side Neon adapter สำหรับ query `admissions_dw` marts/views โดยไม่ expose credentials ไป client
+
+- `app/dashboard-page.tsx`
+  - Dashboard route pages สำหรับ Overview, Warehouse, Rounds, Majors, Quality และ Insights
+  - หน้า Warehouse แสดง data catalog, lineage edges, query contract และ ETL validation checks
+  - หน้า Quality แสดง metric definitions, source object และ validation rule ของแต่ละ quality metric
+  - หน้า Insights แสดง 15 business questions, 12 decision insights, executive priorities, category grouping, warehouse health และ decision mart contract
 
 - `app/globals.css`
   - Dashboard layout และ visual design
@@ -182,6 +205,24 @@ Active views and marts:
 - `mart_major_round_conversion`
 - `mart_admissions_executive_summary`
 - `mart_major_conversion`
+- `mart_major_opportunity`
+- `mart_round_efficiency`
+- `mart_status_friction`
+- `mart_admissions_year_change`
+- `vw_dw_refresh_health`
+
+Committed dashboard artifact:
+
+- `app/data/generated/warehouse-dashboard-snapshot.json`
+  - `years` มาจาก `mart_admissions_executive_summary`
+  - `rounds` มาจาก `vw_admission_round_overview`
+  - `majorRows` มาจาก `mart_major_conversion`
+  - `statuses` มาจาก `vw_admission_round_status_distribution`
+  - `qualityMetricDefinitions` มาจาก quality scorecard contract
+  - `dataCatalogRows` และ `lineageEdges` ใช้เป็น governance evidence สำหรับการตรวจโปรเจค
+  - `businessQuestions` มาจาก business question catalog
+  - `decisionInsights` มาจาก decision mart query results
+  - `warehouseHealth` มาจาก refresh/quality health contract
 
 ---
 
@@ -218,6 +259,45 @@ Important interpretation:
 2. ไม่เขียนค่า `citizen_id` ลง processed CSV
 3. ไม่โหลด PII เข้า Neon
 4. ไม่แสดง PII ใน dashboard หรือ report
+
+---
+
+## Audit Evidence
+
+เอกสารที่ใช้ตอบคำถามเชิง Data Warehouse:
+
+- `docs/data-warehouse-evidence.md`
+  - source catalog, lineage, ETL cleaning contract, validation checks, dashboard snapshot contract และ limitations
+- `docs/warehouse-query-contract.md`
+  - SQL contract สำหรับ query จาก Neon views/marts ก่อน export dashboard snapshot
+- `docs/data-quality-metrics.md`
+  - นิยาม metric เช่น source rows, missing score, missing major, PII exported, catalog rows และ lineage edges
+
+เหตุผลที่ dashboard ไม่ query Neon โดยตรง:
+
+- ไม่ส่ง database credentials ไป browser
+- ลดความเสี่ยง credential leak ใน public/private deployed site
+- ทำให้การตรวจโปรเจค reproducible ด้วย pipeline-generated artifact
+- หากข้อมูล warehouse เปลี่ยน ให้ export query results ใหม่และรัน `npm run data:build`
+
+Runtime architecture ปัจจุบันเป็น hybrid:
+
+```text
+Primary: server-side Neon mart query via DATABASE_URL
+Fallback: generated warehouse artifact
+```
+
+กฎ production ใหม่:
+
+- ห้ามฝัง dashboard data เป็น static arrays/constants ใน `app/`
+- `npm test` ต้องรัน data build, validation, no-static-data check, app build และ rendered HTML checks
+- `docs/decisions/0009-ban-embedded-dashboard-data.md` คือ ADR ที่บังคับกฎนี้
+
+Business decision layer:
+
+- `docs/business-questions.md` map คำถามธุรกิจกับ mart/view และ quality gate
+- `/insights` แสดงคำตอบที่พร้อมใช้ตัดสินใจ ไม่ใช่กราฟลอย ๆ
+- ทุก insight ต้องมี `businessQuestionId`, `martObject`, `metricValue`, `decision`, `recommendedAction`, `confidence` และ `qualityGate`
 
 ---
 
