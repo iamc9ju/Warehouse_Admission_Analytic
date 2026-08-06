@@ -108,6 +108,30 @@ export function DashboardPage({ activePage, snapshot }: { activePage: PageName; 
   return <StandardDashboardPage activePage={activePage} snapshot={snapshot} />;
 }
 
+type RadarMetric = {
+  label: string;
+  value: number;
+  display: string;
+  max: number;
+};
+
+function polarPoint(index: number, total: number, radius: number, center = 180) {
+  const angle = (Math.PI * 2 * index) / total - Math.PI / 2;
+  return {
+    x: center + Math.cos(angle) * radius,
+    y: center + Math.sin(angle) * radius,
+  };
+}
+
+function radarPolygon(values: number[], radius = 112) {
+  return values
+    .map((value, index) => {
+      const point = polarPoint(index, values.length, radius * Math.max(value, 0.08));
+      return `${point.x},${point.y}`;
+    })
+    .join(" ");
+}
+
 function StandardDashboardPage({ activePage, snapshot }: { activePage: PageName; snapshot: DashboardSnapshot }) {
   const selectableYears = useMemo(
     () => [...snapshot.years].sort((first, second) => second.year - first.year),
@@ -136,6 +160,109 @@ function StandardDashboardPage({ activePage, snapshot }: { activePage: PageName;
   } = snapshot;
 
   const current = years.find((year) => year.year === selectedYear) ?? selectableYears[0];
+
+  const radarMetrics: RadarMetric[] = current ? [
+    {
+      label: "ตัวเลือก",
+      value: current.choices,
+      display: formatNumber(current.choices),
+      max: Math.max(...years.map((year) => year.choices), 1),
+    },
+    {
+      label: "ผู้สมัคร",
+      value: current.applicants,
+      display: formatNumber(current.applicants),
+      max: Math.max(...years.map((year) => year.applicants), 1),
+    },
+    {
+      label: "ยืนยันสิทธิ์",
+      value: current.confirmed,
+      display: formatNumber(current.confirmed),
+      max: Math.max(...years.map((year) => year.confirmed), 1),
+    },
+    {
+      label: "Conversion",
+      value: current.rate,
+      display: `${current.rate.toFixed(2)}%`,
+      max: Math.max(...years.map((year) => year.rate), 1),
+    },
+    {
+      label: "คะแนนเฉลี่ย",
+      value: current.avgScore,
+      display: current.avgScore.toFixed(2),
+      max: Math.max(...years.map((year) => year.avgScore), 1),
+    },
+  ] : [];
+  const radarValues = radarMetrics.map((metric) => metric.value / metric.max);
+
+  const roundStatuses = snapshot.roundStatuses;
+  const statusLabels = useMemo(
+    () => [
+      "ผู้สมัคร",
+      ...Array.from(new Set(roundStatuses.map((status) => status.label))).filter((label) => label !== "ผู้สมัคร"),
+    ],
+    [roundStatuses]
+  );
+  const roundCodes = useMemo(
+    () => Array.from(new Set(rounds.map((round) => round.code))).sort(),
+    [rounds]
+  );
+  const [selectedStatus, setSelectedStatus] = useState(() => "ผู้สมัคร");
+  const [selectedRoundCode, setSelectedRoundCode] = useState(() => roundCodes[0] ?? "TCAS1");
+  const availableYears = useMemo(
+    () => [...years].map((y) => y.year).sort((a, b) => a - b),
+    [years]
+  );
+  const selectedRoundMeta = rounds.find((r) => r.code === selectedRoundCode);
+  const roundStatusValues = availableYears.map((year) => {
+    const round = rounds.find((item) => item.year === year && item.code === selectedRoundCode);
+    if (!round) return 0;
+    if (selectedStatus === "ผู้สมัคร") return round.applicants;
+    return roundStatuses.find((status) => (
+      status.year === year
+      && status.code === selectedRoundCode
+      && status.label === selectedStatus
+    ))?.choices ?? 0;
+  });
+  const maxRoundChartValue = Math.max(...roundStatusValues, 1);
+
+  const uniqueMajors = useMemo(() => {
+    const map = new Map<string, { code: string; name: string }>();
+    majorRows.forEach((m) => {
+      if (!map.has(m.code)) {
+        map.set(m.code, { code: m.code, name: m.name });
+      }
+    });
+    return Array.from(map.values());
+  }, [majorRows]);
+
+  const allStatusLabels = useMemo(
+    () => [
+      "ผู้สมัคร",
+      ...Array.from(new Set([
+        ...statuses.map((s) => s.label),
+        ...roundStatuses.map((s) => s.label),
+      ])).filter((label) => label !== "ผู้สมัคร"),
+    ],
+    [statuses, roundStatuses]
+  );
+
+  const [selectedMajorStatus, setSelectedMajorStatus] = useState(() => "ผู้สมัคร");
+  const [selectedMajorCode, setSelectedMajorCode] = useState(() => uniqueMajors[0]?.code ?? "");
+
+  const selectedMajorMeta = uniqueMajors.find((m) => m.code === selectedMajorCode);
+  const majorStatusValues = availableYears.map((year) => {
+    const row = majorRows.find((m) => m.year === year && m.code === selectedMajorCode);
+    if (!row) return 0;
+    if (selectedMajorStatus === "ผู้สมัคร") return row.applicants;
+    if (selectedMajorStatus === "ยืนยันสิทธิ์") return row.confirmed;
+    const statusRow = statuses.find((s) => s.year === year && s.label === selectedMajorStatus);
+    const totalApplicantsInYear = years.find((y) => y.year === year)?.applicants || 1;
+    const totalStatusInYear = statusRow?.choices || 0;
+    return Math.round((row.applicants / totalApplicantsInYear) * totalStatusInYear);
+  });
+  const maxSelectedMajorChartValue = Math.max(...majorStatusValues, 1);
+
   const filteredMajors = useMemo(() => {
     const normalizedQuery = majorQuery.trim().toLowerCase();
     return majorRows
@@ -209,14 +336,8 @@ function StandardDashboardPage({ activePage, snapshot }: { activePage: PageName;
             <p className="eyebrow">{meta.eyebrow}</p>
             <h1>{meta.title}</h1>
             <p>{meta.copy}</p>
-            <div className="snapshot-meta" aria-label="Warehouse snapshot metadata">
-              <span>{warehouseSnapshot.dashboardMode}</span>
-              <span>{warehouseSnapshot.schema}</span>
-              <span>{runtime.source}</span>
-              <span>exported {warehouseSnapshot.exportedAt}</span>
-            </div>
           </div>
-          {activePage !== "Technical" && <div className="hero-controls">
+          {activePage !== "Technical" && activePage !== "Rounds" && activePage !== "Majors" && <div className="hero-controls">
             <label className="year-select">
               <span>ปีการศึกษา</span>
               <select value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value) as Year)}>
@@ -390,6 +511,52 @@ function StandardDashboardPage({ activePage, snapshot }: { activePage: PageName;
 
         {showDashboardGrid && (
         <section className={`dashboard-grid ${isFocusedPage ? "focused-grid" : ""}`}>
+          {isOverview && (
+            <article className="panel analytics-card radar-card" style={{ gridColumn: "1 / -1" }}>
+              <div className="panel-title">
+                <div>
+                  <p className="technical-kicker">5-axis Profile</p>
+                  <h2>โปรไฟล์ภาพรวม 5 ด้าน ปี {selectedYear}</h2>
+                </div>
+                <span className="mini-pill">ปี {selectedYear}</span>
+              </div>
+              <div className="radar-layout">
+                <svg className="radar-chart" role="img" aria-label={`กราฟเรดาร์ 5 ด้าน ปี ${selectedYear}`} viewBox="0 0 360 360">
+                  {[0.25, 0.5, 0.75, 1].map((level) => (
+                    <polygon
+                      className="radar-grid"
+                      key={level}
+                      points={radarMetrics.map((_, index) => {
+                        const point = polarPoint(index, radarMetrics.length, 112 * level);
+                        return `${point.x},${point.y}`;
+                      }).join(" ")}
+                    />
+                  ))}
+                  {radarMetrics.map((metric, index) => {
+                    const axis = polarPoint(index, radarMetrics.length, 112);
+                    const label = polarPoint(index, radarMetrics.length, 145);
+                    return (
+                      <g key={metric.label}>
+                        <line className="radar-axis" x1="180" y1="180" x2={axis.x} y2={axis.y} />
+                        <text className="radar-label" x={label.x} y={label.y}>{metric.label}</text>
+                      </g>
+                    );
+                  })}
+                  <polygon className="radar-area" points={radarPolygon(radarValues)} />
+                  {radarValues.map((value, index) => {
+                    const point = polarPoint(index, radarValues.length, 112 * Math.max(value, 0.08));
+                    return <circle className="radar-point" cx={point.x} cy={point.y} key={radarMetrics[index].label} r="5" />;
+                  })}
+                </svg>
+                <div className="radar-metrics" aria-label={`ค่าตัวชี้วัดปี ${selectedYear}`}>
+                  {radarMetrics.map((metric) => (
+                    <div key={metric.label}><span>{metric.label}</span><strong>{metric.display}</strong></div>
+                  ))}
+                </div>
+              </div>
+            </article>
+          )}
+
           {showStatusPanel && (
           <article id="quality" className="panel status-panel">
             <div className="panel-title">
@@ -414,42 +581,98 @@ function StandardDashboardPage({ activePage, snapshot }: { activePage: PageName;
           )}
 
           {showMajorsPanel && (
-          <article id="majors" className="panel majors-panel">
-            <div className="panel-title">
-              <h2>ทุกสาขาวิชา ปี {selectedYear}</h2>
-              <input
-                aria-label="ค้นหาสาขา"
-                placeholder="ค้นหาสาขา"
-                value={majorQuery}
-                onChange={(event) => setMajorQuery(event.target.value)}
-              />
-            </div>
-            <div className="major-table" role="table" aria-label="Major ranking">
-              <div className="major-head" role="row">
-                <span>ลำดับ</span>
-                <span>สาขา</span>
-                <span>ผู้สมัคร</span>
-                <span>ยืนยันสิทธิ์</span>
-                <span>อัตรา</span>
-                <span>{isOverview ? "ประเภท" : "Δ เทียบปีก่อน"}</span>
-              </div>
-              {visibleMajors.map((major, index) => (
-                <div className="major-row" role="row" key={`${major.year}-${major.code}-${major.name}`}>
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <strong>{major.name}</strong>
-                  <span className="value-with-bar">
-                    {formatNumber(major.applicants)}
-                    <i style={{ width: `${(major.applicants / maxApplicants) * 100}%` }} />
-                  </span>
-                  <span>{formatNumber(major.confirmed)}</span>
-                  <span>{major.rate.toFixed(2)}%</span>
-                  {isOverview
-                    ? <span>{major.type}</span>
-                    : <span className={`change-chip ${deltaClass(major.applicantChange)}`}>{formatSigned(major.applicantChange)}</span>}
+          <>
+            {activePage === "Majors" && (
+              <article className="panel analytics-card round-performance-card" style={{ gridColumn: "1 / -1" }}>
+                <header>
+                  <div><span>MAJOR YOY COMPARISON</span><h2>ผู้สมัครและยืนยันสิทธิ์แต่ละสาขาวิชา ทุกปี</h2></div>
+                  <div className="round-chart-filters" style={{ display: "flex", gap: "1rem" }}>
+                    <label className="round-chart-select">
+                      <span>STATUS</span>
+                      <select value={selectedMajorStatus} onChange={(event) => setSelectedMajorStatus(event.target.value)}>
+                        {allStatusLabels.map((label) => (
+                          <option key={label} value={label}>{label}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="round-chart-select">
+                      <span>สาขาวิชา</span>
+                      <select value={selectedMajorCode} onChange={(event) => setSelectedMajorCode(event.target.value)}>
+                        {uniqueMajors.map((m) => (
+                          <option key={m.code} value={m.code}>{m.name}</option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                </header>
+                <div className="vertical-round-chart" aria-label={`${selectedMajorStatus} และ ${selectedMajorMeta?.name} เปรียบเทียบตามปี`}>
+                  <div className="vertical-chart-heading">
+                    <strong>{selectedMajorMeta?.name} — {selectedMajorStatus}</strong>
+                    <span>{selectedMajorStatus}ของสาขาที่เลือก เปรียบเทียบตามปีการศึกษา</span>
+                  </div>
+                  <div className="vertical-series-legend" aria-label="คำอธิบายชุดข้อมูล">
+                    <span><i className="status-series" style={{ background: "#c56100" }} />{selectedMajorMeta?.name}: {selectedMajorStatus}</span>
+                  </div>
+                  <div className="vertical-chart-plot">
+                    <div className="vertical-grid-lines" aria-hidden="true"><i /><i /><i /><i /></div>
+                    {availableYears.map((year, index) => {
+                      const value = majorStatusValues[index];
+                      const barHeight = Math.max((value / maxSelectedMajorChartValue) * 82, value > 0 ? 4 : 0);
+                      return (
+                        <div className="vertical-bar-column" key={year}>
+                          <div className="vertical-bar-track single-series">
+                            <strong style={{ bottom: `calc(${barHeight}% + 7px)` }}>{formatNumber(value)}</strong>
+                            <i style={{ height: `${barHeight}%`, background: "#c56100" }} />
+                          </div>
+                          <span>{year}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="vertical-chart-footer"><span>ปีการศึกษา</span><small>หน่วย: คน ตามระดับข้อมูลในคลัง</small></div>
                 </div>
-              ))}
-            </div>
-          </article>
+              </article>
+            )}
+
+            {activePage !== "Majors" && (
+              <article id="majors" className="panel majors-panel">
+                <div className="panel-title">
+                  <h2>ทุกสาขาวิชา ปี {selectedYear}</h2>
+                  <input
+                    aria-label="ค้นหาสาขา"
+                    placeholder="ค้นหาสาขา"
+                    value={majorQuery}
+                    onChange={(event) => setMajorQuery(event.target.value)}
+                  />
+                </div>
+                <div className="major-table" role="table" aria-label="Major ranking">
+                <div className="major-head" role="row">
+                  <span>ลำดับ</span>
+                  <span>สาขา</span>
+                  <span>ผู้สมัคร</span>
+                  <span>ยืนยันสิทธิ์</span>
+                  <span>อัตรา</span>
+                  <span>{isOverview ? "ประเภท" : "Δ เทียบปีก่อน"}</span>
+                </div>
+                {visibleMajors.map((major, index) => (
+                  <div className="major-row" role="row" key={`${major.year}-${major.code}-${major.name}`}>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <strong>{major.name}</strong>
+                    <span className="value-with-bar">
+                      {formatNumber(major.applicants)}
+                      <i style={{ width: `${(major.applicants / maxApplicants) * 100}%` }} />
+                    </span>
+                    <span>{formatNumber(major.confirmed)}</span>
+                    <span>{major.rate.toFixed(2)}%</span>
+                    {isOverview
+                      ? <span>{major.type}</span>
+                      : <span className={`change-chip ${deltaClass(major.applicantChange)}`}>{formatSigned(major.applicantChange)}</span>}
+                  </div>
+                ))}
+              </div>
+            </article>
+            )}
+          </>
           )}
 
           {showQualityPanel && (
@@ -489,42 +712,97 @@ function StandardDashboardPage({ activePage, snapshot }: { activePage: PageName;
           )}
 
           {showRoundsPanel && (
-          <article id="rounds" className="panel rounds-panel">
-            <div className="panel-title">
-              <h2>ภาพรวม TCAS รอบ 1-4 ปี {selectedYear}</h2>
-              <span className="mini-pill">{visibleRounds.length} round rows</span>
-            </div>
-            <div className="round-table-wrap">
-              <table className="round-table">
-                <thead>
-                  <tr>
-                    <th>TCAS</th>
-                    <th>Choices</th>
-                    <th>Unique Applicants</th>
-                    <th>Confirmed</th>
-                    <th>Rate</th>
-                    <th>Files</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {visibleRounds.map((round) => (
-                    <tr key={`${round.year}-${round.code}`}>
-                      <td>
-                        <span className={`round-year y${round.year}`}>{round.year}</span>
-                        <strong>{round.code}</strong>
-                        <small>{round.name}</small>
-                      </td>
-                      <td>{formatNumber(round.choices)}</td>
-                      <td>{formatNumber(round.applicants)}</td>
-                      <td>{formatNumber(round.confirmed)}</td>
-                      <td><span className="rate-chip">{round.rate.toFixed(2)}%</span></td>
-                      <td>{round.files}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </article>
+          <>
+            {activePage === "Rounds" && (
+              <article className="panel analytics-card round-performance-card" style={{ gridColumn: "1 / -1" }}>
+                <header>
+                  <div><span>ROUND YOY COMPARISON</span><h2>ผู้สมัครและยืนยันสิทธิ์แต่ละรอบ TCAS ทุกปี</h2></div>
+                  <div className="round-chart-filters" style={{ display: "flex", gap: "1rem" }}>
+                    <label className="round-chart-select">
+                      <span>TCAS STATUS</span>
+                      <select value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)}>
+                        {statusLabels.map((label) => <option key={label} value={label}>{label}</option>)}
+                      </select>
+                    </label>
+                    <label className="round-chart-select">
+                      <span>TCAS ROUND</span>
+                      <select value={selectedRoundCode} onChange={(event) => setSelectedRoundCode(event.target.value)}>
+                        {roundCodes.map((code) => {
+                          const round = rounds.find((item) => item.code === code);
+                          return <option key={code} value={code}>{code} — {round?.name}</option>;
+                        })}
+                      </select>
+                    </label>
+                  </div>
+                </header>
+                <div className="vertical-round-chart" aria-label={`${selectedStatus} และ ${selectedRoundCode} เปรียบเทียบตามปี`}>
+                  <div className="vertical-chart-heading">
+                    <strong>{selectedRoundCode} · {selectedRoundMeta?.name} — {selectedStatus}</strong>
+                    <span>{selectedStatus}ของรอบที่เลือก เปรียบเทียบตามปีการศึกษา</span>
+                  </div>
+                  <div className="vertical-series-legend" aria-label="คำอธิบายชุดข้อมูล">
+                    <span><i className="round-series" />{selectedRoundCode}: {selectedStatus}</span>
+                  </div>
+                  <div className="vertical-chart-plot">
+                    <div className="vertical-grid-lines" aria-hidden="true"><i /><i /><i /><i /></div>
+                    {availableYears.map((year, index) => {
+                      const value = roundStatusValues[index];
+                      const barHeight = Math.max((value / maxRoundChartValue) * 82, value > 0 ? 4 : 0);
+                      return (
+                        <div className="vertical-bar-column" key={year}>
+                          <div className="vertical-bar-track single-series">
+                            <strong style={{ bottom: `calc(${barHeight}% + 7px)` }}>{formatNumber(value)}</strong>
+                            <i style={{ height: `${barHeight}%`, background: "#477ca8" }} />
+                          </div>
+                          <span>{year}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="vertical-chart-footer"><span>ปีการศึกษา</span><small>หน่วย: คน/รายการตามระดับข้อมูลในคลัง</small></div>
+                </div>
+              </article>
+            )}
+
+            {activePage !== "Rounds" && (
+              <article id="rounds" className="panel rounds-panel">
+                <div className="panel-title">
+                  <h2>ภาพรวม TCAS รอบ 1-4 ปี {selectedYear}</h2>
+                  <span className="mini-pill">{visibleRounds.length} round rows</span>
+                </div>
+                <div className="round-table-wrap">
+                  <table className="round-table">
+                    <thead>
+                      <tr>
+                        <th>TCAS</th>
+                        <th>Choices</th>
+                        <th>Unique Applicants</th>
+                        <th>Confirmed</th>
+                        <th>Rate</th>
+                        <th>Files</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visibleRounds.map((round) => (
+                        <tr key={`${round.year}-${round.code}`}>
+                          <td>
+                            <span className={`round-year y${round.year}`}>{round.year}</span>
+                            <strong>{round.code}</strong>
+                            <small>{round.name}</small>
+                          </td>
+                          <td>{formatNumber(round.choices)}</td>
+                          <td>{formatNumber(round.applicants)}</td>
+                          <td>{formatNumber(round.confirmed)}</td>
+                          <td><span className="rate-chip">{round.rate.toFixed(2)}%</span></td>
+                          <td>{round.files}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </article>
+            )}
+          </>
           )}
 
         </section>
@@ -781,10 +1059,6 @@ function StandardDashboardPage({ activePage, snapshot }: { activePage: PageName;
           )}
         </section>
         )}
-
-        <section id="reports" className="detail-bar" aria-live="polite">
-          {detail}
-        </section>
         </div>
       </section>
     </main>

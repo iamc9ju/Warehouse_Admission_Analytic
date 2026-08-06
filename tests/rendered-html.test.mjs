@@ -54,7 +54,6 @@ test("server-renders the admissions warehouse dashboard", async () => {
   const html = await response.text();
   assert.match(html, /<title>TCAS Admissions Data Warehouse<\/title>/i);
   assert.match(html, /TCAS Admissions Data Warehouse/);
-  assert.match(html, /generated-artifact|live-neon/);
   assert.match(html, /aria-label="Dashboard sidebar"/);
   assert.match(html, /aria-label="Section navigation"/);
   assert.doesNotMatch(html, /Warehouse status|Last sync|2 นาทีที่แล้ว/);
@@ -89,22 +88,13 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.match(dashboardHtml, /kpi-sparkline/);
   assert.match(dashboardHtml, /แนวโน้ม/);
   assert.match(dashboardHtml, /ปีล่าสุด/);
-  assert.match(dashboardHtml, /Year Comparison/);
-  assert.match(dashboardHtml, /Status &amp; Round Comparison/);
-  assert.match(dashboardHtml, /vertical-round-chart/);
-  assert.match(dashboardHtml, /TCAS Status/);
-  assert.match(dashboardHtml, /TCAS Round/);
-  assert.match(dashboardHtml, /single-series/);
+  assert.match(dashboardHtml, /Round YoY Comparison/);
   assert.match(dashboardHtml, /1,320/);
   assert.match(dashboardHtml, /1,324/);
   assert.doesNotMatch(dashboardHtml, /Opportunity Matrix|Block Quadrant/);
-  assert.match(dashboardHtml, /6-axis Radar Profile/);
-  assert.match(dashboardHtml, /Status Distribution/);
-  assert.match(dashboardHtml, /Major Ranking/);
+  assert.match(dashboardHtml, /Major YoY Comparison/);
   assert.match(dashboardHtml, /All-year comparison/);
   assert.match(dashboardHtml, /เปรียบเทียบทุกปี/);
-  assert.match(dashboardHtml, /vertical-round-chart/);
-  assert.match(dashboardHtml, /major-comparison-chart/);
 
   const warehouseResponse = await renderPath("/warehouse");
   assert.equal(warehouseResponse.status, 200);

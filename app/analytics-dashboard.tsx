@@ -159,6 +159,16 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
     return last - first;
   };
 
+  const roundGroups = roundCodes.map((code) => {
+    const roundMeta = rounds.find((r) => r.code === code);
+    return {
+      code,
+      name: roundMeta?.name ?? "",
+      rows: rounds.filter((r) => r.code === code),
+    };
+  });
+  const maxRoundVal = Math.max(...rounds.map((r) => Math.max(r.applicants, r.confirmed)), 1);
+
   return (
     <main className="app-frame analytics-app-frame">
       <SidebarNavigation activeHref="/dashboard" />
@@ -245,168 +255,186 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
         </section>
 
         <section className={`analytics-chart-grid ${hasManyYears ? "many-years" : ""}`} data-year-count={availableYears.length}>
-          <article className="analytics-card year-comparison-card">
-            <header><div><span>Year Comparison</span><h2>ภาพรวมทุกปีที่มีข้อมูล</h2></div></header>
-            <div className="year-comparison-chart">
-              {[
-                { label: "ผู้สมัคร", key: "applicants", max: Math.max(...years.map((year) => year.applicants), 1) },
-                { label: "ยืนยันสิทธิ์", key: "confirmed", max: Math.max(...years.map((year) => year.confirmed), 1) },
-                { label: "อัตรายืนยัน", key: "rate", max: Math.max(...years.map((year) => year.rate), 1), rate: true },
-              ].map((metric) => (
-                <div className="year-bar-group" key={metric.label}>
-                  <div className="year-bars">
-                    {sortedOverviews.map((overview) => {
-                      const value = overview[metric.key as "applicants" | "confirmed" | "rate"];
-                      return (
-                        <i key={overview.year} style={{ height: `${(value / metric.max) * 90}%`, background: colorForYear(overview.year, availableYears) }}>
-                          <b>{metric.rate ? `${value.toFixed(2)}%` : formatNumber(value)}</b>
-                        </i>
-                      );
-                    })}
-                  </div>
-                  <span>{metric.label}</span>
-                </div>
-              ))}
-            </div>
-            <div className="analytics-legend">
-              {availableYears.map((year) => <span key={year}><i style={{ background: colorForYear(year, availableYears) }} />{year}</span>)}
-            </div>
-          </article>
-
-          <article className="analytics-card round-performance-card">
+          <article className="analytics-card year-comparison-card" style={{ gridColumn: "1 / -1" }}>
             <header>
-              <div><span>Status & Round Comparison</span><h2>สถานะและรอบ TCAS เปรียบเทียบตามปี</h2></div>
-              <div className="round-chart-filters">
-                <label className="round-chart-select">
-                  <span>TCAS Status</span>
-                  <select value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)}>
-                    {statusLabels.map((label) => <option key={label} value={label}>{label}</option>)}
-                  </select>
-                </label>
-                <label className="round-chart-select">
-                  <span>TCAS Round</span>
-                  <select value={selectedRoundCode} onChange={(event) => setSelectedRoundCode(event.target.value)}>
-                    {roundCodes.map((code) => {
-                      const round = rounds.find((item) => item.code === code);
-                      return <option key={code} value={code}>{code} — {round?.name}</option>;
-                    })}
-                  </select>
-                </label>
+              <div>
+                <span>Round YoY Comparison</span>
+                <h2>ภาพรวมผู้สมัครและยืนยันสิทธิ์แต่ละรอบทุกปี</h2>
+              </div>
+              <div className="analytics-legend" style={{ gap: "10px 18px", margin: 0 }}>
+                <span><i style={{ background: "#e8d8c3", border: "1px solid #bd9d75" }} />2568 ผู้สมัคร</span>
+                <span><i style={{ background: "#4a7bb0" }} />2568 ยืนยันสิทธิ์</span>
+                <span><i style={{ background: "#f5c38b", border: "1px solid #c56100" }} />2569 ผู้สมัคร</span>
+                <span><i style={{ background: "#2e7d32" }} />2569 ยืนยันสิทธิ์</span>
               </div>
             </header>
-            <div className="vertical-round-chart" aria-label={`${selectedStatus} และ ${selectedRoundCode} เปรียบเทียบตามปี`}>
-              <div className="vertical-chart-heading">
-                <strong>{selectedRoundCode} · {selectedRound?.name} — {selectedStatus}</strong>
-                <span>{selectedStatus}ของรอบที่เลือก เปรียบเทียบตามปีการศึกษา</span>
-              </div>
-              <div className="vertical-series-legend" aria-label="คำอธิบายชุดข้อมูล">
-                <span><i className="round-series" />{selectedRoundCode}: {selectedStatus}</span>
-              </div>
-              <div className="vertical-chart-plot">
-                <div className="vertical-grid-lines" aria-hidden="true"><i /><i /><i /><i /></div>
-                {availableYears.map((year, index) => {
-                  const value = roundStatusValues[index];
-                  const barHeight = Math.max((value / maxRoundChartValue) * 82, value > 0 ? 4 : 0);
-                  return (
-                    <div className="vertical-bar-column" key={year}>
-                      <div className="vertical-bar-track single-series">
-                        <strong style={{ bottom: `calc(${barHeight}% + 7px)` }}>{formatNumber(value)}</strong>
-                        <i style={{ height: `${barHeight}%`, background: "#477ca8" }} />
-                      </div>
-                      <span>{year}</span>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: "18px",
+                marginTop: "12px",
+              }}
+            >
+              {roundGroups.map((group) => {
+                const maxInGroup = Math.max(...group.rows.map((r) => Math.max(r.applicants, r.confirmed)), 1);
+                return (
+                  <div
+                    key={group.code}
+                    style={{
+                      border: "1px solid #e5ded6",
+                      borderRadius: "10px",
+                      background: "#fdfbf8",
+                      padding: "16px 20px",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                      <strong style={{ fontSize: "16px", color: "#242424" }}>{group.code}</strong>
+                      <small style={{ color: "#777", fontSize: "13px", fontWeight: 600 }}>{group.name}</small>
                     </div>
-                  );
-                })}
-              </div>
-              <div className="vertical-chart-footer"><span>ปีการศึกษา</span><small>หน่วย: คน/รายการตามระดับข้อมูลในคลัง</small></div>
-            </div>
-          </article>
 
-          <article className="analytics-card radar-card">
-            <header>
-              <div><span>6-axis Radar Profile</span><h2>โปรไฟล์ภาพรวม 6 ด้าน</h2></div>
-              <div className="analytics-year-control" aria-label="เลือกปีสำหรับ Radar">
-                <span>ปี</span>
-                {availableYears.map((year) => (
-                  <button className={analysisYear === year ? "active" : ""} key={year} onClick={() => setAnalysisYear(year)} type="button">{year}</button>
-                ))}
-              </div>
-            </header>
-            <div className="radar-layout">
-              <svg className="radar-chart" role="img" aria-label={`กราฟเรดาร์ 6 ด้าน ปี ${analysisYear}`} viewBox="0 0 360 360">
-                {[0.25, 0.5, 0.75, 1].map((level) => (
-                  <polygon
-                    className="radar-grid"
-                    key={level}
-                    points={radarMetrics.map((_, index) => {
-                      const point = polarPoint(index, radarMetrics.length, 112 * level);
-                      return `${point.x},${point.y}`;
-                    }).join(" ")}
-                  />
-                ))}
-                {radarMetrics.map((metric, index) => {
-                  const axis = polarPoint(index, radarMetrics.length, 112);
-                  const label = polarPoint(index, radarMetrics.length, 145);
-                  return (
-                    <g key={metric.label}>
-                      <line className="radar-axis" x1="180" y1="180" x2={axis.x} y2={axis.y} />
-                      <text className="radar-label" x={label.x} y={label.y}>{metric.label}</text>
-                    </g>
-                  );
-                })}
-                <polygon className="radar-area" points={radarPolygon(radarValues)} />
-                {radarValues.map((value, index) => {
-                  const point = polarPoint(index, radarValues.length, 112 * Math.max(value, 0.08));
-                  return <circle className="radar-point" cx={point.x} cy={point.y} key={radarMetrics[index].label} r="5" />;
-                })}
-              </svg>
-              <div className="radar-metrics" aria-label={`ค่าตัวชี้วัดปี ${analysisYear}`}>
-                {radarMetrics.map((metric) => (
-                  <div key={metric.label}><span>{metric.label}</span><strong>{metric.display}</strong></div>
-                ))}
-              </div>
-            </div>
-            <p className="chart-method-note">แต่ละแกนเทียบกับค่าสูงสุดของทุกปีที่มีในคลังข้อมูล</p>
-          </article>
-
-          <article className="analytics-card status-donut-card status-comparison-card">
-            <header><div><span>Status Distribution</span><h2>สัดส่วนสถานะ เปรียบเทียบทุกปี</h2></div></header>
-            <div className="status-comparison-chart">
-              {statusGroups.map(([label, rows]) => (
-                <section key={label}>
-                  <strong>{label}</strong>
-                  {availableYears.map((year) => {
-                    const row = rows.find((item) => item.year === year);
-                    const share = row?.share ?? 0;
-                    return (
-                      <div key={year}>
-                        <span>{year}</span>
-                        <i><b style={{ width: `${(share / maxStatusShare) * 100}%`, background: colorForYear(year, availableYears) }} /></i>
-                        <small>{share.toFixed(2)}%</small>
-                      </div>
-                    );
-                  })}
-                </section>
-              ))}
+                    <div className="year-bars" style={{ height: "150px", justifyContent: "space-around", borderBottom: "1px solid #ddd7d0", paddingBottom: "4px" }}>
+                      {availableYears.map((year) => {
+                        const row = group.rows.find((r) => r.year === year);
+                        const appVal = row?.applicants ?? 0;
+                        const confVal = row?.confirmed ?? 0;
+                        const confPct = appVal > 0 ? (confVal / appVal) * 100 : 0;
+                        return (
+                          <div key={year} style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%", justifyContent: "flex-end" }}>
+                            <i
+                              title={`${year} ${group.code}: ผู้สมัคร ${formatNumber(appVal)} คน, ยืนยันสิทธิ์ ${formatNumber(confVal)} คน (${confPct.toFixed(1)}%)`}
+                              style={{
+                                height: `${(appVal / maxInGroup) * 82}%`,
+                                background: year === 2568 ? "#e8d8c3" : "#f5c38b",
+                                border: `1px solid ${year === 2568 ? "#bd9d75" : "#c56100"}`,
+                                position: "relative",
+                                overflow: "visible",
+                                borderRadius: "4px 4px 0 0",
+                                width: "42px",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  position: "absolute",
+                                  bottom: 0,
+                                  left: 0,
+                                  right: 0,
+                                  height: `${confPct}%`,
+                                  background: year === 2568 ? "#4a7bb0" : "#2e7d32",
+                                  borderRadius: confPct >= 98 ? "3px 3px 0 0" : "0",
+                                  transition: "height 300ms ease",
+                                }}
+                              />
+                              <b style={{ position: "absolute", top: "-22px", left: "50%", transform: "translateX(-50%)", fontSize: "11px", whiteSpace: "nowrap", color: "#333" }}>
+                                {formatNumber(appVal)}
+                              </b>
+                              {confVal > 0 && (
+                                <small
+                                  style={{
+                                    position: "absolute",
+                                    bottom: "4px",
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    fontSize: "10px",
+                                    color: "#fff",
+                                    fontWeight: 750,
+                                    whiteSpace: "nowrap",
+                                    zIndex: 2,
+                                    pointerEvents: "none",
+                                  }}
+                                >
+                                  {formatNumber(confVal)}
+                                </small>
+                              )}
+                            </i>
+                            <span style={{ fontSize: "13px", fontWeight: 750, marginTop: "8px", color: "#555" }}>ปี {year}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </article>
 
           <article className="analytics-card major-ranking-card">
-            <header><div><span>Major Ranking</span><h2>สาขาที่มี Demand สูงสุด เปรียบเทียบทุกปี</h2></div><Link href="/majors">ดูรายละเอียด</Link></header>
+            <header>
+              <div>
+                <span>Major YoY Comparison</span>
+                <h2>ผู้สมัครและยืนยันสิทธิ์แต่ละสาขาวิชา ทุกปี</h2>
+              </div>
+              <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+                <div className="analytics-legend" style={{ gap: "10px 18px", margin: 0 }}>
+                  <span><i style={{ background: "#e8d8c3", border: "1px solid #bd9d75" }} />2568 ผู้สมัคร</span>
+                  <span><i style={{ background: "#4a7bb0" }} />2568 ยืนยันสิทธิ์</span>
+                  <span><i style={{ background: "#f5c38b", border: "1px solid #c56100" }} />2569 ผู้สมัคร</span>
+                  <span><i style={{ background: "#2e7d32" }} />2569 ยืนยันสิทธิ์</span>
+                </div>
+                <Link href="/majors">ดูรายละเอียดเจาะลึก</Link>
+              </div>
+            </header>
             <div className="major-comparison-chart">
               {majorGroups.slice(0, 7).map(([, rows], index) => (
                 <section key={`${rows[0].code}-${rows[0].name}`}>
                   <div className="comparison-row-label"><b>{index + 1}</b><small>{rows[0].name}</small></div>
-                  <div className="comparison-series">
+                  <div className="comparison-series" style={{ display: "grid", gap: "8px" }}>
                     {availableYears.map((year) => {
                       const row = rows.find((item) => item.year === year) as MajorRow | undefined;
                       const applicants = row?.applicants ?? 0;
+                      const confirmed = row?.confirmed ?? 0;
+                      const confPct = applicants > 0 ? (confirmed / applicants) * 100 : 0;
+                      const outerWidthPct = (applicants / maxMajorApplicants) * 100;
                       return (
-                        <div key={year}>
-                          <span>{year}</span>
-                          <i><b style={{ width: `${(applicants / maxMajorApplicants) * 100}%`, background: colorForYear(year, availableYears) }} /></i>
-                          <strong>{formatNumber(applicants)}</strong>
-                          <small>{row ? `${row.rate.toFixed(2)}%` : "—"}</small>
+                        <div key={year} style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                          <span style={{ fontSize: "12px", fontWeight: 750, color: "#666", width: "36px" }}>{year}</span>
+                          <i
+                            title={`${year} ${rows[0].name}: ผู้สมัคร ${formatNumber(applicants)} คน, ยืนยันสิทธิ์ ${formatNumber(confirmed)} คน (${row?.rate.toFixed(2)}%)`}
+                            style={{
+                              flex: 1,
+                              height: "22px",
+                              background: "#f0ece7",
+                              borderRadius: "5px",
+                              position: "relative",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <span
+                              style={{
+                                position: "absolute",
+                                top: 0,
+                                bottom: 0,
+                                left: 0,
+                                width: `${outerWidthPct}%`,
+                                background: year === 2568 ? "#e8d8c3" : "#f5c38b",
+                                border: `1px solid ${year === 2568 ? "#bd9d75" : "#c56100"}`,
+                                borderRadius: "5px",
+                                overflow: "hidden",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  position: "absolute",
+                                  top: 0,
+                                  bottom: 0,
+                                  left: 0,
+                                  width: `${confPct}%`,
+                                  background: year === 2568 ? "#4a7bb0" : "#2e7d32",
+                                  borderRadius: "4px 0 0 4px",
+                                  transition: "width 300ms ease",
+                                }}
+                              />
+                            </span>
+                          </i>
+                          <strong style={{ fontSize: "12px", width: "52px", textAlign: "right", fontVariantNumeric: "tabular-nums", color: "#333" }}>
+                            {formatNumber(applicants)}
+                          </strong>
+                          <span style={{ fontSize: "11px", color: year === 2568 ? "#2b5684" : "#1b5e20", fontWeight: 750, width: "96px", textAlign: "right", whiteSpace: "nowrap" }}>
+                            ยืนยัน {formatNumber(confirmed)} <small style={{ fontWeight: 600, color: "#666" }}>({row ? `${row.rate.toFixed(2)}%` : "—"})</small>
+                          </span>
                         </div>
                       );
                     })}
