@@ -2449,13 +2449,21 @@ th {
 .round-chart-select {
   display: grid;
   gap: 4px;
-  min-width: min(245px, 28vw);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .round-chart-filters {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 9px;
+  width: 100%;
+}
+
+.round-performance-card > header {
+  display: grid;
+  gap: 14px;
+  align-items: start;
 }
 
 .round-chart-select > span {
@@ -2467,7 +2475,10 @@ th {
 }
 
 .round-chart-select select {
+  display: block;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 43px;
   border: 1px solid #dfd6cc;
   border-radius: 8px;
@@ -2476,7 +2487,10 @@ th {
   cursor: pointer;
   font-size: 14px;
   font-weight: 720;
+  overflow: hidden;
   padding: 0 36px 0 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .round-chart-select select:hover,
