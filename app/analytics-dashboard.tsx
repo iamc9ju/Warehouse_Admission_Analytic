@@ -70,7 +70,8 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
   const statusLabels = Array.from(new Set(statuses.map((status) => status.label)));
   const roundCodes = Array.from(new Set(rounds.map((round) => round.code))).sort();
   const defaultStatus = statusLabels.includes("ผู้สมัคร") ? "ผู้สมัคร" : statusLabels[0];
-  const [roundChartSelection, setRoundChartSelection] = useState(() => `status:${defaultStatus}`);
+  const [selectedStatus, setSelectedStatus] = useState(() => defaultStatus);
+  const [selectedRoundCode, setSelectedRoundCode] = useState(() => roundCodes[0]);
   const hasManyYears = availableYears.length > 4;
 
   const comparisonKpis = [
@@ -80,19 +81,14 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
     { label: "อัตรายืนยันสิทธิ์", key: "rate", format: (value: number) => `${value.toFixed(2)}%` },
   ] as const;
 
-  const [roundChartType, roundChartKey] = roundChartSelection.split(":", 2);
-  const selectedRound = rounds.find((round) => round.code === roundChartKey);
-  const roundChartValues = availableYears.map((year) => {
-    if (roundChartType === "status") {
-      return statuses.find((status) => status.year === year && status.label === roundChartKey)?.choices ?? 0;
-    }
-    return rounds.find((round) => round.year === year && round.code === roundChartKey)?.applicants ?? 0;
-  });
-  const maxRoundChartValue = Math.max(...roundChartValues, 1);
-  const roundChartTitle = roundChartType === "status" ? roundChartKey : `${roundChartKey} · ${selectedRound?.name ?? ""}`;
-  const roundChartDescription = roundChartType === "status"
-    ? "จำนวนตัวเลือกที่มีสถานะนี้"
-    : "จำนวนผู้สมัครไม่ซ้ำในรอบนี้";
+  const selectedRound = rounds.find((round) => round.code === selectedRoundCode);
+  const statusChartValues = availableYears.map((year) => (
+    statuses.find((status) => status.year === year && status.label === selectedStatus)?.choices ?? 0
+  ));
+  const roundChartValues = availableYears.map((year) => (
+    rounds.find((round) => round.year === year && round.code === selectedRoundCode)?.applicants ?? 0
+  ));
+  const maxRoundChartValue = Math.max(...statusChartValues, ...roundChartValues, 1);
 
   const majorGroups = [...groupRows(majorRows, (major) => `${major.code}-${major.name}`).entries()]
     .sort(([, firstRows], [, secondRows]) => (
@@ -149,36 +145,6 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
     },
   ] : [];
   const radarValues = radarMetrics.map((metric) => metric.value / metric.max);
-
-  const selectedMajors = majorRows.filter((major) => major.year === analysisYear);
-  const demandThreshold = selectedMajors.reduce((sum, major) => sum + major.applicants, 0) / Math.max(selectedMajors.length, 1);
-  const conversionThreshold = selectedMajors.reduce((sum, major) => sum + major.rate, 0) / Math.max(selectedMajors.length, 1);
-  const quadrants = [
-    {
-      key: "grow",
-      label: "เร่งต่อยอด",
-      description: "Demand ต่ำ · Conversion สูง",
-      rows: selectedMajors.filter((major) => major.applicants < demandThreshold && major.rate >= conversionThreshold),
-    },
-    {
-      key: "star",
-      label: "ดาวเด่น",
-      description: "Demand สูง · Conversion สูง",
-      rows: selectedMajors.filter((major) => major.applicants >= demandThreshold && major.rate >= conversionThreshold),
-    },
-    {
-      key: "watch",
-      label: "เฝ้าระวัง",
-      description: "Demand ต่ำ · Conversion ต่ำ",
-      rows: selectedMajors.filter((major) => major.applicants < demandThreshold && major.rate < conversionThreshold),
-    },
-    {
-      key: "convert",
-      label: "โอกาสเพิ่ม Conversion",
-      description: "Demand สูง · Conversion ต่ำ",
-      rows: selectedMajors.filter((major) => major.applicants >= demandThreshold && major.rate < conversionThreshold),
-    },
-  ];
 
   const yearDelta = (key: "choices" | "applicants" | "confirmed" | "rate") => {
     const first = sortedOverviews[0]?.[key] ?? 0;
@@ -264,36 +230,52 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
           <article className="analytics-card round-performance-card">
             <header>
               <div><span>Status & Round Comparison</span><h2>สถานะและรอบ TCAS เปรียบเทียบตามปี</h2></div>
-              <label className="round-chart-select">
-                <span>เลือกข้อมูล</span>
-                <select value={roundChartSelection} onChange={(event) => setRoundChartSelection(event.target.value)}>
-                  <optgroup label="TCAS Status">
-                    {statusLabels.map((label) => <option key={label} value={`status:${label}`}>{label}</option>)}
-                  </optgroup>
-                  <optgroup label="รอบ TCAS">
+              <div className="round-chart-filters">
+                <label className="round-chart-select">
+                  <span>TCAS Status</span>
+                  <select value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)}>
+                    {statusLabels.map((label) => <option key={label} value={label}>{label}</option>)}
+                  </select>
+                </label>
+                <label className="round-chart-select">
+                  <span>TCAS Round</span>
+                  <select value={selectedRoundCode} onChange={(event) => setSelectedRoundCode(event.target.value)}>
                     {roundCodes.map((code) => {
                       const round = rounds.find((item) => item.code === code);
-                      return <option key={code} value={`round:${code}`}>{code} — {round?.name}</option>;
+                      return <option key={code} value={code}>{code} — {round?.name}</option>;
                     })}
-                  </optgroup>
-                </select>
-              </label>
+                  </select>
+                </label>
+              </div>
             </header>
-            <div className="vertical-round-chart" aria-label={`${roundChartTitle} เปรียบเทียบตามปี`}>
+            <div className="vertical-round-chart" aria-label={`${selectedStatus} และ ${selectedRoundCode} เปรียบเทียบตามปี`}>
               <div className="vertical-chart-heading">
-                <strong>{roundChartTitle}</strong>
-                <span>{roundChartDescription}</span>
+                <strong>{selectedStatus} × {selectedRoundCode} · {selectedRound?.name}</strong>
+                <span>เปรียบเทียบจำนวนรายการตามสถานะ กับผู้สมัครไม่ซ้ำของรอบที่เลือก</span>
+              </div>
+              <div className="vertical-series-legend" aria-label="คำอธิบายชุดข้อมูล">
+                <span><i className="status-series" />Status: {selectedStatus}</span>
+                <span><i className="round-series" />Round: {selectedRoundCode}</span>
               </div>
               <div className="vertical-chart-plot">
                 <div className="vertical-grid-lines" aria-hidden="true"><i /><i /><i /><i /></div>
                 {availableYears.map((year, index) => {
-                  const value = roundChartValues[index];
-                  const barHeight = Math.max((value / maxRoundChartValue) * 88, value > 0 ? 4 : 0);
+                  const series = [
+                    { key: "status", value: statusChartValues[index], color: "#c56100" },
+                    { key: "round", value: roundChartValues[index], color: "#477ca8" },
+                  ];
                   return (
                     <div className="vertical-bar-column" key={year}>
-                      <div className="vertical-bar-track">
-                        <strong style={{ bottom: `calc(${barHeight}% + 7px)` }}>{formatNumber(value)}</strong>
-                        <i style={{ height: `${barHeight}%`, background: colorForYear(year, availableYears) }} />
+                      <div className="vertical-bar-pair">
+                        {series.map(({ key, value, color }) => {
+                          const barHeight = Math.max((value / maxRoundChartValue) * 82, value > 0 ? 4 : 0);
+                          return (
+                            <div className="vertical-bar-track" key={key}>
+                              <strong style={{ bottom: `calc(${barHeight}% + 7px)` }}>{formatNumber(value)}</strong>
+                              <i style={{ height: `${barHeight}%`, background: color }} />
+                            </div>
+                          );
+                        })}
                       </div>
                       <span>{year}</span>
                     </div>
@@ -307,7 +289,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
           <article className="analytics-card radar-card">
             <header>
               <div><span>6-axis Radar Profile</span><h2>โปรไฟล์ภาพรวม 6 ด้าน</h2></div>
-              <div className="analytics-year-control" aria-label="เลือกปีสำหรับ Radar และ Block Quadrant">
+              <div className="analytics-year-control" aria-label="เลือกปีสำหรับ Radar">
                 <span>ปี</span>
                 {availableYears.map((year) => (
                   <button className={analysisYear === year ? "active" : ""} key={year} onClick={() => setAnalysisYear(year)} type="button">{year}</button>
@@ -349,30 +331,6 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
               </div>
             </div>
             <p className="chart-method-note">แต่ละแกนเทียบกับค่าสูงสุดของทุกปีที่มีในคลังข้อมูล</p>
-          </article>
-
-          <article className="analytics-card opportunity-card quadrant-card">
-            <header>
-              <div><span>Block Quadrant · Opportunity Matrix</span><h2>จัดกลุ่มสาขาตาม Demand และ Conversion</h2></div>
-              <strong className="selected-year-pill">ปี {analysisYear}</strong>
-            </header>
-            <div className="quadrant-axis-label top">Conversion สูง</div>
-            <div className="block-quadrant" aria-label={`Block Quadrant แบ่งสาขาปี ${analysisYear} เป็น 4 กลุ่ม`}>
-              {quadrants.map((quadrant) => (
-                <section className={`quadrant-block ${quadrant.key}`} key={quadrant.key}>
-                  <header><div><strong>{quadrant.label}</strong><span>{quadrant.description}</span></div><b>{quadrant.rows.length}</b></header>
-                  <div className="quadrant-programs">
-                    {quadrant.rows.length ? quadrant.rows.map((major) => (
-                      <div key={`${major.code}-${major.name}`} title={major.name}>
-                        <span>{major.name}</span>
-                        <small>{formatNumber(major.applicants)} คน · {major.rate.toFixed(2)}%</small>
-                      </div>
-                    )) : <p>ยังไม่มีสาขาในกลุ่มนี้</p>}
-                  </div>
-                </section>
-              ))}
-            </div>
-            <div className="quadrant-axis-label bottom">Demand ต่ำ <span>เส้นแบ่ง: {formatNumber(Math.round(demandThreshold))} คน · {conversionThreshold.toFixed(2)}%</span> Demand สูง</div>
           </article>
 
           <article className="analytics-card status-donut-card status-comparison-card">

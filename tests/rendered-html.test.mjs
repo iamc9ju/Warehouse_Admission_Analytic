@@ -90,9 +90,10 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.match(dashboardHtml, /Status &amp; Round Comparison/);
   assert.match(dashboardHtml, /vertical-round-chart/);
   assert.match(dashboardHtml, /TCAS Status/);
-  assert.match(dashboardHtml, /Opportunity Matrix/);
+  assert.match(dashboardHtml, /TCAS Round/);
+  assert.match(dashboardHtml, /vertical-bar-pair/);
+  assert.doesNotMatch(dashboardHtml, /Opportunity Matrix|Block Quadrant/);
   assert.match(dashboardHtml, /6-axis Radar Profile/);
-  assert.match(dashboardHtml, /Block Quadrant/);
   assert.match(dashboardHtml, /Status Distribution/);
   assert.match(dashboardHtml, /Major Ranking/);
   assert.match(dashboardHtml, /All-year comparison/);
