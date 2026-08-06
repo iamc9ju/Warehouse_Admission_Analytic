@@ -2337,6 +2337,7 @@ th {
 
 .quadrant-card {
   grid-column: span 7;
+  container-type: inline-size;
 }
 
 .status-donut-card {
@@ -2452,6 +2453,136 @@ th {
 .chart-segment-control button {
   font-size: 14px;
   padding: 8px 12px;
+}
+
+.round-chart-select {
+  display: grid;
+  gap: 4px;
+  min-width: min(330px, 42vw);
+}
+
+.round-chart-select > span {
+  color: #777;
+  font-size: 11px;
+  font-weight: 740;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.round-chart-select select {
+  width: 100%;
+  min-height: 43px;
+  border: 1px solid #dfd6cc;
+  border-radius: 8px;
+  background: #f8f5f1;
+  color: #333;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 720;
+  padding: 0 36px 0 12px;
+}
+
+.round-chart-select select:hover,
+.round-chart-select select:focus-visible {
+  border-color: #c56100;
+  outline: 3px solid rgba(197, 97, 0, 0.12);
+}
+
+.vertical-round-chart {
+  min-height: 355px;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #fdfbf8, #fff);
+  padding: 16px 18px 12px;
+}
+
+.vertical-chart-heading {
+  display: grid;
+  gap: 2px;
+}
+
+.vertical-chart-heading strong {
+  color: #242424;
+  font-size: 18px;
+}
+
+.vertical-chart-heading span {
+  color: #777;
+  font-size: 12px;
+}
+
+.vertical-chart-plot {
+  position: relative;
+  display: flex;
+  gap: clamp(30px, 7vw, 92px);
+  align-items: end;
+  justify-content: center;
+  height: 245px;
+  margin-top: 12px;
+  border-bottom: 1px solid #d8d1ca;
+  padding: 0 24px;
+}
+
+.vertical-grid-lines {
+  position: absolute;
+  inset: 0 0 0;
+  display: grid;
+  grid-template-rows: repeat(4, 1fr);
+  pointer-events: none;
+}
+
+.vertical-grid-lines i {
+  border-top: 1px dashed #e5ded7;
+}
+
+.vertical-bar-column {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: clamp(78px, 10vw, 126px);
+  gap: 8px;
+  align-items: end;
+  text-align: center;
+}
+
+.vertical-bar-track {
+  position: relative;
+  display: flex;
+  height: 208px;
+  align-items: end;
+  justify-content: center;
+}
+
+.vertical-bar-track > i {
+  display: block;
+  width: min(74px, 72%);
+  min-height: 0;
+  border-radius: 7px 7px 0 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: height 280ms ease;
+}
+
+.vertical-bar-track > strong {
+  position: absolute;
+  left: 50%;
+  color: #363636;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  transform: translateX(-50%);
+}
+
+.vertical-bar-column > span {
+  color: #555;
+  font-size: 14px;
+  font-weight: 780;
+}
+
+.vertical-chart-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-top: 9px;
+  color: #777;
+  font-size: 10px;
 }
 
 .round-performance-chart,
@@ -2732,15 +2863,15 @@ th {
 .block-quadrant {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
+  align-items: start;
 }
 
 .quadrant-block {
   min-width: 0;
-  min-height: 205px;
   border: 1px solid #e8e1d9;
   border-radius: 9px;
-  padding: 12px;
+  padding: 10px;
 }
 
 .quadrant-block.grow {
@@ -2764,7 +2895,7 @@ th {
   gap: 8px;
   align-items: start;
   justify-content: space-between;
-  padding-bottom: 9px;
+  padding-bottom: 7px;
   border-bottom: 1px solid rgba(88, 70, 48, 0.1);
 }
 
@@ -2797,8 +2928,9 @@ th {
 
 .quadrant-programs {
   display: grid;
-  gap: 6px;
-  margin-top: 9px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  margin-top: 7px;
 }
 
 .quadrant-programs > div {
@@ -2808,7 +2940,7 @@ th {
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.82);
   box-shadow: 0 1px 0 rgba(80, 60, 38, 0.05);
-  padding: 7px 8px;
+  padding: 6px 7px;
 }
 
 .quadrant-programs span {
@@ -2827,7 +2959,8 @@ th {
 }
 
 .quadrant-programs p {
-  padding: 14px 4px;
+  grid-column: 1 / -1;
+  padding: 8px 3px;
 }
 
 .quadrant-axis-label {
@@ -2840,11 +2973,17 @@ th {
 
 .quadrant-axis-label.top {
   justify-content: center;
-  margin: -7px 0 5px;
+  margin: -8px 0 3px;
 }
 
 .quadrant-axis-label.bottom {
-  margin-top: 6px;
+  margin-top: 4px;
+}
+
+@container (max-width: 720px) {
+  .quadrant-programs {
+    grid-template-columns: 1fr;
+  }
 }
 
 .quadrant-axis-label.bottom span {
@@ -3149,6 +3288,11 @@ th {
     display: grid;
   }
 
+  .round-chart-select {
+    width: 100%;
+    min-width: 0;
+  }
+
   .radar-card > header {
     display: grid;
   }
@@ -3171,6 +3315,21 @@ th {
 
   .quadrant-axis-label.bottom span {
     display: none;
+  }
+
+  .vertical-round-chart {
+    min-height: 320px;
+    padding-inline: 8px;
+  }
+
+  .vertical-chart-plot {
+    gap: 18px;
+    height: 220px;
+    padding-inline: 8px;
+  }
+
+  .vertical-bar-track {
+    height: 185px;
   }
 
   .round-performance-chart > div {

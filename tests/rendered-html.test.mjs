@@ -87,7 +87,9 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   const dashboardHtml = await dashboardResponse.text();
   assert.match(dashboardHtml, /Admissions Analytics Dashboard/);
   assert.match(dashboardHtml, /Year Comparison/);
-  assert.match(dashboardHtml, /Round Performance/);
+  assert.match(dashboardHtml, /Status &amp; Round Comparison/);
+  assert.match(dashboardHtml, /vertical-round-chart/);
+  assert.match(dashboardHtml, /TCAS Status/);
   assert.match(dashboardHtml, /Opportunity Matrix/);
   assert.match(dashboardHtml, /6-axis Radar Profile/);
   assert.match(dashboardHtml, /Block Quadrant/);
@@ -95,7 +97,7 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.match(dashboardHtml, /Major Ranking/);
   assert.match(dashboardHtml, /All-year comparison/);
   assert.match(dashboardHtml, /เปรียบเทียบทุกปี/);
-  assert.match(dashboardHtml, /round-comparison-chart/);
+  assert.match(dashboardHtml, /vertical-round-chart/);
   assert.match(dashboardHtml, /major-comparison-chart/);
 
   const warehouseResponse = await renderPath("/warehouse");

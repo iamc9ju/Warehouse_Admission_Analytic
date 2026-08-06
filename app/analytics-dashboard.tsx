@@ -3,10 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { PresentationChartLineIcon } from "@heroicons/react/24/outline";
-import type { DashboardSnapshot, MajorRow, RoundRow, Year } from "./data/dashboard-types";
+import type { DashboardSnapshot, MajorRow, Year } from "./data/dashboard-types";
 import { SidebarNavigation } from "./sidebar-navigation";
-
-type RoundMetric = "applicants" | "confirmed" | "rate";
 
 type RadarMetric = {
   label: string;
@@ -30,10 +28,6 @@ const yearPalette = [
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
-}
-
-function formatMetric(metric: RoundMetric, value: number) {
-  return metric === "rate" ? `${value.toFixed(2)}%` : formatNumber(value);
 }
 
 function colorForYear(year: Year, years: Year[]) {
@@ -68,12 +62,15 @@ function radarPolygon(values: number[], radius = 112) {
 
 export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: DashboardSnapshot }) {
   const { majorRows, rounds, statuses, warehouseHealth, years } = snapshot;
-  const [roundMetric, setRoundMetric] = useState<RoundMetric>("applicants");
   const sortedOverviews = [...years].sort((first, second) => first.year - second.year);
   const availableYears = sortedOverviews.map((overview) => overview.year);
   const firstYear = availableYears[0];
   const lastYear = availableYears[availableYears.length - 1];
   const [analysisYear, setAnalysisYear] = useState<Year>(() => lastYear);
+  const statusLabels = Array.from(new Set(statuses.map((status) => status.label)));
+  const roundCodes = Array.from(new Set(rounds.map((round) => round.code))).sort();
+  const defaultStatus = statusLabels.includes("ผู้สมัคร") ? "ผู้สมัคร" : statusLabels[0];
+  const [roundChartSelection, setRoundChartSelection] = useState(() => `status:${defaultStatus}`);
   const hasManyYears = availableYears.length > 4;
 
   const comparisonKpis = [
@@ -83,9 +80,19 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
     { label: "อัตรายืนยันสิทธิ์", key: "rate", format: (value: number) => `${value.toFixed(2)}%` },
   ] as const;
 
-  const roundGroups = [...groupRows(rounds, (round) => round.code).entries()]
-    .sort(([first], [second]) => first.localeCompare(second));
-  const maxRoundMetric = Math.max(...rounds.map((round) => round[roundMetric]), 1);
+  const [roundChartType, roundChartKey] = roundChartSelection.split(":", 2);
+  const selectedRound = rounds.find((round) => round.code === roundChartKey);
+  const roundChartValues = availableYears.map((year) => {
+    if (roundChartType === "status") {
+      return statuses.find((status) => status.year === year && status.label === roundChartKey)?.choices ?? 0;
+    }
+    return rounds.find((round) => round.year === year && round.code === roundChartKey)?.applicants ?? 0;
+  });
+  const maxRoundChartValue = Math.max(...roundChartValues, 1);
+  const roundChartTitle = roundChartType === "status" ? roundChartKey : `${roundChartKey} · ${selectedRound?.name ?? ""}`;
+  const roundChartDescription = roundChartType === "status"
+    ? "จำนวนตัวเลือกที่มีสถานะนี้"
+    : "จำนวนผู้สมัครไม่ซ้ำในรอบนี้";
 
   const majorGroups = [...groupRows(majorRows, (major) => `${major.code}-${major.name}`).entries()]
     .sort(([, firstRows], [, secondRows]) => (
@@ -256,34 +263,44 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
 
           <article className="analytics-card round-performance-card">
             <header>
-              <div><span>Round Performance</span><h2>ผลลัพธ์แต่ละรอบ เปรียบเทียบทุกปี</h2></div>
-              <div className="chart-segment-control">
-                {(["applicants", "confirmed", "rate"] as RoundMetric[]).map((metric) => (
-                  <button className={roundMetric === metric ? "active" : ""} key={metric} onClick={() => setRoundMetric(metric)} type="button">
-                    {metric === "applicants" ? "ผู้สมัคร" : metric === "confirmed" ? "ยืนยัน" : "อัตรา"}
-                  </button>
-                ))}
-              </div>
-            </header>
-            <div className="round-comparison-chart">
-              {roundGroups.map(([code, rows]) => (
-                <section key={code}>
-                  <div className="comparison-row-label"><b>{code}</b><small>{rows[0]?.name}</small></div>
-                  <div className="comparison-series">
-                    {availableYears.map((year) => {
-                      const row = rows.find((item) => item.year === year) as RoundRow | undefined;
-                      const value = row?.[roundMetric] ?? 0;
-                      return (
-                        <div key={year}>
-                          <span>{year}</span>
-                          <i><b style={{ width: `${(value / maxRoundMetric) * 100}%`, background: colorForYear(year, availableYears) }} /></i>
-                          <strong>{formatMetric(roundMetric, value)}</strong>
-                        </div>
-                      );
+              <div><span>Status & Round Comparison</span><h2>สถานะและรอบ TCAS เปรียบเทียบตามปี</h2></div>
+              <label className="round-chart-select">
+                <span>เลือกข้อมูล</span>
+                <select value={roundChartSelection} onChange={(event) => setRoundChartSelection(event.target.value)}>
+                  <optgroup label="TCAS Status">
+                    {statusLabels.map((label) => <option key={label} value={`status:${label}`}>{label}</option>)}
+                  </optgroup>
+                  <optgroup label="รอบ TCAS">
+                    {roundCodes.map((code) => {
+                      const round = rounds.find((item) => item.code === code);
+                      return <option key={code} value={`round:${code}`}>{code} — {round?.name}</option>;
                     })}
-                  </div>
-                </section>
-              ))}
+                  </optgroup>
+                </select>
+              </label>
+            </header>
+            <div className="vertical-round-chart" aria-label={`${roundChartTitle} เปรียบเทียบตามปี`}>
+              <div className="vertical-chart-heading">
+                <strong>{roundChartTitle}</strong>
+                <span>{roundChartDescription}</span>
+              </div>
+              <div className="vertical-chart-plot">
+                <div className="vertical-grid-lines" aria-hidden="true"><i /><i /><i /><i /></div>
+                {availableYears.map((year, index) => {
+                  const value = roundChartValues[index];
+                  const barHeight = Math.max((value / maxRoundChartValue) * 88, value > 0 ? 4 : 0);
+                  return (
+                    <div className="vertical-bar-column" key={year}>
+                      <div className="vertical-bar-track">
+                        <strong style={{ bottom: `calc(${barHeight}% + 7px)` }}>{formatNumber(value)}</strong>
+                        <i style={{ height: `${barHeight}%`, background: colorForYear(year, availableYears) }} />
+                      </div>
+                      <span>{year}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="vertical-chart-footer"><span>ปีการศึกษา</span><small>หน่วย: คน/รายการตามระดับข้อมูลในคลัง</small></div>
             </div>
           </article>
 
