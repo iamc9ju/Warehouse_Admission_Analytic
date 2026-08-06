@@ -572,7 +572,7 @@ h2 {
 }
 
 .majors-panel {
-  grid-column: span 1;
+  grid-column: 2 / -1;
 }
 
 .panel-title input {

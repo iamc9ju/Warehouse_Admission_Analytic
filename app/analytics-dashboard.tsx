@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { PresentationChartLineIcon } from "@heroicons/react/24/outline";
 import type { DashboardSnapshot, MajorRow, Year } from "./data/dashboard-types";
@@ -26,8 +26,409 @@ const yearPalette = [
   "#3f8f8b",
 ];
 
+const majorColors = [
+  "#c56100", // Amber / Orange
+  "#1976d2", // Blue
+  "#2e7d32", // Green
+  "#7b1fa2", // Purple
+  "#c2185b", // Crimson
+  "#0097a7", // Teal
+  "#e65100", // Deep Orange
+  "#5d4037", // Brown
+  "#303f9f", // Indigo
+  "#00796b", // Dark Teal
+];
+
+function getMajorColor(index: number) {
+  return majorColors[index % majorColors.length];
+}
+
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
+}
+
+function MajorTrendLineCharts({
+  availableYears,
+  majorRows,
+}: {
+  availableYears: Year[];
+  majorRows: MajorRow[];
+}) {
+  const [hoveredMajor, setHoveredMajor] = useState<string | null>(null);
+
+  const uniqueMajors = useMemo(() => {
+    const map = new Map<string, { code: string; name: string }>();
+    majorRows.forEach((m) => {
+      if (!map.has(m.code)) {
+        map.set(m.code, { code: m.code, name: m.name });
+      }
+    });
+    return Array.from(map.values());
+  }, [majorRows]);
+
+  return (
+    <article className="analytics-card major-ranking-card" style={{ gridColumn: "1 / -1" }}>
+      <header>
+        <div>
+          <span>Major YoY Comparison</span>
+          <h2>แนวโน้มผู้สมัครและผู้ยืนยันสิทธิ์แต่ละสาขาวิชา ทุกปี</h2>
+        </div>
+        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+          <Link href="/majors" className="link-button" style={{ margin: 0, textDecoration: "none" }}>
+            ดูรายละเอียดเจาะลึก →
+          </Link>
+        </div>
+      </header>
+
+      {/* Major Legend Pills with Hover interaction */}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "8px 12px",
+          margin: "18px 0 24px",
+          padding: "14px 18px",
+          background: "#faf7f2",
+          borderRadius: "12px",
+          border: "1px solid #eae2d6",
+        }}
+      >
+        <span style={{ fontSize: "12px", fontWeight: 800, color: "#777", alignSelf: "center", marginRight: "4px" }}>
+          สาขาวิชา:
+        </span>
+        {uniqueMajors.map((m, idx) => {
+          const color = getMajorColor(idx);
+          const isHovered = hoveredMajor === m.code;
+          const isDimmed = hoveredMajor !== null && !isHovered;
+          return (
+            <button
+              key={m.code}
+              type="button"
+              onMouseEnter={() => setHoveredMajor(m.code)}
+              onMouseLeave={() => setHoveredMajor(null)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "6px 12px",
+                borderRadius: "999px",
+                border: `1.5px solid ${isHovered ? color : "#e0d8cc"}`,
+                background: isHovered ? `${color}18` : "#ffffff",
+                cursor: "pointer",
+                transition: "all 180ms ease",
+                opacity: isDimmed ? 0.45 : 1,
+                transform: isHovered ? "scale(1.04)" : "none",
+              }}
+            >
+              <span
+                style={{
+                  width: "10px",
+                  height: "10px",
+                  borderRadius: "50%",
+                  backgroundColor: color,
+                  display: "inline-block",
+                }}
+              />
+              <span style={{ fontSize: "12.5px", fontWeight: 750, color: isHovered ? color : "#333" }}>
+                {m.name}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 2 Line Charts in Grid */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(440px, 1fr))",
+          gap: "24px",
+        }}
+      >
+        <SingleMajorLineChart
+          title="📈 กราฟจำนวนผู้สมัคร (Applicants)"
+          subtitle="แนวโน้มจำนวนผู้สมัครของแต่ละสาขาวิชา แยกตามปีการศึกษา"
+          metricKey="applicants"
+          availableYears={availableYears}
+          uniqueMajors={uniqueMajors}
+          majorRows={majorRows}
+          getColor={getMajorColor}
+          hoveredMajor={hoveredMajor}
+          setHoveredMajor={setHoveredMajor}
+        />
+        <SingleMajorLineChart
+          title="✅ กราฟจำนวนผู้ยืนยันสิทธิ์ (Confirmed)"
+          subtitle="แนวโน้มจำนวนผู้ยืนยันสิทธิ์ของแต่ละสาขาวิชา แยกตามปีการศึกษา"
+          metricKey="confirmed"
+          availableYears={availableYears}
+          uniqueMajors={uniqueMajors}
+          majorRows={majorRows}
+          getColor={getMajorColor}
+          hoveredMajor={hoveredMajor}
+          setHoveredMajor={setHoveredMajor}
+        />
+      </div>
+    </article>
+  );
+}
+
+function SingleMajorLineChart({
+  title,
+  subtitle,
+  metricKey,
+  availableYears,
+  uniqueMajors,
+  majorRows,
+  getColor,
+  hoveredMajor,
+  setHoveredMajor,
+}: {
+  title: string;
+  subtitle: string;
+  metricKey: "applicants" | "confirmed";
+  availableYears: Year[];
+  uniqueMajors: { code: string; name: string }[];
+  majorRows: MajorRow[];
+  getColor: (idx: number) => string;
+  hoveredMajor: string | null;
+  setHoveredMajor: (code: string | null) => void;
+}) {
+  const [activeTooltip, setActiveTooltip] = useState<{
+    x: number;
+    y: number;
+    year: Year;
+    majorName: string;
+    value: number;
+    color: string;
+  } | null>(null);
+
+  const dataByMajor = uniqueMajors.map((m, idx) => {
+    const points = availableYears.map((year) => {
+      const row = majorRows.find((r) => r.code === m.code && r.year === year);
+      return {
+        year,
+        value: row ? row[metricKey] : 0,
+      };
+    });
+    return {
+      code: m.code,
+      name: m.name,
+      color: getColor(idx),
+      points,
+    };
+  });
+
+  const allValues = dataByMajor.flatMap((d) => d.points.map((p) => p.value));
+  const rawMax = Math.max(...allValues, 10);
+  const pow = Math.pow(10, Math.floor(Math.log10(rawMax)));
+  const maxVal = Math.ceil(rawMax / (pow / 2 || 1)) * (pow / 2 || 1) || 10;
+
+  const svgWidth = 560;
+  const svgHeight = 280;
+  const padLeft = 55;
+  const padRight = 35;
+  const padTop = 35;
+  const padBottom = 45;
+  const plotW = svgWidth - padLeft - padRight;
+  const plotH = svgHeight - padTop - padBottom;
+
+  const getX = (yearIdx: number) => {
+    if (availableYears.length <= 1) return padLeft + plotW / 2;
+    return padLeft + (yearIdx * plotW) / (availableYears.length - 1);
+  };
+
+  const getY = (val: number) => {
+    return padTop + plotH - (val / maxVal) * plotH;
+  };
+
+  const yTicks = [0, 0.25, 0.5, 0.75, 1].map((pct) => ({
+    val: Math.round(maxVal * pct),
+    y: padTop + plotH - pct * plotH,
+  }));
+
+  return (
+    <div
+      style={{
+        border: "1px solid #eae2d6",
+        borderRadius: "14px",
+        background: "#ffffff",
+        padding: "20px 22px",
+        boxShadow: "0 8px 24px rgba(42, 31, 19, 0.04)",
+        position: "relative",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+        <div>
+          <h3 style={{ fontSize: "16px", fontWeight: 850, color: "#111313", margin: 0 }}>{title}</h3>
+          <span style={{ fontSize: "12px", color: "#6c6f70", marginTop: "3px", display: "block" }}>{subtitle}</span>
+        </div>
+        <span
+          style={{
+            fontSize: "11px",
+            fontWeight: 800,
+            padding: "5px 11px",
+            borderRadius: "999px",
+            background: metricKey === "applicants" ? "#fff1df" : "#e8f5e8",
+            color: metricKey === "applicants" ? "#8d4c05" : "#2f7d32",
+            border: `1px solid ${metricKey === "applicants" ? "#f3d2a9" : "#c8e6c9"}`,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {metricKey === "applicants" ? "จำนวนคนสมัคร" : "จำนวนยืนยันสิทธิ์"}
+        </span>
+      </div>
+
+      <div style={{ width: "100%", overflowX: "auto", position: "relative" }}>
+        <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} style={{ width: "100%", height: "auto", display: "block" }}>
+          {/* Horizontal Grid lines & Y-axis labels */}
+          {yTicks.map((tick) => (
+            <g key={tick.val}>
+              <line
+                x1={padLeft}
+                y1={tick.y}
+                x2={svgWidth - padRight}
+                y2={tick.y}
+                stroke="#eee8e1"
+                strokeDasharray={tick.val === 0 ? "none" : "4 4"}
+                strokeWidth={tick.val === 0 ? "1.5" : "1"}
+              />
+              <text x={padLeft - 10} y={tick.y + 4} textAnchor="end" fontSize="11" fill="#757575" fontWeight="600">
+                {formatNumber(tick.val)}
+              </text>
+            </g>
+          ))}
+
+          {/* X-axis year ticks */}
+          {availableYears.map((year, yearIdx) => {
+            const x = getX(yearIdx);
+            return (
+              <g key={year}>
+                <line x1={x} y1={padTop + plotH} x2={x} y2={padTop + plotH + 6} stroke="#bbb" strokeWidth="1.5" />
+                <text x={x} y={padTop + plotH + 24} textAnchor="middle" fontSize="13" fontWeight="800" fill="#333">
+                  ปี {year}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Polylines for each major */}
+          {dataByMajor.map((m) => {
+            const isHovered = hoveredMajor === m.code;
+            const isDimmed = hoveredMajor !== null && !isHovered;
+            const pathPoints = m.points.map((p, yearIdx) => `${getX(yearIdx)},${getY(p.value)}`).join(" ");
+
+            return (
+              <g
+                key={m.code}
+                onMouseEnter={() => setHoveredMajor(m.code)}
+                onMouseLeave={() => setHoveredMajor(null)}
+                style={{ cursor: "pointer" }}
+              >
+                {/* Background wider stroke for easier hover selection */}
+                <polyline
+                  points={pathPoints}
+                  fill="none"
+                  stroke="transparent"
+                  strokeWidth="14"
+                />
+
+                {/* Visible Line */}
+                <polyline
+                  points={pathPoints}
+                  fill="none"
+                  stroke={m.color}
+                  strokeWidth={isHovered ? "4" : "2.5"}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity={isDimmed ? 0.18 : isHovered ? 1 : 0.85}
+                  style={{ transition: "all 180ms ease" }}
+                />
+
+                {/* Data Points */}
+                {m.points.map((p, yearIdx) => {
+                  const cx = getX(yearIdx);
+                  const cy = getY(p.value);
+                  return (
+                    <g
+                      key={p.year}
+                      onMouseEnter={() =>
+                        setActiveTooltip({
+                          x: cx,
+                          y: cy,
+                          year: p.year,
+                          majorName: m.name,
+                          value: p.value,
+                          color: m.color,
+                        })
+                      }
+                      onMouseLeave={() => setActiveTooltip(null)}
+                    >
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={isHovered ? "6.5" : "4.5"}
+                        fill={m.color}
+                        stroke="#ffffff"
+                        strokeWidth="2.5"
+                        opacity={isDimmed ? 0.25 : 1}
+                        style={{ transition: "all 180ms ease" }}
+                      />
+                      {/* Value label on points */}
+                      <text
+                        x={cx}
+                        y={cy - 10}
+                        textAnchor="middle"
+                        fontSize="10"
+                        fontWeight="800"
+                        fill={m.color}
+                        stroke="#ffffff"
+                        strokeWidth="3.5"
+                        paintOrder="stroke"
+                        opacity={isDimmed ? 0.15 : 1}
+                      >
+                        {formatNumber(p.value)}
+                      </text>
+                    </g>
+                  );
+                })}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Floating Tooltip Card */}
+        {activeTooltip && (
+          <div
+            style={{
+              position: "absolute",
+              top: `${(activeTooltip.y / svgHeight) * 100}%`,
+              left: `${(activeTooltip.x / svgWidth) * 100}%`,
+              transform: "translate(-50%, -125%)",
+              background: "#111313",
+              color: "#ffffff",
+              padding: "8px 12px",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: 700,
+              boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
+              pointerEvents: "none",
+              zIndex: 10,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
+              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: activeTooltip.color }} />
+              <span style={{ color: "#dddddd", fontSize: "11px" }}>{activeTooltip.majorName} (ปี {activeTooltip.year})</span>
+            </div>
+            <div style={{ fontSize: "14px", fontWeight: 850 }}>
+              {metricKey === "applicants" ? "ผู้สมัคร: " : "ยืนยันสิทธิ์: "}
+              <span style={{ color: "#ffd54f" }}>{formatNumber(activeTooltip.value)} คน</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function colorForYear(year: Year, years: Year[]) {
@@ -102,15 +503,6 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
       secondRows.reduce((sum, row) => sum + row.applicants, 0)
       - firstRows.reduce((sum, row) => sum + row.applicants, 0)
   ));
-  const maxMajorApplicants = Math.max(...majorRows.map((major) => major.applicants), 1);
-
-  const statusGroups = [...groupRows(statuses, (status) => status.label).entries()]
-    .sort(([, firstRows], [, secondRows]) => (
-      secondRows.reduce((sum, row) => sum + row.choices, 0)
-      - firstRows.reduce((sum, row) => sum + row.choices, 0)
-    ))
-    .slice(0, 6);
-  const maxStatusShare = Math.max(...statuses.map((status) => status.share), 1);
 
   const selectedOverview = sortedOverviews.find((overview) => overview.year === analysisYear) ?? sortedOverviews[sortedOverviews.length - 1];
   const radarMetrics: RadarMetric[] = selectedOverview ? [
@@ -167,7 +559,6 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
       rows: rounds.filter((r) => r.code === code),
     };
   });
-  const maxRoundVal = Math.max(...rounds.map((r) => Math.max(r.applicants, r.confirmed)), 1);
 
   return (
     <main className="app-frame analytics-app-frame">
@@ -361,90 +752,13 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
             </div>
           </article>
 
-          <article className="analytics-card major-ranking-card">
-            <header>
-              <div>
-                <span>Major YoY Comparison</span>
-                <h2>ผู้สมัครและยืนยันสิทธิ์แต่ละสาขาวิชา ทุกปี</h2>
-              </div>
-              <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-                <div className="analytics-legend" style={{ gap: "10px 18px", margin: 0 }}>
-                  <span><i style={{ background: "#e8d8c3", border: "1px solid #bd9d75" }} />2568 ผู้สมัคร</span>
-                  <span><i style={{ background: "#4a7bb0" }} />2568 ยืนยันสิทธิ์</span>
-                  <span><i style={{ background: "#f5c38b", border: "1px solid #c56100" }} />2569 ผู้สมัคร</span>
-                  <span><i style={{ background: "#2e7d32" }} />2569 ยืนยันสิทธิ์</span>
-                </div>
-                <Link href="/majors">ดูรายละเอียดเจาะลึก</Link>
-              </div>
-            </header>
-            <div className="major-comparison-chart">
-              {majorGroups.slice(0, 7).map(([, rows], index) => (
-                <section key={`${rows[0].code}-${rows[0].name}`}>
-                  <div className="comparison-row-label"><b>{index + 1}</b><small>{rows[0].name}</small></div>
-                  <div className="comparison-series" style={{ display: "grid", gap: "8px" }}>
-                    {availableYears.map((year) => {
-                      const row = rows.find((item) => item.year === year) as MajorRow | undefined;
-                      const applicants = row?.applicants ?? 0;
-                      const confirmed = row?.confirmed ?? 0;
-                      const confPct = applicants > 0 ? (confirmed / applicants) * 100 : 0;
-                      const outerWidthPct = (applicants / maxMajorApplicants) * 100;
-                      return (
-                        <div key={year} style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                          <span style={{ fontSize: "12px", fontWeight: 750, color: "#666", width: "36px" }}>{year}</span>
-                          <i
-                            title={`${year} ${rows[0].name}: ผู้สมัคร ${formatNumber(applicants)} คน, ยืนยันสิทธิ์ ${formatNumber(confirmed)} คน (${row?.rate.toFixed(2)}%)`}
-                            style={{
-                              flex: 1,
-                              height: "22px",
-                              background: "#f0ece7",
-                              borderRadius: "5px",
-                              position: "relative",
-                              overflow: "hidden",
-                            }}
-                          >
-                            <span
-                              style={{
-                                position: "absolute",
-                                top: 0,
-                                bottom: 0,
-                                left: 0,
-                                width: `${outerWidthPct}%`,
-                                background: year === 2568 ? "#e8d8c3" : "#f5c38b",
-                                border: `1px solid ${year === 2568 ? "#bd9d75" : "#c56100"}`,
-                                borderRadius: "5px",
-                                overflow: "hidden",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  position: "absolute",
-                                  top: 0,
-                                  bottom: 0,
-                                  left: 0,
-                                  width: `${confPct}%`,
-                                  background: year === 2568 ? "#4a7bb0" : "#2e7d32",
-                                  borderRadius: "4px 0 0 4px",
-                                  transition: "width 300ms ease",
-                                }}
-                              />
-                            </span>
-                          </i>
-                          <strong style={{ fontSize: "12px", width: "52px", textAlign: "right", fontVariantNumeric: "tabular-nums", color: "#333" }}>
-                            {formatNumber(applicants)}
-                          </strong>
-                          <span style={{ fontSize: "11px", color: year === 2568 ? "#2b5684" : "#1b5e20", fontWeight: 750, width: "96px", textAlign: "right", whiteSpace: "nowrap" }}>
-                            ยืนยัน {formatNumber(confirmed)} <small style={{ fontWeight: 600, color: "#666" }}>({row ? `${row.rate.toFixed(2)}%` : "—"})</small>
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              ))}
-            </div>
-          </article>
+          <MajorTrendLineCharts
+            availableYears={availableYears}
+            majorRows={majorRows}
+          />
         </section>
       </section>
     </main>
   );
 }
+
