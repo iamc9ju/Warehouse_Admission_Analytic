@@ -764,42 +764,44 @@ function StandardDashboardPage({ activePage, snapshot }: { activePage: PageName;
                     </article>
                   )}
 
-                  <article id="rounds" className="panel rounds-panel">
-                    <div className="panel-title">
-                      <h2>ภาพรวม TCAS รอบ 1-4 ปี {selectedYear}</h2>
-                      <span className="mini-pill">{visibleRounds.length} round rows</span>
-                    </div>
-                    <div className="round-table-wrap">
-                      <table className="round-table">
-                        <thead>
-                          <tr>
-                            <th>TCAS</th>
-                            <th>Choices</th>
-                            <th>Unique Applicants</th>
-                            <th>Confirmed</th>
-                            <th>Rate</th>
-                            <th>Files</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {visibleRounds.map((round) => (
-                            <tr key={`${round.year}-${round.code}`}>
-                              <td>
-                                <span className={`round-year y${round.year}`}>{round.year}</span>
-                                <strong>{round.code}</strong>
-                                <small>{round.name}</small>
-                              </td>
-                              <td>{formatNumber(round.choices)}</td>
-                              <td>{formatNumber(round.applicants)}</td>
-                              <td>{formatNumber(round.confirmed)}</td>
-                              <td><span className="rate-chip">{round.rate.toFixed(2)}%</span></td>
-                              <td>{round.files}</td>
+                  {activePage !== "Rounds" && (
+                    <article id="rounds" className="panel rounds-panel">
+                      <div className="panel-title">
+                        <h2>ภาพรวม TCAS รอบ 1-4 ปี {selectedYear}</h2>
+                        <span className="mini-pill">{visibleRounds.length} round rows</span>
+                      </div>
+                      <div className="round-table-wrap">
+                        <table className="round-table">
+                          <thead>
+                            <tr>
+                              <th>TCAS</th>
+                              <th>Choices</th>
+                              <th>Unique Applicants</th>
+                              <th>Confirmed</th>
+                              <th>Rate</th>
+                              <th>Files</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </article>
+                          </thead>
+                          <tbody>
+                            {visibleRounds.map((round) => (
+                              <tr key={`${round.year}-${round.code}`}>
+                                <td>
+                                  <span className={`round-year y${round.year}`}>{round.year}</span>
+                                  <strong>{round.code}</strong>
+                                  <small>{round.name}</small>
+                                </td>
+                                <td>{formatNumber(round.choices)}</td>
+                                <td>{formatNumber(round.applicants)}</td>
+                                <td>{formatNumber(round.confirmed)}</td>
+                                <td><span className="rate-chip">{round.rate.toFixed(2)}%</span></td>
+                                <td>{round.files}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </article>
+                  )}
                 </>
               )}
 
