@@ -870,10 +870,8 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
                 <h2>ภาพรวมผู้สมัครและยืนยันสิทธิ์แต่ละรอบทุกปี</h2>
               </div>
               <div className="analytics-legend" style={{ gap: "10px 18px", margin: 0 }}>
-                <span><i style={{ background: "#e8d8c3", border: "1px solid #bd9d75" }} />2568 ผู้สมัคร</span>
-                <span><i style={{ background: "#4a7bb0" }} />2568 ยืนยันสิทธิ์</span>
-                <span><i style={{ background: "#f5c38b", border: "1px solid #c56100" }} />2569 ผู้สมัคร</span>
-                <span><i style={{ background: "#2e7d32" }} />2569 ยืนยันสิทธิ์</span>
+                <span><i style={{ background: "#f5c38b", border: "1px solid #c56100" }} />ผู้สมัคร</span>
+                <span><i style={{ background: "#2e7d32" }} />ยืนยันสิทธิ์</span>
               </div>
             </header>
             <div
@@ -916,8 +914,8 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
                               title={`${year} ${group.code}: ผู้สมัคร ${formatNumber(appVal)} คน, ยืนยันสิทธิ์ ${formatNumber(confVal)} คน (${confPct.toFixed(1)}%)`}
                               style={{
                                 height: `${(appVal / maxInGroup) * 82}%`,
-                                background: year === 2568 ? "#e8d8c3" : "#f5c38b",
-                                border: `1px solid ${year === 2568 ? "#bd9d75" : "#c56100"}`,
+                                background: "#f5c38b",
+                                border: "1px solid #c56100",
                                 position: "relative",
                                 overflow: "visible",
                                 borderRadius: "4px 4px 0 0",
@@ -931,7 +929,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
                                   left: 0,
                                   right: 0,
                                   height: `${confPct}%`,
-                                  background: year === 2568 ? "#4a7bb0" : "#2e7d32",
+                                  background: "#2e7d32",
                                   borderRadius: confPct >= 98 ? "3px 3px 0 0" : "0",
                                   transition: "height 300ms ease",
                                 }}
