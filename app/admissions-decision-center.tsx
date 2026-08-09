@@ -16,10 +16,10 @@ import { SidebarNavigation } from "./sidebar-navigation";
 type Question = DashboardSnapshot["businessQuestions"][number];
 type Insight = DashboardSnapshot["decisionInsights"][number];
 
-const recommendedQuestionIds = ["BQ-001", "BQ-004", "BQ-003", "BQ-007", "BQ-008"];
+const recommendedQuestionIds = ["BQ-001", /* "BQ-004", "BQ-003", */ "BQ-007", "BQ-008"];
 const visibleCategories = [
   "ทั้งหมด",
-  "แนะนำ",
+  // "แนะนำ",
   "Demand",
   "Round Strategy",
   "Conversion",
@@ -29,22 +29,34 @@ const visibleCategories = [
 
 const thaiRecommendedActions: Record<string, string> = {
   "BQ-002": "เพิ่มทรัพยากรด้านการสื่อสารก่อนและระหว่างช่วงยืนยันสิทธิ์ TCAS3",
-  "BQ-003": "สื่อสารเกณฑ์คุณสมบัติให้ชัดเจนและติดตามสาขาที่มี demand สูง",
-  "BQ-004": "แยกแผนสร้าง demand ออกจากแผนเพิ่ม confirmation conversion",
-  "BQ-005": "ใช้ข้อมูลเพื่อทบทวนผู้บริหาร พร้อมเก็บหลักฐานการ refresh",
+  // "BQ-003": "สื่อสารเกณฑ์คุณสมบัติให้ชัดเจนและติดตามสาขาที่มี demand สูง",
+  // "BQ-004": "แยกแผนสร้าง demand ออกจากแผนเพิ่ม confirmation conversion",
+  // "BQ-005": "ใช้ข้อมูลเพื่อทบทวนผู้บริหาร พร้อมเก็บหลักฐานการ refresh",
   "BQ-006": "ทบทวน quota และ seat allocation ควบคู่กับการติดตามหลังได้รับ offer",
   "BQ-007": "ทบทวนข้อความของหลักสูตรและเปรียบเทียบ positioning กับคู่แข่ง",
   "BQ-008": "สื่อสารผลลัพธ์ด้านโลจิสติกส์และรักษาข้อความที่สร้าง conversion",
   "BQ-009": "เพิ่ม awareness แบบเจาะกลุ่ม โดยรักษาความตรงกับผู้สมัคร",
-  "BQ-010": "เสริมการสื่อสารหลัง shortlist และลดความไม่แน่นอนก่อนยืนยันสิทธิ์",
-  "BQ-011": "เพิ่ม communication และทีมติดตามในช่วงยืนยันสิทธิ์ TCAS3",
-  "BQ-012": "ย้ายการสื่อสารเรื่องความเหมาะสมของหลักสูตรให้เร็วขึ้น",
-  "BQ-013": "เพิ่มตัวกรองประเภทหลักสูตร และเปรียบเทียบด้านราคาและเวลาเรียน",
-  "BQ-014": "ทำ automated go/no-go check ก่อนเผยแพร่ dashboard ทุกครั้ง",
-  "BQ-015": "ทำ scheduled refresh และแจ้งเตือนทันทีเมื่อเกิน SLA",
+  // "BQ-010": "เสริมการสื่อสารหลัง shortlist และลดความไม่แน่นอนก่อนยืนยันสิทธิ์",
+  // "BQ-011": "เพิ่ม communication และทีมติดตามในช่วงยืนยันสิทธิ์ TCAS3",
+  // "BQ-012": "ย้ายการสื่อสารเรื่องความเหมาะสมของหลักสูตรให้เร็วขึ้น",
+  // "BQ-013": "เพิ่มตัวกรองประเภทหลักสูตร และเปรียบเทียบด้านราคาและเวลาเรียน",
+  // "BQ-014": "ทำ automated go/no-go check ก่อนเผยแพร่ dashboard ทุกครั้ง",
+  // "BQ-015": "ทำ scheduled refresh และแจ้งเตือนทันทีเมื่อเกิน SLA",
 };
 
-const rateQuestionIds = new Set(["BQ-001", "BQ-002", "BQ-006", "BQ-009", "BQ-010", "BQ-011"]);
+const rateQuestionIds = new Set(["BQ-001", "BQ-002", "BQ-006", "BQ-009" /* , "BQ-010", "BQ-011" */]);
+
+const commentedQuestionIds = new Set([
+  "BQ-003",
+  "BQ-004",
+  "BQ-005",
+  "BQ-010",
+  "BQ-011",
+  "BQ-012",
+  "BQ-013",
+  "BQ-014",
+  "BQ-015",
+]);
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
@@ -62,6 +74,10 @@ function confidenceLabel(confidence: Insight["confidence"]) {
 
 export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnapshot }) {
   const { businessQuestions, decisionInsights, majorRows, rounds, warehouseHealth } = snapshot;
+  const activeBusinessQuestions = useMemo(
+    () => businessQuestions.filter((q) => !commentedQuestionIds.has(q.id)),
+    [businessQuestions]
+  );
   const [selectedQuestionId, setSelectedQuestionId] = useState("BQ-001");
   const [activeCategory, setActiveCategory] = useState("ทั้งหมด");
   const [query, setQuery] = useState("");
@@ -70,24 +86,24 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnap
   const filteredQuestions = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("th");
     const categoryQuestions = activeCategory === "ทั้งหมด"
-      ? businessQuestions
+      ? activeBusinessQuestions
       : activeCategory === "แนะนำ"
         ? recommendedQuestionIds
-            .map((id) => businessQuestions.find((question) => question.id === id))
+            .map((id) => activeBusinessQuestions.find((question) => question.id === id))
             .filter((question): question is Question => Boolean(question))
-        : businessQuestions.filter((question) => question.domain === activeCategory);
+        : activeBusinessQuestions.filter((question) => question.domain === activeCategory);
 
     if (!normalizedQuery) return categoryQuestions;
 
-    return businessQuestions.filter((question) =>
+    return activeBusinessQuestions.filter((question) =>
       `${question.id} ${question.domain} ${question.question}`
         .toLocaleLowerCase("th")
         .includes(normalizedQuery),
     );
-  }, [activeCategory, businessQuestions, query]);
+  }, [activeCategory, activeBusinessQuestions, query]);
 
-  const selectedQuestion = businessQuestions.find((question) => question.id === selectedQuestionId)
-    ?? businessQuestions[0];
+  const selectedQuestion = activeBusinessQuestions.find((question) => question.id === selectedQuestionId)
+    ?? activeBusinessQuestions[0];
   const selectedInsight = decisionInsights.find(
     (insight) => insight.businessQuestionId === selectedQuestion.id,
   ) ?? decisionInsights[0];
@@ -163,7 +179,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnap
 
       <section className="decision-workspace" aria-label="ศูนย์ตอบคำถามการรับสมัคร">
         <aside className="question-picker">
-          <h2>เลือกคำถาม <span>{businessQuestions.length} คำถาม</span></h2>
+          <h2>เลือกคำถาม <span>{activeBusinessQuestions.length} คำถาม</span></h2>
           <div className="question-tabs" aria-label="หมวดคำถาม">
             {visibleCategories.map((category) => (
               <button
@@ -248,14 +264,14 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnap
                     <dt>ตัวชี้วัดหลัก</dt>
                     <dd className="metric-long">{selectedInsight.metricValue}</dd>
                   </div>
-                  <div>
+                  {/* <div>
                     <dt>ความเชื่อมั่น</dt>
                     <dd className="metric-long">{confidenceLabel(selectedInsight.confidence)}</dd>
                   </div>
                   <div>
                     <dt>ลำดับความสำคัญ</dt>
                     <dd>#{selectedInsight.priority}</dd>
-                  </div>
+                  </div> */}
                 </>
               )}
             </dl>
@@ -287,7 +303,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnap
               </section>
             )}
 
-            <section className="next-actions">
+            {/* <section className="next-actions">
               <h3>สิ่งที่ควรทำต่อ</h3>
               <div>
                 {actionItems.map((action, index) => (
@@ -297,10 +313,10 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnap
                   </p>
                 ))}
               </div>
-            </section>
+            </section> */}
           </article>
 
-          <footer className="answer-footer">
+          {/* <footer className="answer-footer">
             <div>
               <h3>แหล่งข้อมูล</h3>
               <span><CircleStackIcon aria-hidden="true" />{selectedInsight.martObject}</span>
@@ -311,7 +327,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnap
               ดูรายละเอียดเชิงลึก
               <ArrowRightIcon aria-hidden="true" />
             </button>
-          </footer>
+          </footer> */}
         </section>
       </section>
 

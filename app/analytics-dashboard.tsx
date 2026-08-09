@@ -224,11 +224,11 @@ function SingleMajorLineChart({
   const maxVal = Math.ceil(rawMax / (pow / 2 || 1)) * (pow / 2 || 1) || 10;
 
   const svgWidth = 560;
-  const svgHeight = 280;
+  const svgHeight = 420;
   const padLeft = 55;
   const padRight = 35;
-  const padTop = 35;
-  const padBottom = 45;
+  const padTop = 45;
+  const padBottom = 50;
   const plotW = svgWidth - padLeft - padRight;
   const plotH = svgHeight - padTop - padBottom;
 
