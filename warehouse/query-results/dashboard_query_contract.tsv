@@ -1,5 +1,5 @@
 name	object	sql
-Dashboard KPI snapshot	mart_admissions_executive_summary	select academic_year, application_choices, unique_applicants, confirmed_applicants, confirmed_rate from admissions_dw.mart_admissions_executive_summary order by academic_year;
+Dashboard KPI snapshot	mart_admissions_executive_summary	select academic_year, application_choices, unique_applicants, confirmed_applicants, confirmed_rate, source_files, avg_score from admissions_dw.mart_admissions_executive_summary order by academic_year;
 Round overview	vw_admission_round_overview	select academic_year, tcas_round_code, choices, unique_applicants, confirmed_applicants, confirmed_rate, source_files from admissions_dw.vw_admission_round_overview order by academic_year, tcas_round_code;
-Major conversion	mart_major_conversion	select academic_year, major_code, major_name, applicant_count, confirmed_count, confirmed_rate from admissions_dw.mart_major_conversion order by academic_year, applicant_count desc;
+Major conversion	mart_major_conversion	select academic_year, major_code, major_name, program_type, applicant_count, confirmed_count, confirmed_rate, avg_score, applicant_change from admissions_dw.mart_major_conversion order by academic_year, applicant_count desc;
 Quality scorecard	vw_dw_quality_scorecard	select metric_name, metric_value, source_object, validation_rule from admissions_dw.vw_dw_quality_scorecard order by metric_name;

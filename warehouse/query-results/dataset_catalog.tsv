@@ -1,8 +1,9 @@
 dataset	layer	grain	evidence	sensitivity
-admissions_excel_files	Source	source_file + year + round	11 files / 9,432 rows	PII at source only
-processed_admissions_aggregates	Staging	year + round + major/status	PII-free CSV aggregates	No PII
-fact_admission_year_overview	Core fact	academic_year	2 rows	No PII
-fact_admission_round_overview	Core fact	academic_year + tcas_round	8 rows	No PII
-fact_admission_round_major_summary	Core fact	academic_year + major	20 displayed rows	No PII
-admission_round_source_data_quality	Quality fact	source_file	11 quality records	No PII
-mart_admissions_executive_summary	Presentation mart	academic_year	dashboard-ready	No PII
+admissions_excel_files	Source	source_file + source_row	15 files / 13,649 rows	PII at source only
+admissions_fact_stage	Staging	one application choice	PII removed; opaque tokens only	Pseudonymous
+dim_student	Dimension	one pseudonymous student	HMAC-SHA256 token	Pseudonymous
+dim_year	Dimension	one academic year	2567-2569	No PII
+conformed_dimensions	Dimension	round/project/faculty/major/program/status/source	all keys referenced by fact	No PII
+fact_admission	Core fact	one application choice	13,649 rows with score	Pseudonymous
+admissions_presentation_marts	Mart	year/round/major/status aggregates	derived from one fact	No PII
+warehouse_dashboard_snapshot	Presentation	one generated artifact	dashboard-ready	No PII

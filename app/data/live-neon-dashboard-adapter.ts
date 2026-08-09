@@ -97,8 +97,18 @@ export async function loadLiveNeonSnapshot(databaseUrl: string): Promise<Dashboa
         order by academic_year, applicant_count desc
       `),
       client.query<Record<string, unknown>>(`
-        select academic_year, status_label, choices, share_pct, tone
+        select
+          academic_year,
+          status_label,
+          sum(choices) as choices,
+          round(
+            sum(choices)::numeric * 100
+            / nullif(sum(sum(choices)) over (partition by academic_year), 0),
+            2
+          ) as share_pct,
+          max(tone) as tone
         from admissions_dw.vw_admission_round_status_distribution
+        group by academic_year, status_label
         order by academic_year, choices desc
       `),
       client.query<Record<string, unknown>>(`

@@ -1,22 +1,31 @@
 {
   "runtime": {
     "source": "generated-artifact",
-    "loadedAt": "2026-07-21T00:00:00+07:00"
+    "loadedAt": "2026-08-09T00:00:00+07:00"
   },
   "warehouseSnapshot": {
-    "exportedAt": "2026-07-21",
+    "exportedAt": "2026-08-09",
     "sourceSystem": "Neon PostgreSQL",
     "schema": "admissions_dw",
     "dashboardMode": "generated warehouse mart artifact",
-    "sourceRows": 9432,
+    "sourceRows": 13649,
     "activeSourceGroups": 1,
-    "sourceFiles": 11,
-    "catalogRows": 7,
-    "lineageEdges": 7,
+    "sourceFiles": 15,
+    "catalogRows": 8,
+    "lineageEdges": 6,
     "piiExportedColumns": 0,
     "sourceQuery": "mart_admissions_executive_summary + mart_major_conversion + vw_admission_round_overview"
   },
   "years": [
+    {
+      "year": 2567,
+      "choices": 4217,
+      "applicants": 3253,
+      "confirmed": 498,
+      "rate": 15.31,
+      "sourceFiles": 4,
+      "avgScore": 19.7939
+    },
     {
       "year": 2568,
       "choices": 4853,
@@ -38,203 +47,312 @@
   ],
   "majorRows": [
     {
+      "year": 2567,
+      "code": "E04",
+      "name": "วิศวกรรมโยธา-ชลประทาน",
+      "type": "ภาคปกติ",
+      "applicants": 865,
+      "confirmed": 61,
+      "rate": 7.05,
+      "avgScore": 30.045,
+      "applicantChange": 0
+    },
+    {
+      "year": 2567,
+      "code": "E29",
+      "name": "วิศวกรรมคอมพิวเตอร์",
+      "type": "ภาคปกติ",
+      "applicants": 776,
+      "confirmed": 57,
+      "rate": 7.35,
+      "avgScore": 20.5781,
+      "applicantChange": 0
+    },
+    {
+      "year": 2567,
+      "code": "E24",
+      "name": "วิศวกรรมอุตสาหการ-โลจิสติกส์",
+      "type": "ภาคปกติ",
+      "applicants": 679,
+      "confirmed": 65,
+      "rate": 9.57,
+      "avgScore": 8.7731,
+      "applicantChange": 0
+    },
+    {
+      "year": 2567,
+      "code": "E38",
+      "name": "วิศวกรรมโยธา-โครงสร้างพื้นฐาน",
+      "type": "ภาคปกติ",
+      "applicants": 612,
+      "confirmed": 65,
+      "rate": 10.62,
+      "avgScore": 18.2563,
+      "applicantChange": 0
+    },
+    {
+      "year": 2567,
+      "code": "E03",
+      "name": "วิศวกรรมเครื่องกล",
+      "type": "ภาคปกติ",
+      "applicants": 419,
+      "confirmed": 63,
+      "rate": 15.04,
+      "avgScore": 19.0558,
+      "applicantChange": 0
+    },
+    {
+      "year": 2567,
+      "code": "E37",
+      "name": "วิศวกรรมเครื่องกล-เกษตร",
+      "type": "ภาคปกติ",
+      "applicants": 235,
+      "confirmed": 55,
+      "rate": 23.4,
+      "avgScore": 22.0527,
+      "applicantChange": 0
+    },
+    {
+      "year": 2567,
+      "code": "E36",
+      "name": "วิศวกรรมอาหาร",
+      "type": "ภาคปกติ",
+      "applicants": 187,
+      "confirmed": 56,
+      "rate": 29.95,
+      "avgScore": 20.0006,
+      "applicantChange": 0
+    },
+    {
+      "year": 2567,
+      "code": "E38",
+      "name": "วิศวกรรมโยธา-โครงสร้างพื้นฐาน (ภาคพิเศษ)",
+      "type": "ภาคพิเศษ",
+      "applicants": 172,
+      "confirmed": 50,
+      "rate": 29.07,
+      "avgScore": 15.8302,
+      "applicantChange": 0
+    },
+    {
+      "year": 2567,
+      "code": "E03",
+      "name": "วิศวกรรมเครื่องกล (ภาคพิเศษ)",
+      "type": "ภาคพิเศษ",
+      "applicants": 93,
+      "confirmed": 26,
+      "rate": 27.96,
+      "avgScore": 13.8712,
+      "applicantChange": 0
+    },
+    {
       "year": 2568,
       "code": "E38",
       "name": "วิศวกรรมโยธา-โครงสร้างพื้นฐาน",
       "type": "ภาคปกติ",
-      "applicants": 827,
+      "applicants": 770,
       "confirmed": 60,
-      "rate": 7.26,
-      "avgScore": 35.6516
-    },
-    {
-      "year": 2568,
-      "code": "E04",
-      "name": "วิศวกรรมโยธา-ชลประทาน",
-      "type": "ภาคปกติ",
-      "applicants": 750,
-      "confirmed": 60,
-      "rate": 8,
-      "avgScore": 49.224
+      "rate": 7.79,
+      "avgScore": 13.2778,
+      "applicantChange": 158
     },
     {
       "year": 2568,
       "code": "E29",
       "name": "วิศวกรรมคอมพิวเตอร์",
       "type": "ภาคปกติ",
-      "applicants": 741,
+      "applicants": 715,
       "confirmed": 63,
-      "rate": 8.5,
-      "avgScore": 40.7674
+      "rate": 8.81,
+      "avgScore": 21.1265,
+      "applicantChange": -61
+    },
+    {
+      "year": 2568,
+      "code": "E04",
+      "name": "วิศวกรรมโยธา-ชลประทาน",
+      "type": "ภาคปกติ",
+      "applicants": 708,
+      "confirmed": 60,
+      "rate": 8.47,
+      "avgScore": 24.8745,
+      "applicantChange": -157
     },
     {
       "year": 2568,
       "code": "E24",
       "name": "วิศวกรรมอุตสาหการ-โลจิสติกส์",
       "type": "ภาคปกติ",
-      "applicants": 527,
+      "applicants": 517,
       "confirmed": 62,
-      "rate": 11.76,
-      "avgScore": 35.7684
+      "rate": 11.99,
+      "avgScore": 17.7145,
+      "applicantChange": -162
     },
     {
       "year": 2568,
       "code": "E03",
       "name": "วิศวกรรมเครื่องกล",
       "type": "ภาคปกติ",
-      "applicants": 517,
+      "applicants": 509,
       "confirmed": 48,
-      "rate": 9.28,
-      "avgScore": 35.6015
+      "rate": 9.43,
+      "avgScore": 24.6525,
+      "applicantChange": 90
     },
     {
       "year": 2568,
       "code": "E37",
       "name": "วิศวกรรมเครื่องกล-เกษตร",
       "type": "ภาคปกติ",
-      "applicants": 411,
+      "applicants": 410,
       "confirmed": 56,
-      "rate": 13.63,
-      "avgScore": 46.0421
+      "rate": 13.66,
+      "avgScore": 34.2795,
+      "applicantChange": 175
     },
     {
       "year": 2568,
       "code": "E38",
       "name": "วิศวกรรมโยธา-โครงสร้างพื้นฐาน (ภาคพิเศษ)",
       "type": "ภาคพิเศษ",
-      "applicants": 335,
+      "applicants": 321,
       "confirmed": 52,
-      "rate": 15.52,
-      "avgScore": 33.0021
+      "rate": 16.2,
+      "avgScore": 20.7864,
+      "applicantChange": 149
     },
     {
       "year": 2568,
       "code": "E36",
       "name": "วิศวกรรมอาหาร",
       "type": "ภาคปกติ",
-      "applicants": 313,
+      "applicants": 309,
       "confirmed": 57,
-      "rate": 18.21,
-      "avgScore": 34.5253
+      "rate": 18.45,
+      "avgScore": 22.5021,
+      "applicantChange": 122
     },
     {
       "year": 2568,
       "code": "E03",
       "name": "วิศวกรรมเครื่องกล (ภาคพิเศษ)",
       "type": "ภาคพิเศษ",
-      "applicants": 293,
+      "applicants": 292,
       "confirmed": 35,
-      "rate": 11.95,
-      "avgScore": 31.1507
+      "rate": 11.99,
+      "avgScore": 24.0275,
+      "applicantChange": 199
     },
     {
       "year": 2568,
       "code": "E39",
       "name": "วิศวกรรมนวัตกรรมเพื่อการเกษตรและอุตสาหกรรม",
       "type": "ภาคปกติ",
-      "applicants": 139,
+      "applicants": 136,
       "confirmed": 35,
-      "rate": 25.18,
-      "avgScore": 43.2799
+      "rate": 25.74,
+      "avgScore": 23.0411,
+      "applicantChange": 0
     },
     {
       "year": 2569,
       "code": "E38",
       "name": "วิศวกรรมโยธา-โครงสร้างพื้นฐาน",
       "type": "ภาคปกติ",
-      "applicants": 825,
+      "applicants": 763,
       "confirmed": 63,
-      "rate": 7.64,
-      "avgScore": 35.7908,
-      "applicantChange": -2
+      "rate": 8.26,
+      "avgScore": 14.3597,
+      "applicantChange": -7
     },
     {
       "year": 2569,
       "code": "E24",
       "name": "วิศวกรรมอุตสาหการ-โลจิสติกส์",
       "type": "ภาคปกติ",
-      "applicants": 684,
+      "applicants": 665,
       "confirmed": 62,
-      "rate": 9.06,
-      "avgScore": 35.9961,
-      "applicantChange": 157
+      "rate": 9.32,
+      "avgScore": 21.0503,
+      "applicantChange": 148
     },
     {
       "year": 2569,
       "code": "E29",
       "name": "วิศวกรรมคอมพิวเตอร์",
       "type": "ภาคปกติ",
-      "applicants": 680,
+      "applicants": 644,
       "confirmed": 67,
-      "rate": 9.85,
-      "avgScore": 40.0213,
-      "applicantChange": -61
+      "rate": 10.4,
+      "avgScore": 19.5987,
+      "applicantChange": -71
     },
     {
       "year": 2569,
       "code": "E04",
       "name": "วิศวกรรมโยธา-ชลประทาน",
       "type": "ภาคปกติ",
-      "applicants": 602,
+      "applicants": 581,
       "confirmed": 62,
-      "rate": 10.3,
-      "avgScore": 47.2472,
-      "applicantChange": -148
+      "rate": 10.67,
+      "avgScore": 19.0715,
+      "applicantChange": -127
     },
     {
       "year": 2569,
       "code": "E03",
       "name": "วิศวกรรมเครื่องกล",
       "type": "ภาคปกติ",
-      "applicants": 543,
+      "applicants": 521,
       "confirmed": 51,
-      "rate": 9.39,
-      "avgScore": 35.5185,
-      "applicantChange": 26
+      "rate": 9.79,
+      "avgScore": 23.3519,
+      "applicantChange": 12
     },
     {
       "year": 2569,
       "code": "E38",
       "name": "วิศวกรรมโยธา-โครงสร้างพื้นฐาน (ภาคพิเศษ)",
       "type": "ภาคพิเศษ",
-      "applicants": 343,
+      "applicants": 328,
       "confirmed": 52,
-      "rate": 15.16,
-      "avgScore": 34.1846,
-      "applicantChange": 8
+      "rate": 15.85,
+      "avgScore": 21.8263,
+      "applicantChange": 7
     },
     {
       "year": 2569,
       "code": "E36",
       "name": "วิศวกรรมอาหาร",
       "type": "ภาคปกติ",
-      "applicants": 294,
+      "applicants": 292,
       "confirmed": 59,
-      "rate": 20.07,
-      "avgScore": 33.6946,
-      "applicantChange": -19
+      "rate": 20.21,
+      "avgScore": 19.9417,
+      "applicantChange": -17
     },
     {
       "year": 2569,
       "code": "E03",
       "name": "วิศวกรรมเครื่องกล (ภาคพิเศษ)",
       "type": "ภาคพิเศษ",
-      "applicants": 286,
+      "applicants": 280,
       "confirmed": 34,
-      "rate": 11.89,
-      "avgScore": 33.1081,
-      "applicantChange": -7
+      "rate": 12.14,
+      "avgScore": 24.7732,
+      "applicantChange": -12
     },
     {
       "year": 2569,
       "code": "E37",
       "name": "วิศวกรรมเครื่องกล-เกษตร",
       "type": "ภาคปกติ",
-      "applicants": 214,
+      "applicants": 209,
       "confirmed": 59,
-      "rate": 27.57,
-      "avgScore": 30.2993,
-      "applicantChange": -197
+      "rate": 28.23,
+      "avgScore": 9.2031,
+      "applicantChange": -201
     },
     {
       "year": 2569,
@@ -244,11 +362,81 @@
       "applicants": 108,
       "confirmed": 36,
       "rate": 33.33,
-      "avgScore": 30.836,
-      "applicantChange": -31
+      "avgScore": 12.2773,
+      "applicantChange": -28
     }
   ],
   "statuses": [
+    {
+      "year": 2567,
+      "label": "ไม่ผ่านการคัดเลือก",
+      "choices": 2633,
+      "share": 62.44,
+      "tone": "green"
+    },
+    {
+      "year": 2567,
+      "label": "ผ่านการคัดเลือกในลำดับที่ดีกว่า",
+      "choices": 883,
+      "share": 20.94,
+      "tone": "amber"
+    },
+    {
+      "year": 2567,
+      "label": "ยืนยันสิทธิ์",
+      "choices": 498,
+      "share": 11.81,
+      "tone": "orange"
+    },
+    {
+      "year": 2567,
+      "label": "ยืนยันที่อื่นแล้ว",
+      "choices": 123,
+      "share": 2.92,
+      "tone": "blue"
+    },
+    {
+      "year": 2567,
+      "label": "ไม่ใช้สิทธิ์",
+      "choices": 22,
+      "share": 0.52,
+      "tone": "muted"
+    },
+    {
+      "year": 2567,
+      "label": "สละสิทธิ์",
+      "choices": 21,
+      "share": 0.5,
+      "tone": "red"
+    },
+    {
+      "year": 2567,
+      "label": "ไม่เข้าระบบมาดำเนินการใดๆ",
+      "choices": 19,
+      "share": 0.45,
+      "tone": "purple"
+    },
+    {
+      "year": 2567,
+      "label": "สละสิทธิ์ในรอบ 2",
+      "choices": 9,
+      "share": 0.21,
+      "tone": "muted"
+    },
+    {
+      "year": 2567,
+      "label": "ผ่านการคัดเลือก",
+      "choices": 8,
+      "share": 0.19,
+      "tone": "muted"
+    },
+    {
+      "year": 2567,
+      "label": "ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2",
+      "choices": 1,
+      "share": 0.02,
+      "tone": "muted"
+    },
     {
       "year": 2568,
       "label": "ไม่ผ่านการคัดเลือก",
@@ -310,14 +498,21 @@
       "label": "สละสิทธิ์ในรอบ 2",
       "choices": 8,
       "share": 0.16,
-      "tone": "orange"
+      "tone": "muted"
     },
     {
       "year": 2568,
       "label": "ผ่านการคัดเลือก",
       "choices": 1,
       "share": 0.02,
-      "tone": "green"
+      "tone": "muted"
+    },
+    {
+      "year": 2568,
+      "label": "ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2",
+      "choices": 1,
+      "share": 0.02,
+      "tone": "muted"
     },
     {
       "year": 2569,
@@ -373,17 +568,47 @@
       "label": "สละสิทธิ์ในรอบ 2",
       "choices": 6,
       "share": 0.13,
-      "tone": "orange"
+      "tone": "muted"
     },
     {
       "year": 2569,
       "label": "ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2",
       "choices": 1,
       "share": 0.02,
-      "tone": "green"
+      "tone": "muted"
     }
   ],
   "rounds": [
+    {
+      "year": 2567,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "choices": 1457,
+      "applicants": 1381,
+      "confirmed": 157,
+      "rate": 11.37,
+      "files": 2
+    },
+    {
+      "year": 2567,
+      "code": "TCAS2",
+      "name": "Quota",
+      "choices": 502,
+      "applicants": 502,
+      "confirmed": 115,
+      "rate": 22.91,
+      "files": 1
+    },
+    {
+      "year": 2567,
+      "code": "TCAS3",
+      "name": "Admission",
+      "choices": 2258,
+      "applicants": 1639,
+      "confirmed": 226,
+      "rate": 13.79,
+      "files": 1
+    },
     {
       "year": 2568,
       "code": "TCAS1",
@@ -466,6 +691,158 @@
     }
   ],
   "roundStatuses": [
+    {
+      "year": 2567,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ยืนยันที่อื่นแล้ว",
+      "choices": 100,
+      "applicants": 100
+    },
+    {
+      "year": 2567,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ยืนยันสิทธิ์",
+      "choices": 157,
+      "applicants": 157
+    },
+    {
+      "year": 2567,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "สละสิทธิ์",
+      "choices": 1,
+      "applicants": 1
+    },
+    {
+      "year": 2567,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "สละสิทธิ์ในรอบ 2",
+      "choices": 9,
+      "applicants": 9
+    },
+    {
+      "year": 2567,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ไม่ผ่านการคัดเลือก",
+      "choices": 1162,
+      "applicants": 1103
+    },
+    {
+      "year": 2567,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ไม่เข้าระบบมาดำเนินการใดๆ",
+      "choices": 17,
+      "applicants": 17
+    },
+    {
+      "year": 2567,
+      "code": "TCAS1",
+      "name": "Portfolio",
+      "label": "ไม่ใช้สิทธิ์",
+      "choices": 11,
+      "applicants": 11
+    },
+    {
+      "year": 2567,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ผ่านการคัดเลือก",
+      "choices": 8,
+      "applicants": 8
+    },
+    {
+      "year": 2567,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ยืนยันที่อื่นแล้ว",
+      "choices": 23,
+      "applicants": 23
+    },
+    {
+      "year": 2567,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ยืนยันสิทธิ์",
+      "choices": 115,
+      "applicants": 115
+    },
+    {
+      "year": 2567,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ไม่ผ่านการคัดเลือก",
+      "choices": 350,
+      "applicants": 350
+    },
+    {
+      "year": 2567,
+      "code": "TCAS2",
+      "name": "Quota",
+      "label": "ไม่ใช้สิทธิ์",
+      "choices": 6,
+      "applicants": 6
+    },
+    {
+      "year": 2567,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2",
+      "choices": 1,
+      "applicants": 1
+    },
+    {
+      "year": 2567,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ผ่านการคัดเลือกในลำดับที่ดีกว่า",
+      "choices": 883,
+      "applicants": 724
+    },
+    {
+      "year": 2567,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ยืนยันสิทธิ์",
+      "choices": 226,
+      "applicants": 226
+    },
+    {
+      "year": 2567,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "สละสิทธิ์",
+      "choices": 20,
+      "applicants": 20
+    },
+    {
+      "year": 2567,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ไม่ผ่านการคัดเลือก",
+      "choices": 1121,
+      "applicants": 879
+    },
+    {
+      "year": 2567,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ไม่เข้าระบบมาดำเนินการใดๆ",
+      "choices": 2,
+      "applicants": 2
+    },
+    {
+      "year": 2567,
+      "code": "TCAS3",
+      "name": "Admission",
+      "label": "ไม่ใช้สิทธิ์",
+      "choices": 5,
+      "applicants": 5
+    },
     {
       "year": 2568,
       "code": "TCAS1",
@@ -854,108 +1231,115 @@
   "qualityMetricDefinitions": [
     {
       "label": "Source rows",
-      "value": "9,432",
+      "value": "13,649",
       "sourceObject": "admission_round_source_data_quality.source_rows",
-      "definition": "จำนวนแถวจาก Excel admissions source ทั้งหมดที่ ETL อ่านก่อน aggregate",
-      "rule": "sum(source_rows) across 11 files must equal loaded staging row count"
+      "definition": "จำนวนแถวจาก Excel admissions source ทั้งหมดก่อนโหลด fact",
+      "rule": "sum(source_rows) across 15 files must equal fact row count"
     },
     {
       "label": "Missing score",
       "value": "0",
       "sourceObject": "admission_round_source_data_quality.missing_score_rows",
-      "definition": "จำนวนแถวที่ field คะแนนหรือ score ที่ใช้คำนวณ summary เป็นค่าว่าง",
-      "rule": "missing_score_rows = 0 for every source file in the active snapshot"
+      "definition": "จำนวนแถวที่ score เป็นค่าว่าง",
+      "rule": "missing_score_rows = 0 for every active source file"
     },
     {
       "label": "Missing major",
       "value": "0",
       "sourceObject": "admission_round_source_data_quality.missing_major_rows",
-      "definition": "จำนวนแถวที่ไม่สามารถ map ไปยังรหัส/ชื่อสาขาวิชาใน dim_major",
-      "rule": "missing_major_rows = 0 before loading major-level facts"
+      "definition": "จำนวนแถวที่ map ไป dim_major ไม่ได้",
+      "rule": "missing_major_rows = 0 before fact load"
     },
     {
       "label": "PII exported",
       "value": "0 columns",
-      "sourceObject": "processed aggregate CSV column audit",
-      "definition": "จำนวน column ส่วนบุคคลที่ถูกส่งออกจาก ETL ไป processed CSV, Neon หรือ dashboard",
-      "rule": "source-only applicant identifiers must not appear in processed outputs"
+      "sourceObject": "processed fact column audit",
+      "definition": "จำนวนคอลัมน์ข้อมูลส่วนบุคคลใน staging, warehouse และ dashboard",
+      "rule": "only irreversible student/application tokens may cross the ETL privacy boundary"
     },
     {
       "label": "Active source groups",
       "value": "1",
-      "sourceObject": "dw_dataset_catalog.source_group",
-      "definition": "จำนวนกลุ่ม source ที่อยู่ใน active scope หลังตัด social ingestion",
-      "rule": "only admissions_excel is active; social sources are excluded"
+      "sourceObject": "dw_dataset_catalog.source_system",
+      "definition": "จำนวน source group ที่ active",
+      "rule": "only admissions_excel is active"
     },
     {
       "label": "Source files",
-      "value": "11",
+      "value": "15",
       "sourceObject": "admission_round_source_data_quality.source_file",
-      "definition": "จำนวน Excel admissions files ของ TCAS รอบ 1-4 ปี 2568 และ 2569",
-      "rule": "source_file count must reconcile to TCAS1-4 coverage for both years"
+      "definition": "จำนวนไฟล์ Excel รอบ 1-3 ปี 2567 และรอบ 1-4 ปี 2568-2569",
+      "rule": "source files must reconcile to configured round coverage"
     },
     {
       "label": "Catalog rows",
-      "value": "7",
+      "value": "8",
       "sourceObject": "dw_dataset_catalog",
-      "definition": "จำนวน dataset catalog records ที่อธิบาย source, staging, core facts, marts และ dashboard snapshot",
-      "rule": "every dashboard-facing table/view must have catalog metadata"
+      "definition": "จำนวน dataset catalog records ของ single-fact model",
+      "rule": "all dashboard-facing layers require metadata"
     },
     {
       "label": "Lineage edges",
-      "value": "7",
+      "value": "6",
       "sourceObject": "dw_lineage_edge",
-      "definition": "จำนวน dependency edges จาก source ไป staging, core facts, marts และ dashboard",
-      "rule": "every mart used by UI must trace back to source/staging"
+      "definition": "จำนวน dependency edges จาก source ถึง dashboard",
+      "rule": "all marts must trace to fact_admission"
     }
   ],
   "dataCatalogRows": [
     [
       "admissions_excel_files",
       "Source",
-      "source_file + year + round",
-      "11 files / 9,432 rows",
+      "source_file + source_row",
+      "15 files / 13,649 rows",
       "PII at source only"
     ],
     [
-      "processed_admissions_aggregates",
+      "admissions_fact_stage",
       "Staging",
-      "year + round + major/status",
-      "PII-free CSV aggregates",
+      "one application choice",
+      "PII removed; opaque tokens only",
+      "Pseudonymous"
+    ],
+    [
+      "dim_student",
+      "Dimension",
+      "one pseudonymous student",
+      "HMAC-SHA256 token",
+      "Pseudonymous"
+    ],
+    [
+      "dim_year",
+      "Dimension",
+      "one academic year",
+      "2567-2569",
       "No PII"
     ],
     [
-      "fact_admission_year_overview",
+      "conformed_dimensions",
+      "Dimension",
+      "round/project/faculty/major/program/status/source",
+      "all keys referenced by fact",
+      "No PII"
+    ],
+    [
+      "fact_admission",
       "Core fact",
-      "academic_year",
-      "2 rows",
+      "one application choice",
+      "13,649 rows with score",
+      "Pseudonymous"
+    ],
+    [
+      "admissions_presentation_marts",
+      "Mart",
+      "year/round/major/status aggregates",
+      "derived from one fact",
       "No PII"
     ],
     [
-      "fact_admission_round_overview",
-      "Core fact",
-      "academic_year + tcas_round",
-      "8 rows",
-      "No PII"
-    ],
-    [
-      "fact_admission_round_major_summary",
-      "Core fact",
-      "academic_year + major",
-      "20 displayed rows",
-      "No PII"
-    ],
-    [
-      "admission_round_source_data_quality",
-      "Quality fact",
-      "source_file",
-      "11 quality records",
-      "No PII"
-    ],
-    [
-      "mart_admissions_executive_summary",
-      "Presentation mart",
-      "academic_year",
+      "warehouse_dashboard_snapshot",
+      "Presentation",
+      "one generated artifact",
       "dashboard-ready",
       "No PII"
     ]
@@ -963,54 +1347,54 @@
   "lineageEdges": [
     [
       "Excel admissions files",
-      "PII-free processed aggregates",
-      "extract, normalize, aggregate"
+      "PII-safe application staging",
+      "extract, normalize, tokenize"
     ],
     [
-      "PII-free processed aggregates",
-      "fact_admission_year_overview",
-      "year-level KPI load"
+      "PII-safe application staging",
+      "dim_student + dim_year",
+      "load conformed dimensions"
     ],
     [
-      "PII-free processed aggregates",
-      "fact_admission_round_overview",
-      "round-level KPI load"
+      "PII-safe application staging",
+      "conformed admissions dimensions",
+      "load round/project/faculty/major/program/status/source"
     ],
     [
-      "PII-free processed aggregates",
-      "fact_admission_round_major_summary",
-      "major conversion load"
+      "All conformed dimensions",
+      "fact_admission",
+      "load one application-choice fact with score"
     ],
     [
-      "PII-free processed aggregates",
-      "admission_round_source_data_quality",
-      "source validation load"
+      "fact_admission",
+      "admissions presentation marts",
+      "aggregate for year/round/major/status"
     ],
     [
-      "Core facts + quality facts",
-      "mart_admissions_executive_summary",
-      "presentation mart build"
-    ],
-    [
-      "Presentation marts",
+      "Admissions presentation marts",
       "app/data/generated/warehouse-dashboard-snapshot.json",
-      "pipeline-generated dashboard artifact"
+      "publish generated dashboard artifact"
     ]
   ],
   "etlValidationChecks": [
     [
       "Row reconciliation",
-      "9,432 source rows read from 11 files",
+      "13,649 source rows read from 15 files and mapped 1:1 to fact grain",
       "pass"
     ],
     [
       "PII boundary",
-      "0 exported PII columns in processed CSV, Neon facts and dashboard artifact",
+      "0 raw identity/contact columns exported; student uses HMAC-SHA256 token",
+      "pass"
+    ],
+    [
+      "Dimension coverage",
+      "every fact row resolves student, year, round, project, faculty, major, program, status and source dimensions",
       "pass"
     ],
     [
       "Major mapping",
-      "0 missing major rows before major fact load",
+      "0 missing major rows before fact load",
       "pass"
     ],
     [
@@ -1020,12 +1404,12 @@
     ],
     [
       "Round coverage",
-      "TCAS1-4 represented for both 2568 and 2569",
+      "TCAS1-3 represented for 2567; TCAS1-4 represented for 2568 and 2569",
       "pass"
     ],
     [
-      "Social exclusion",
-      "0 social media source groups in active warehouse scope",
+      "Single fact",
+      "fact_admission is the only physical fact table",
       "pass"
     ]
   ],
@@ -1033,7 +1417,7 @@
     {
       "name": "Dashboard KPI snapshot",
       "object": "mart_admissions_executive_summary",
-      "sql": "select academic_year, application_choices, unique_applicants, confirmed_applicants, confirmed_rate from admissions_dw.mart_admissions_executive_summary order by academic_year;"
+      "sql": "select academic_year, application_choices, unique_applicants, confirmed_applicants, confirmed_rate, source_files, avg_score from admissions_dw.mart_admissions_executive_summary order by academic_year;"
     },
     {
       "name": "Round overview",
@@ -1043,7 +1427,7 @@
     {
       "name": "Major conversion",
       "object": "mart_major_conversion",
-      "sql": "select academic_year, major_code, major_name, applicant_count, confirmed_count, confirmed_rate from admissions_dw.mart_major_conversion order by academic_year, applicant_count desc;"
+      "sql": "select academic_year, major_code, major_name, program_type, applicant_count, confirmed_count, confirmed_rate, avg_score, applicant_change from admissions_dw.mart_major_conversion order by academic_year, applicant_count desc;"
     },
     {
       "name": "Quality scorecard",
@@ -1076,7 +1460,7 @@
       ],
       "decisionOwner": "Curriculum and admissions planning",
       "decisionUse": "วางกลยุทธ์รอบรับสมัครและ allocation ของ seat/communication",
-      "qualityGate": "Round coverage = TCAS1-4"
+      "qualityGate": "Configured round coverage complete"
     },
     {
       "id": "BQ-003",
@@ -1094,7 +1478,7 @@
     {
       "id": "BQ-004",
       "domain": "Demand",
-      "question": "ปี 2569 เปลี่ยนจาก 2568 อย่างไร",
+      "question": "แนวโน้มปี 2567-2569 เปลี่ยนอย่างไร",
       "martObject": "mart_admissions_year_change",
       "metrics": [
         "applicant_delta",
@@ -1103,7 +1487,7 @@
       ],
       "decisionOwner": "Faculty leadership",
       "decisionUse": "ใช้สรุปภาพรวมแนวโน้มและความเสี่ยงก่อนวางแผนปีถัดไป",
-      "qualityGate": "Year coverage = 2568, 2569"
+      "qualityGate": "Year coverage = 2567-2569"
     },
     {
       "id": "BQ-005",
@@ -1157,7 +1541,7 @@
       ],
       "decisionOwner": "Faculty leadership",
       "decisionUse": "หา program signal ที่ควรขยายเป็นจุดขายของปีหน้า",
-      "qualityGate": "Year coverage = 2568, 2569"
+      "qualityGate": "Year coverage = 2567-2569"
     },
     {
       "id": "BQ-009",
@@ -1184,7 +1568,7 @@
       ],
       "decisionOwner": "Admissions operations",
       "decisionUse": "ปรับ timing, communication และ follow-up สำหรับรอบที่มี leakage สูง",
-      "qualityGate": "Round coverage = TCAS1-4"
+      "qualityGate": "Configured round coverage complete"
     },
     {
       "id": "BQ-011",
@@ -1284,7 +1668,7 @@
       "decision": "ควรใช้ TCAS3 เป็นรอบหลักสำหรับ demand capture และ tracking",
       "recommendedAction": "Allocate communication effort before and during TCAS3 confirmation window",
       "confidence": "High",
-      "qualityGate": "Round coverage = TCAS1-4"
+      "qualityGate": "Configured round coverage complete"
     },
     {
       "id": "INS-003",
@@ -1314,7 +1698,7 @@
       "decision": "ควรรักษากระบวนการที่ช่วย conversion แต่หาสาเหตุ demand ลดลง",
       "recommendedAction": "Separate demand-generation actions from confirmation-conversion actions",
       "confidence": "High",
-      "qualityGate": "Year coverage = 2568, 2569"
+      "qualityGate": "Year coverage = 2567-2569"
     },
     {
       "id": "INS-005",
@@ -1359,7 +1743,7 @@
       "decision": "ใช้ signal นี้เป็นจุดขายและขยาย communication ในปีถัดไป",
       "recommendedAction": "Promote logistics outcome stories and retain high-performing funnel messages",
       "confidence": "High",
-      "qualityGate": "Year coverage = 2568, 2569"
+      "qualityGate": "Year coverage = 2567-2569"
     },
     {
       "id": "INS-008",
@@ -1389,7 +1773,7 @@
       "decision": "ควรปรับ follow-up และ expectation ในรอบ Portfolio",
       "recommendedAction": "Strengthen post-shortlist communication and reduce uncertainty before confirmation",
       "confidence": "Medium",
-      "qualityGate": "Round coverage = TCAS1-4"
+      "qualityGate": "Configured round coverage complete"
     },
     {
       "id": "INS-010",
@@ -1485,64 +1869,64 @@
   "warehouseHealth": {
     "id": "WH-001",
     "status": "pass",
-    "lastRefreshAt": "2026-07-21T14:00:00+07:00",
+    "lastRefreshAt": "2026-08-09T21:16:24.462771+07:00",
     "freshnessSlaHours": 168,
-    "sourceRows": 9432,
-    "sourceFiles": 11,
+    "sourceRows": 13649,
+    "sourceFiles": 15,
     "martCount": 5,
-    "qualityChecksPassed": 6,
+    "qualityChecksPassed": 7,
     "qualityChecksFailed": 0,
     "piiExportedColumns": 0,
-    "artifactChecksum": "warehouse-dashboard-snapshot-json-local",
-    "notes": "Generated artifact reconciles to active admissions warehouse query results"
+    "artifactChecksum": "single-fact-admissions-dashboard",
+    "notes": "Generated artifact reconciles to fact_admission-derived query results"
   },
   "decisionMartContract": [
     {
       "martObject": "mart_major_opportunity",
       "grain": "academic_year + major_code + major_name + program_type",
-      "sourceObjects": "mart_major_conversion",
+      "sourceObjects": "fact_admission -> mart_major_conversion",
       "purpose": "Identify high-demand majors with weak confirmation conversion"
     },
     {
       "martObject": "mart_round_efficiency",
       "grain": "academic_year + tcas_round_code",
-      "sourceObjects": "vw_admission_round_overview",
+      "sourceObjects": "fact_admission -> vw_admission_round_overview",
       "purpose": "Compare round-level conversion and confirmed volume"
     },
     {
       "martObject": "mart_status_friction",
       "grain": "academic_year + status_label",
-      "sourceObjects": "vw_admission_round_status_distribution",
+      "sourceObjects": "fact_admission -> vw_admission_round_status_distribution",
       "purpose": "Identify funnel statuses that explain applicant loss or operational friction"
     },
     {
       "martObject": "mart_admissions_year_change",
       "grain": "academic_year pair",
-      "sourceObjects": "mart_admissions_executive_summary",
+      "sourceObjects": "fact_admission -> mart_admissions_executive_summary",
       "purpose": "Explain year-over-year movement in demand and conversion"
     },
     {
       "martObject": "vw_dw_refresh_health",
       "grain": "refresh_run_id + artifact",
-      "sourceObjects": "vw_dw_quality_scorecard + dw_refresh_run",
+      "sourceObjects": "fact_admission + source quality + dw_refresh_run",
       "purpose": "Confirm freshness, quality gates, PII boundary and artifact readiness"
     },
     {
       "martObject": "mart_major_year_change",
       "grain": "academic_year pair + major_code + major_name",
-      "sourceObjects": "mart_major_conversion",
+      "sourceObjects": "fact_admission -> mart_major_conversion",
       "purpose": "Detect major-level demand growth and decline against overall trend"
     },
     {
       "martObject": "mart_program_type_mix",
-      "grain": "academic_year + program_type + major_code",
-      "sourceObjects": "mart_major_conversion",
+      "grain": "academic_year + program_type",
+      "sourceObjects": "fact_admission -> mart_major_conversion",
       "purpose": "Compare normal and special program tracks for portfolio planning"
     },
     {
       "martObject": "vw_dw_quality_scorecard",
       "grain": "metric_name + source_object",
-      "sourceObjects": "admission_round_source_data_quality + dw_dataset_catalog",
+      "sourceObjects": "fact_admission + admission_round_source_data_quality",
       "purpose": "Block or approve reporting based on critical data quality gates"
     }
   ]

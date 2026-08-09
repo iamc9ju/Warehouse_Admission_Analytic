@@ -1,7 +1,8 @@
 check_name	evidence	result
-Row reconciliation	9,432 source rows read from 11 files	pass
-PII boundary	0 exported PII columns in processed CSV, Neon facts and dashboard artifact	pass
-Major mapping	0 missing major rows before major fact load	pass
+Row reconciliation	13,649 source rows read from 15 files and mapped 1:1 to fact grain	pass
+PII boundary	0 raw identity/contact columns exported; student uses HMAC-SHA256 token	pass
+Dimension coverage	every fact row resolves student, year, round, project, faculty, major, program, status and source dimensions	pass
+Major mapping	0 missing major rows before fact load	pass
 Score completeness	0 missing score rows in active snapshot	pass
-Round coverage	TCAS1-4 represented for both 2568 and 2569	pass
-Social exclusion	0 social media source groups in active warehouse scope	pass
+Round coverage	TCAS1-3 represented for 2567; TCAS1-4 represented for 2568 and 2569	pass
+Single fact	fact_admission is the only physical fact table	pass

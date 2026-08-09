@@ -1,80 +1,20 @@
 # Production Review Report
 
-## Objective
+## Model review
 
-TCAS Admissions Data Warehouse ใช้ admissions source data เพื่อสร้าง governed warehouse, quality gates, decision marts และ dashboard สำหรับตอบคำถามการวางแผนรับสมัครของคณะวิศวกรรมศาสตร์ กำแพงแสน
+- เพิ่ม `dim_student` แบบ pseudonymous และ `dim_year`
+- รวม admissions measures ไว้ใน `fact_admission` ตารางเดียว
+- เชื่อม dimension keys ครบทุก fact row
+- เพิ่ม `score NUMERIC(12,4) NOT NULL`
+- ยกเลิก legacy aggregate facts และ secondary analytics facts
 
-## Active Source Scope
+## Data review
 
-- Admissions Excel files for TCAS1-4, academic years 2568 and 2569
-- 11 source files
-- 9,432 source rows
-- No active social media ingestion
-- PII is source-only and must not appear in processed outputs, Neon marts or dashboard artifacts
+- ปี 2567 เพิ่ม 4,217 rows จาก 4 files ครอบคลุม TCAS1-3
+- รวมทุกปี 13,649 fact rows, 15 files และ 10,067 pseudonymous students
+- missing score 0, missing major 0 และ exported direct identity/contact columns 0
 
-## Architecture
+## Runtime review
 
-```text
-Admissions source files
-  -> ETL and PII-free aggregates
-  -> admissions_dw facts and dimensions
-  -> governed marts, quality scorecard and lineage
-  -> business question / decision mart query results
-  -> generated artifact or live Neon server-side adapter
-  -> dashboard routes
-```
-
-## Business Questions
-
-The production dashboard answers 15 business questions across 5 decision domains:
-
-| Domain | Examples |
-|---|---|
-| Demand | demand drop, demand growth, high-demand low-conversion majors |
-| Conversion | funnel friction, status share, high-fit low-awareness programs |
-| Round Strategy | best converting round, high-volume low-conversion round, flagship round |
-| Program Portfolio | quota review, normal vs special program mix |
-| Data Trust | report readiness, critical quality gates, freshness SLA |
-
-## Decision Outputs
-
-| Insight | Decision use |
-|---|---|
-| High demand but low conversion: วิศวกรรมโยธา-โครงสร้างพื้นฐาน | Review offer competitiveness and communication flow |
-| TCAS3 creates the strongest confirmed volume | Allocate operational effort around TCAS3 timing |
-| Status friction is concentrated in not-selected choices | Review capacity, criteria and expectation setting |
-| Applicants decreased while confirmed increased | Separate demand-generation actions from conversion actions |
-| Dashboard data is decision-ready | Approve executive review artifact while preserving source evidence |
-| วิศวกรรมเครื่องกล-เกษตร demand drop risk | Run recovery campaign and positioning review |
-| วิศวกรรมอุตสาหการ-โลจิสติกส์ grows against trend | Expand high-performing logistics messaging |
-| High conversion but low demand program | Increase targeted awareness |
-| TCAS1 high volume but weak conversion | Strengthen post-shortlist communication |
-| Special program tracking needed | Add program-type planning view |
-
-## Quality Gates
-
-| Gate | Required result |
-|---|---|
-| Source rows | 9,432 |
-| Source files | 11 |
-| Missing score | 0 |
-| Missing major | 0 |
-| PII exported | 0 columns |
-| Active source groups | 1 |
-| Round coverage | TCAS1-4 for 2568 and 2569 |
-| ETL checks | all pass |
-
-## Runtime
-
-```text
-Primary: server-side Neon adapter using DATABASE_URL
-Fallback: generated warehouse dashboard artifact
-```
-
-The browser never receives database credentials.
-
-## Limitations
-
-- Current admissions scope covers two academic years, so trend output is descriptive.
-- Generated artifact is fallback, not a replacement for warehouse refresh automation.
-- Future production hardening should add scheduled refresh, alerting and environment separation for dev/staging/prod.
+Dashboard ใช้ presentation marts จาก fact เดียวผ่าน server-side adapter และ generated artifact fallback
+การ regenerate ผ่าน `data:build`, `data:validate`, `data:check-static` และ production build

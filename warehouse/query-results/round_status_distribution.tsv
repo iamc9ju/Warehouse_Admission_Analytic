@@ -1,4 +1,23 @@
 academic_year	tcas_round_code	tcas_round_name	status_label	choices	unique_applicants
+2567	TCAS1	Portfolio	ยืนยันที่อื่นแล้ว	100	100
+2567	TCAS1	Portfolio	ยืนยันสิทธิ์	157	157
+2567	TCAS1	Portfolio	สละสิทธิ์	1	1
+2567	TCAS1	Portfolio	สละสิทธิ์ในรอบ 2	9	9
+2567	TCAS1	Portfolio	ไม่ผ่านการคัดเลือก	1162	1103
+2567	TCAS1	Portfolio	ไม่เข้าระบบมาดำเนินการใดๆ	17	17
+2567	TCAS1	Portfolio	ไม่ใช้สิทธิ์	11	11
+2567	TCAS2	Quota	ผ่านการคัดเลือก	8	8
+2567	TCAS2	Quota	ยืนยันที่อื่นแล้ว	23	23
+2567	TCAS2	Quota	ยืนยันสิทธิ์	115	115
+2567	TCAS2	Quota	ไม่ผ่านการคัดเลือก	350	350
+2567	TCAS2	Quota	ไม่ใช้สิทธิ์	6	6
+2567	TCAS3	Admission	ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2	1	1
+2567	TCAS3	Admission	ผ่านการคัดเลือกในลำดับที่ดีกว่า	883	724
+2567	TCAS3	Admission	ยืนยันสิทธิ์	226	226
+2567	TCAS3	Admission	สละสิทธิ์	20	20
+2567	TCAS3	Admission	ไม่ผ่านการคัดเลือก	1121	879
+2567	TCAS3	Admission	ไม่เข้าระบบมาดำเนินการใดๆ	2	2
+2567	TCAS3	Admission	ไม่ใช้สิทธิ์	5	5
 2568	TCAS1	Portfolio	ยืนยันที่อื่นแล้ว	170	170
 2568	TCAS1	Portfolio	ยืนยันสิทธิ์	191	191
 2568	TCAS1	Portfolio	สละสิทธิ์	1	1

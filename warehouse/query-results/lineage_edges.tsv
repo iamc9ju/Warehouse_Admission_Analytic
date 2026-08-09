@@ -1,8 +1,7 @@
 from_object	to_object	transform
-Excel admissions files	PII-free processed aggregates	extract, normalize, aggregate
-PII-free processed aggregates	fact_admission_year_overview	year-level KPI load
-PII-free processed aggregates	fact_admission_round_overview	round-level KPI load
-PII-free processed aggregates	fact_admission_round_major_summary	major conversion load
-PII-free processed aggregates	admission_round_source_data_quality	source validation load
-Core facts + quality facts	mart_admissions_executive_summary	presentation mart build
-Presentation marts	app/data/generated/warehouse-dashboard-snapshot.json	pipeline-generated dashboard artifact
+Excel admissions files	PII-safe application staging	extract, normalize, tokenize
+PII-safe application staging	dim_student + dim_year	load conformed dimensions
+PII-safe application staging	conformed admissions dimensions	load round/project/faculty/major/program/status/source
+All conformed dimensions	fact_admission	load one application-choice fact with score
+fact_admission	admissions presentation marts	aggregate for year/round/major/status
+Admissions presentation marts	app/data/generated/warehouse-dashboard-snapshot.json	publish generated dashboard artifact

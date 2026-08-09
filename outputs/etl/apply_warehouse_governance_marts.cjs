@@ -4,9 +4,7 @@ const { Client } = require("pg");
 
 const rootDir = path.resolve(__dirname, "../..");
 const schemaPaths = [
-  path.join(rootDir, "outputs", "sql", "admissions_round3_warehouse.sql"),
   path.join(rootDir, "outputs", "sql", "admissions_all_rounds_warehouse.sql"),
-  path.join(rootDir, "outputs", "sql", "website_analytics_warehouse.sql"),
   path.join(rootDir, "outputs", "sql", "warehouse_governance_marts.sql"),
 ];
 
@@ -52,7 +50,7 @@ async function main() {
             SELECT COUNT(*)
             FROM admissions_dw.dw_dataset_catalog
           ),
-          'Applied admissions and owned website analytics catalog, lineage, quality scorecard and presentation marts.',
+          'Applied the single-fact admissions catalog, lineage, quality scorecard and presentation marts.',
           now()
         )
       `

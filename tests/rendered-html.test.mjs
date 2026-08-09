@@ -66,7 +66,7 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.match(html, /href="\/majors"/);
   assert.match(html, /href="\/quality"/);
   assert.match(html, /href="\/insights"/);
-  assert.doesNotMatch(html, /href="\/(?:social|marts|reports|data-catalog|settings)"/);
+  assert.doesNotMatch(html, /href="\/(?:marts|reports|data-catalog|settings)"/);
   assert.match(html, /TCAS รอบ 1-4/);
   assert.match(html, new RegExp(latestYear.applicants.toLocaleString("en-US")));
   assert.match(html, new RegExp(latestYear.choices.toLocaleString("en-US")));
@@ -109,7 +109,9 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.equal(roundsResponse.status, 200);
   const roundsHtml = await roundsResponse.text();
   assert.match(roundsHtml, /TCAS Round Analytics/);
-  assert.match(roundsHtml, /ภาพรวม TCAS รอบ 1-4/);
+  assert.match(roundsHtml, /ผู้สมัครและยืนยันสิทธิ์แต่ละรอบ TCAS ทุกปี/);
+  assert.match(roundsHtml, /2567/);
+  assert.match(roundsHtml, /TCAS3/);
   assert.match(roundsHtml, /2568[\s\S]*TCAS1/);
   assert.match(roundsHtml, /2569[\s\S]*TCAS4/);
   assert.doesNotMatch(roundsHtml, /ทุกสาขาวิชา/);
@@ -133,7 +135,7 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.equal(majorsResponse.status, 200);
   const majorsHtml = await majorsResponse.text();
   assert.match(majorsHtml, /Major Demand and Conversion/);
-  assert.match(majorsHtml, /ทุกสาขาวิชา/);
+  assert.match(majorsHtml, /แต่ละสาขาวิชา ทุกปี/);
   assert.doesNotMatch(majorsHtml, /ภาพรวม TCAS รอบ 1-4/);
   assert.doesNotMatch(majorsHtml, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี|ดูการเปรียบเทียบราย round/);
 
@@ -143,7 +145,7 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.match(qualityHtml, /Data quality metric definitions/);
   assert.match(qualityHtml, /Warehouse health:[\s\S]*pass/);
   assert.match(qualityHtml, /admission_round_source_data_quality\.missing_score_rows/);
-  assert.match(qualityHtml, /processed aggregate CSV column audit/);
+  assert.match(qualityHtml, /processed fact column audit/);
 
   const insightsResponse = await renderPath("/insights");
   assert.equal(insightsResponse.status, 200);
@@ -177,12 +179,14 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   const snapshotObject = JSON.parse(snapshot);
 
   assert.match(snapshot, /"choices": 4579/);
+  assert.match(snapshot, /"year": 2567/);
+  assert.match(snapshot, /"choices": 4217/);
   assert.match(snapshot, /"source": "generated-artifact"/);
   assert.match(snapshot, /"applicants": 3443/);
   assert.match(snapshot, /"confirmed": 545/);
   assert.match(snapshot, /"sourceFiles": 5/);
-  assert.match(snapshot, /"sourceRows": 9432/);
-  assert.match(snapshot, /"sourceFiles": 11/);
+  assert.match(snapshot, /"sourceRows": 13649/);
+  assert.match(snapshot, /"sourceFiles": 15/);
   assert.match(snapshot, /mart_admissions_executive_summary/);
   assert.match(snapshot, /vw_admission_round_overview/);
   assert.match(snapshot, /qualityMetricDefinitions/);
@@ -245,7 +249,7 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(staticDataDecision, /Ban embedded dashboard data/);
   assert.match(staticDataDecision, /live-neon-dashboard-adapter/);
 
-  assert.doesNotMatch(page, /mock|synthetic|sample platform|TikTok|Pantip|YouTube API|Facebook public search/i);
+  assert.doesNotMatch(page, /mock|synthetic|sample platform/i);
   assert.doesNotMatch(page, /Your site is taking shape|Codex is working/i);
 });
 

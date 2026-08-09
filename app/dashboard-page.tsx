@@ -37,7 +37,7 @@ const pageMeta: Record<PageName, { eyebrow: string; title: string; copy: string 
   Overview: {
     eyebrow: "Engineering Admissions Analytics",
     title: "TCAS Admissions Data Warehouse",
-    copy: "ดูภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน แยกตามปีการศึกษาที่เลือก ครบ TCAS รอบ 1-4 โดยข้อมูล trace กลับไปยัง Neon PostgreSQL marts, dimensional facts และ governed lineage ได้",
+    copy: "ดูภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน: TCAS รอบ 1-3 ปี 2567 และรอบ 1-4 ปี 2568-2569 โดย trace กลับไปยัง single fact และ governed lineage ได้",
   },
   Dashboard: {
     eyebrow: "Visual Analytics",
@@ -373,9 +373,9 @@ function StandardDashboardPage({ activePage, snapshot }: { activePage: PageName;
                   {[
                     ["01", "Excel", "Source", "ไฟล์รับสมัครต้นทางระดับผู้สมัคร ใช้เป็นหลักฐานดิบและยังมี PII"],
                     ["02", "ETL", "Transform", "อ่าน ทำความสะอาด normalize, deduplicate และ aggregate ข้อมูล"],
-                    ["03", "PII-free CSV", "Privacy boundary", "เก็บเฉพาะข้อมูลสรุป โดยไม่ส่งชื่อ เลขบัตร โทรศัพท์ หรืออีเมลออกจาก source"],
+                    ["03", "PII-safe staging", "Privacy boundary", "คง grain ระดับตัวเลือกสมัครด้วย HMAC token โดยไม่ส่งชื่อ เลขประจำตัว โทรศัพท์ หรืออีเมลออกจาก source"],
                     ["04", "Neon PostgreSQL", "Warehouse storage", "รวมข้อมูลใน schema admissions_dw เพื่อ query, audit และรันซ้ำได้"],
-                    ["05", "Fact + Dimension", "Core model", "แยกค่าที่วัดได้ออกจากมิติ ปี รอบ สาขา และสถานะ พร้อมกำหนด grain"],
+                    ["05", "Single Fact + Dimension", "Core model", "fact_admission เชื่อมทุก dimension และเก็บ score ที่ grain หนึ่งตัวเลือกสมัคร"],
                     ["06", "Data Mart", "Decision layer", "สรุป metric ตามคำถาม เช่น year summary, conversion และ round efficiency"],
                     ["07", "Dashboard", "Presentation", "แสดงข้อมูลจาก governed mart ผ่าน server-side loader โดย UI ไม่เป็นแหล่งเก็บตัวเลข"],
                   ].map(([number, title, layer, copy]) => (
@@ -406,9 +406,9 @@ function StandardDashboardPage({ activePage, snapshot }: { activePage: PageName;
                   {([
                     ["05", "Presentation", "Decision experience", ["Dashboard", "Insights", "Reports"]],
                     ["04", "Semantic", "Business-ready metrics", ["Executive mart", "Major conversion", "Decision insights"]],
-                    ["03", "Warehouse", "Governed dimensional model", ["Fact tables", "Conformed dimensions", "Quality & lineage"]],
+                    ["03", "Warehouse", "Governed dimensional model", ["fact_admission", "Conformed dimensions", "Quality & lineage"]],
                     ["02", "Integration", "Clean and privacy-safe data", ["ETL", "Normalized staging", "PII boundary"]],
-                    ["01", "Source", "Owned raw evidence", ["Admissions Excel", "GA4 aggregate reports"]],
+                    ["01", "Source", "Owned raw evidence", ["Admissions Excel 2567-2569", "15 governed workbooks"]],
                   ] as const).map(([level, title, description, items]) => (
                     <li className={`technical-hierarchy-level level-${level}`} key={level}>
                       <span className="technical-hierarchy-number">L{level}</span>
@@ -478,8 +478,8 @@ function StandardDashboardPage({ activePage, snapshot }: { activePage: PageName;
                 </div>
                 <div className="technical-topic-list">
                   {[
-                    ["ETL & Privacy", "ใช้ applicant identifier เฉพาะใน memory เพื่อหา unique applicants แล้วตัด PII ก่อน export"],
-                    ["Star Schema & Grain", "Fact เก็บค่าที่วัดได้ ส่วน Dimension ทำให้ group ตามปี รอบ สาขา และสถานะได้สม่ำเสมอ"],
+                    ["ETL & Privacy", "ใช้ applicant identifier เฉพาะใน memory เพื่อสร้าง HMAC token แล้วตัด direct identity/contact fields ก่อน export"],
+                    ["Star Schema & Grain", "fact_admission ตารางเดียวเก็บหนึ่งตัวเลือกสมัครพร้อม score และ foreign key ของทุก dimension"],
                     ["Marts & Query Contract", "Dashboard ใช้ metric ที่นิยามจาก mart/view เดียวกัน จึงไม่คำนวณซ้ำใน UI"],
                     ["Quality & Lineage", "ตรวจ missing values, source coverage, PII boundary และ trace จาก Dashboard กลับถึง source"],
                     ["Repeatable Delivery", "Load แบบ upsert และทดสอบ data build, validation, static-data policy และ rendered output ก่อน publish"],
@@ -970,8 +970,8 @@ function StandardDashboardPage({ activePage, snapshot }: { activePage: PageName;
               <div className="warehouse-flow">
                 {[
                   ["Source", "Excel admissions files"],
-                  ["Staging", "PII-free processed CSV"],
-                  ["Core DW", "facts + dimensions"],
+                  ["Staging", "PII-safe application rows"],
+                  ["Core DW", "single fact + dimensions"],
                   ["Marts", "year, round, major conversion"],
                   ["Dashboard", "interactive BI view"],
                 ].map(([title, copy]) => (

@@ -1,129 +1,13 @@
-# Admissions Round 3 Warehouse SQL
+# Admissions Warehouse SQL
 
-ไฟล์ `admissions_round3_warehouse.sql` ใช้สร้าง schema `admissions_dw` สำหรับข้อมูล aggregate TCAS รอบ 3 ปี 2568 และ 2569
+`admissions_all_rounds_warehouse.sql` defines all conformed dimensions and the only physical fact,
+`fact_admission`. The fact grain is one application choice and includes every dimension key plus `score`.
 
----
+`warehouse_governance_marts.sql` defines catalog, lineage, quality scorecard and dashboard-facing marts.
+All metrics aggregate from `fact_admission`; no summary fact tables are persisted.
 
-## Created Objects
-
-Base tables:
-
-- `admissions_dw.dim_tcas_round`
-- `admissions_dw.dim_faculty`
-- `admissions_dw.dim_major`
-- `admissions_dw.dim_tcas_status`
-- `admissions_dw.fact_admission_round_year_summary`
-- `admissions_dw.fact_admission_round_major_summary`
-- `admissions_dw.fact_admission_round_status_summary`
-- `admissions_dw.admission_round_data_quality`
-
-Views:
-
-- `admissions_dw.vw_round3_year_overview`
-- `admissions_dw.vw_round3_major_performance`
-- `admissions_dw.vw_round3_status_summary`
-- `admissions_dw.vw_round3_year_comparison`
-- `admissions_dw.vw_social_media_year_overview`
-- `admissions_dw.vw_social_media_platform_summary`
-- `admissions_dw.vw_social_media_keyword_summary`
-- `admissions_dw.vw_social_media_sentiment_summary`
-- `admissions_dw.vw_social_admissions_year_correlation`
-- `admissions_dw.vw_website_analytics_year_overview`
-- `admissions_dw.vw_website_analytics_channel_summary`
-- `admissions_dw.vw_website_analytics_landing_page_summary`
-- `admissions_dw.vw_website_admissions_year_correlation`
-- `admissions_dw.vw_admission_year_overview`
-- `admissions_dw.vw_admission_round_overview`
-- `admissions_dw.vw_admission_round_status_distribution`
-- `admissions_dw.vw_admission_source_quality`
-- `admissions_dw.mart_tcas_year_summary`
-- `admissions_dw.mart_tcas_round_summary`
-- `admissions_dw.mart_major_round_conversion`
-- `admissions_dw.vw_dw_dataset_inventory`
-- `admissions_dw.vw_dw_lineage_overview`
-- `admissions_dw.vw_dw_table_row_counts`
-- `admissions_dw.vw_dw_quality_scorecard`
-- `admissions_dw.mart_admissions_executive_summary`
-- `admissions_dw.mart_major_conversion`
-- `admissions_dw.mart_channel_effectiveness`
-
----
-
-## Load Script
-
-ใช้ script นี้เพื่อ apply schema และโหลด CSV aggregate เข้า PostgreSQL:
+Apply and load through:
 
 ```bash
-DATABASE_URL="postgresql://..." NODE_PATH="/path/to/node_modules" node outputs/etl/load_round3_to_neon.cjs
+DATABASE_URL="postgresql://..." node outputs/etl/load_admissions_all_rounds_to_neon.cjs
 ```
-
-โหลด GA4 website analytics CSV:
-
-```bash
-DATABASE_URL="postgresql://..." \
-WEBSITE_ANALYTICS_CSV="outputs/real_data/ga4_website_monthly.csv" \
-NODE_PATH="/path/to/node_modules" \
-node outputs/etl/load_website_analytics_to_neon.cjs
-```
-
-Apply governed warehouse metadata and marts:
-
-```bash
-DATABASE_URL="postgresql://..." \
-NODE_PATH="/path/to/node_modules" \
-node outputs/etl/apply_warehouse_governance_marts.cjs
-```
-
-Load all TCAS rounds:
-
-```bash
-DATABASE_URL="postgresql://..." \
-NODE_PATH="/path/to/node_modules" \
-node outputs/etl/load_admissions_all_rounds_to_neon.cjs
-```
-
-หมายเหตุ:
-
-- ห้าม commit `DATABASE_URL` ลง repo
-- script ใช้ `ON CONFLICT DO UPDATE` เพื่อรันซ้ำได้โดยไม่เพิ่ม duplicate fact rows
-- source CSV ต้องอยู่ใน `outputs/processed/`
-- loader ไม่ส่งออกหรือบันทึกข้อมูลส่วนบุคคล
-
----
-
-## Current Neon Load Result
-
-โหลดข้อมูลเข้า Neon สำเร็จแล้วใน schema:
-
-```text
-admissions_dw
-```
-
-จำนวนข้อมูลหลังโหลด:
-
-| Object | Rows |
-|---|---:|
-| `dim_major` | 10 |
-| `fact_admission_round_year_summary` | 2 |
-| `fact_admission_year_overview` | 2 |
-| `fact_admission_round_overview` | 8 |
-| `fact_admission_round_year_summary` | 11 |
-| `fact_admission_round_major_summary` | 72 |
-| `fact_admission_round_status_summary` | 48 |
-| `admission_round_source_data_quality` | 11 |
-| `admission_round_data_quality` | 2 |
-| `fact_social_media_monthly_summary` | 62 |
-| `dw_dataset_catalog` | 8 |
-| `dw_lineage_edge` | 8 |
-| `mart_admissions_executive_summary` | 2 |
-| `mart_major_conversion` | 20 |
-| `mart_channel_effectiveness` | 16 |
-
-ภาพรวมรายปี:
-
-| Academic Year | Application Choices | Unique Applicants | Confirmed Unique Applicants | Confirmed Unique Rate |
-|---:|---:|---:|---:|---:|
-| 2568 | 2,711 | 1,810 | 214 | 11.82% |
-| 2569 | 2,379 | 1,620 | 283 | 17.47% |
-
-หมายเหตุ: `fact_social_media_monthly_summary` ยังมี historical development fixture rows อยู่บางส่วน แต่ dashboard ใช้เฉพาะ real/collected sources ได้แก่ YouTube API และ manual Facebook public-search sample เท่านั้น

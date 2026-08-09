@@ -73,7 +73,9 @@ function confidenceLabel(confidence: Insight["confidence"]) {
 }
 
 export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnapshot }) {
-  const { businessQuestions, decisionInsights, majorRows, rounds, warehouseHealth } = snapshot;
+  const { businessQuestions, decisionInsights, majorRows, rounds, warehouseHealth, years } = snapshot;
+  const latestYear = Math.max(...years.map((year) => year.year));
+  const latestYearOverview = years.find((year) => year.year === latestYear);
   const activeBusinessQuestions = useMemo(
     () => businessQuestions.filter((q) => !commentedQuestionIds.has(q.id)),
     [businessQuestions]
@@ -109,20 +111,20 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnap
   ) ?? decisionInsights[0];
 
   const selectedMajor = majorRows.find(
-    (major) => major.year === 2569 && selectedInsight.title.includes(major.name),
+    (major) => major.year === latestYear && selectedInsight.title.includes(major.name),
   );
   const defaultMajor = majorRows.find(
-    (major) => major.year === 2569 && major.name === "วิศวกรรมโยธา-โครงสร้างพื้นฐาน",
+    (major) => major.year === latestYear && major.name === "วิศวกรรมโยธา-โครงสร้างพื้นฐาน",
   );
   const answerMajor = selectedMajor ?? defaultMajor;
   const isPrimaryAnswer = selectedQuestion.id === "BQ-001";
   const selectedRound = selectedQuestion.id === "BQ-010"
-    ? rounds.find((round) => round.year === 2569 && round.code === "TCAS1")
+    ? rounds.find((round) => round.year === latestYear && round.code === "TCAS1")
     : ["BQ-002", "BQ-011"].includes(selectedQuestion.id)
-      ? rounds.find((round) => round.year === 2569 && round.code === "TCAS3")
+      ? rounds.find((round) => round.year === latestYear && round.code === "TCAS3")
       : undefined;
-  const selectedRate = selectedRound?.rate ?? selectedMajor?.rate ?? answerMajor?.rate ?? 7.64;
-  const comparisonRate = selectedRound ? 15.83 : 18.84;
+  const selectedRate = selectedRound?.rate ?? selectedMajor?.rate ?? answerMajor?.rate ?? 0;
+  const comparisonRate = latestYearOverview?.rate ?? 0;
   const rateGap = Math.max(0, comparisonRate - selectedRate);
   const showsRateComparison = rateQuestionIds.has(selectedQuestion.id);
   const answerTitle = isPrimaryAnswer
@@ -285,7 +287,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnap
                   <b>{selectedRate.toFixed(2)}%</b>
                 </div>
                 <div className="rate-row average">
-                  <span>{selectedRound ? "อัตรายืนยันสิทธิ์รวมปี 2569" : "ค่าเฉลี่ยคณะวิศวกรรมศาสตร์"}</span>
+                  <span>{selectedRound ? `อัตรายืนยันสิทธิ์รวมปี ${latestYear}` : "ค่าเฉลี่ยคณะวิศวกรรมศาสตร์"}</span>
                   <div className="rate-track"><i style={{ width: `${Math.min(comparisonRate * 4, 100)}%` }} /></div>
                   <b>{comparisonRate.toFixed(2)}%</b>
                 </div>

@@ -494,13 +494,14 @@ function DonutChartCard({
   const total = useMemo(() => slices.reduce((sum, s) => sum + s.value, 0), [slices]);
 
   const chartData = useMemo(() => {
-    let accumulatedAngle = 0;
     return slices.map((slice, idx) => {
       const sharePct = total > 0 ? (slice.value / total) * 100 : 0;
       const angle = (sharePct / 100) * 360;
-      const startAngle = accumulatedAngle;
-      const endAngle = accumulatedAngle + angle;
-      accumulatedAngle += angle;
+      const priorValue = slices
+        .slice(0, idx)
+        .reduce((sum, priorSlice) => sum + priorSlice.value, 0);
+      const startAngle = total > 0 ? (priorValue / total) * 360 : 0;
+      const endAngle = startAngle + angle;
       return {
         ...slice,
         idx,
@@ -976,4 +977,3 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
     </main>
   );
 }
-

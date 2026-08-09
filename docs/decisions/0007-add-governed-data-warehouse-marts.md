@@ -40,4 +40,4 @@ This adds:
 ข้อจำกัด:
 
 - ตอนนี้ mart เป็น SQL views ไม่ใช่ materialized views เพราะข้อมูลยังเล็กและต้องการให้ refresh ง่าย
-- Social media marts ถูกถอดออกจาก active scope ตาม ADR 0008
+- Presentation marts ต้อง aggregate จาก `fact_admission` เพียงตารางเดียว

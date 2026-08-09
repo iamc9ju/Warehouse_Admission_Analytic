@@ -876,6 +876,11 @@ th {
   color: #9a580d;
 }
 
+.round-year.y2567 {
+  background: #eaf0f7;
+  color: #3f678d;
+}
+
 .round-year.y2569 {
   background: #e8f5e8;
   color: var(--green);
@@ -2518,6 +2523,10 @@ th {
 
 .year-2568 {
   background: #e5c49c;
+}
+
+.year-2567 {
+  background: #8fb2d4;
 }
 
 .year-2569 {
