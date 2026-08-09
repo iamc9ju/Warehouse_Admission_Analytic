@@ -308,13 +308,17 @@ async function loadQuality(client, rows) {
         missing_priority_rows = EXCLUDED.missing_priority_rows,
         missing_major_rows = EXCLUDED.missing_major_rows,
         pii_exported_columns = EXCLUDED.pii_exported_columns,
-        loaded_at = now();
-
+        loaded_at = now()
+    `,
+    [JSON.stringify(rows)]
+  );
+  await client.query(
+    `
       DELETE FROM admissions_dw.admission_round_source_data_quality q
       WHERE NOT EXISTS (
         SELECT 1 FROM jsonb_to_recordset($1::jsonb) AS active(source_file TEXT)
         WHERE active.source_file = q.source_file
-      );
+      )
     `,
     [JSON.stringify(rows)]
   );

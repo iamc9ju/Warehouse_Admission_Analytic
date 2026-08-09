@@ -9,6 +9,10 @@ DROP TABLE IF EXISTS admissions_dw.fact_admission_round_overview CASCADE;
 DROP TABLE IF EXISTS admissions_dw.fact_website_analytics_monthly CASCADE;
 DROP TABLE IF EXISTS admissions_dw.fact_social_media_monthly_summary CASCADE;
 DROP TABLE IF EXISTS admissions_dw.admission_round_data_quality CASCADE;
+-- The legacy source-quality table used round_key/unique_applicants and an
+-- incompatible PII-removal text column. It is fully derived, so rebuild it
+-- with the single-fact quality grain before loading the current snapshot.
+DROP TABLE IF EXISTS admissions_dw.admission_round_source_data_quality CASCADE;
 
 DROP TABLE IF EXISTS admissions_dw.dim_website_channel CASCADE;
 DROP TABLE IF EXISTS admissions_dw.dim_website_landing_page CASCADE;
