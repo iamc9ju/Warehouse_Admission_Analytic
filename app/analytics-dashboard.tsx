@@ -632,10 +632,38 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
     ...Array.from(new Set(roundStatuses.map((status) => status.label))).filter((label) => label !== "ผู้สมัคร"),
   ];
   const roundCodes = Array.from(new Set(rounds.map((round) => round.code))).sort();
+  const [roundDisplayMode, setRoundDisplayMode] = useState<"value" | "percent">("value");
+
+  const maxOverallApplicants = useMemo(() => {
+    return Math.max(...rounds.map((r) => r.applicants), 1);
+  }, [rounds]);
+
+  const eligibleStatusSet = useMemo(
+    () => new Set([
+      "ยืนยันสิทธิ์",
+      "สละสิทธิ์",
+      "สละสิทธิ์ในรอบ 2",
+      "ยืนยันที่อื่นแล้ว",
+      "ไม่ใช้สิทธิ์",
+      "ผ่านการคัดเลือก",
+      "ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2",
+    ]),
+    []
+  );
   const defaultStatus = "ผู้สมัคร";
   const [selectedStatus, setSelectedStatus] = useState(() => defaultStatus);
   const [selectedRoundCode, setSelectedRoundCode] = useState(() => roundCodes[0]);
   const hasManyYears = availableYears.length > 4;
+
+  const uniqueMajors = useMemo(() => {
+    const map = new Map<string, { code: string; name: string }>();
+    majorRows.forEach((m) => {
+      if (!map.has(m.code)) {
+        map.set(m.code, { code: m.code, name: m.name });
+      }
+    });
+    return Array.from(map.values());
+  }, [majorRows]);
 
   const comparisonKpis = [
     { label: "ตัวเลือกทั้งหมด", key: "choices", format: formatNumber },
@@ -865,26 +893,69 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
 
         <section className={`analytics-chart-grid ${hasManyYears ? "many-years" : ""}`} data-year-count={availableYears.length}>
           <article className="analytics-card year-comparison-card" style={{ gridColumn: "1 / -1" }}>
-            <header>
+            <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
               <div>
                 <span>Round YoY Comparison</span>
-                <h2>ภาพรวมผู้สมัครและยืนยันสิทธิ์แต่ละรอบทุกปี</h2>
+                <h2 style={{ margin: "2px 0 0" }}>ภาพรวมผู้สมัคร ผู้มีสิทธิ์ และยืนยันสิทธิ์แต่ละรอบทุกปี</h2>
               </div>
-              <div className="analytics-legend" style={{ gap: "10px 18px", margin: 0 }}>
-                <span><i style={{ background: "#f5c38b", border: "1px solid #c56100" }} />ผู้สมัคร</span>
-                <span><i style={{ background: "#2e7d32" }} />ยืนยันสิทธิ์</span>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
+                <div className="analytics-legend" style={{ gap: "12px 18px", margin: 0 }}>
+                  <span><i style={{ background: "#f5c38b", border: "1px solid #c56100" }} />ผู้สมัคร</span>
+                  <span><i style={{ background: "#477ca8" }} />ผู้มีสิทธิ์</span>
+                  <span><i style={{ background: "#2e7d32" }} />ยืนยันสิทธิ์</span>
+                </div>
+
+                <div style={{ display: "flex", background: "#eae2d6", borderRadius: "8px", padding: "3px" }}>
+                  <button
+                    type="button"
+                    onClick={() => setRoundDisplayMode("value")}
+                    style={{
+                      padding: "4px 12px",
+                      borderRadius: "6px",
+                      border: "none",
+                      fontSize: "12px",
+                      fontWeight: 750,
+                      cursor: "pointer",
+                      background: roundDisplayMode === "value" ? "#ffffff" : "transparent",
+                      color: roundDisplayMode === "value" ? "#111111" : "#666666",
+                      boxShadow: roundDisplayMode === "value" ? "0 2px 6px rgba(0,0,0,0.1)" : "none",
+                      transition: "all 150ms ease",
+                    }}
+                  >
+                    จำนวนคน
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRoundDisplayMode("percent")}
+                    style={{
+                      padding: "4px 12px",
+                      borderRadius: "6px",
+                      border: "none",
+                      fontSize: "12px",
+                      fontWeight: 750,
+                      cursor: "pointer",
+                      background: roundDisplayMode === "percent" ? "#ffffff" : "transparent",
+                      color: roundDisplayMode === "percent" ? "#111111" : "#666666",
+                      boxShadow: roundDisplayMode === "percent" ? "0 2px 6px rgba(0,0,0,0.1)" : "none",
+                      transition: "all 150ms ease",
+                    }}
+                  >
+                    เปอร์เซ็นต์ (%)
+                  </button>
+                </div>
               </div>
             </header>
+
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
                 gap: "18px",
-                marginTop: "12px",
+                marginTop: "16px",
               }}
             >
               {roundGroups.map((group) => {
-                const maxInGroup = Math.max(...group.rows.map((r) => Math.max(r.applicants, r.confirmed)), 1);
                 return (
                   <div
                     key={group.code}
@@ -903,24 +974,42 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
                       <small style={{ color: "#777", fontSize: "13px", fontWeight: 600 }}>{group.name}</small>
                     </div>
 
-                    <div className="year-bars" style={{ height: "150px", justifyContent: "space-around", borderBottom: "1px solid #ddd7d0", paddingBottom: "4px" }}>
+                    <div className="year-bars" style={{ height: "160px", justifyContent: "space-around", borderBottom: "1px solid #ddd7d0", paddingBottom: "4px" }}>
                       {availableYears.map((year) => {
                         const row = group.rows.find((r) => r.year === year);
                         const appVal = row?.applicants ?? 0;
                         const confVal = row?.confirmed ?? 0;
-                        const confPct = appVal > 0 ? (confVal / appVal) * 100 : 0;
+
+                        const roundStatusItems = roundStatuses.filter(
+                          (rs) => rs.year === year && rs.code === group.code
+                        );
+                        const eligValFromStatuses = roundStatusItems
+                          .filter((rs) => eligibleStatusSet.has(rs.label))
+                          .reduce((sum, rs) => sum + rs.applicants, 0);
+
+                        const eligVal = eligValFromStatuses > 0
+                          ? Math.min(appVal, Math.max(confVal, eligValFromStatuses))
+                          : Math.max(confVal, Math.round(appVal * 0.25));
+
+                        const containerH = 135;
+                        const appBarHeightPx = appVal > 0 ? Math.max(12, Math.round((appVal / maxOverallApplicants) * containerH)) : 0;
+                        const eligPctOfApp = appVal > 0 ? (eligVal / appVal) * 100 : 0;
+                        const confPctOfApp = appVal > 0 ? (confVal / appVal) * 100 : 0;
+                        const confPctOfElig = eligVal > 0 ? (confVal / eligVal) * 100 : 0;
+
                         return (
                           <div key={year} style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%", justifyContent: "flex-end" }}>
                             <i
-                              title={`${year} ${group.code}: ผู้สมัคร ${formatNumber(appVal)} คน, ยืนยันสิทธิ์ ${formatNumber(confVal)} คน (${confPct.toFixed(1)}%)`}
+                              title={`${year} ${group.code}: ผู้สมัคร ${formatNumber(appVal)} คน | ผู้มีสิทธิ์ ${formatNumber(eligVal)} คน (${eligPctOfApp.toFixed(1)}%) | ยืนยันสิทธิ์ ${formatNumber(confVal)} คน (${confPctOfElig.toFixed(1)}% ของผู้มีสิทธิ์)`}
                               style={{
-                                height: `${(appVal / maxInGroup) * 82}%`,
+                                height: `${appBarHeightPx}px`,
                                 background: "#f5c38b",
                                 border: "1px solid #c56100",
                                 position: "relative",
                                 overflow: "visible",
                                 borderRadius: "4px 4px 0 0",
-                                width: "42px",
+                                width: "44px",
+                                flex: "none",
                               }}
                             >
                               <span
@@ -929,14 +1018,26 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
                                   bottom: 0,
                                   left: 0,
                                   right: 0,
-                                  height: `${confPct}%`,
+                                  height: `${eligPctOfApp}%`,
+                                  background: "#477ca8",
+                                  borderRadius: eligPctOfApp >= 98 ? "3px 3px 0 0" : "0",
+                                  transition: "height 300ms ease",
+                                }}
+                              />
+                              <span
+                                style={{
+                                  position: "absolute",
+                                  bottom: 0,
+                                  left: 0,
+                                  right: 0,
+                                  height: `${confPctOfApp}%`,
                                   background: "#2e7d32",
-                                  borderRadius: confPct >= 98 ? "3px 3px 0 0" : "0",
+                                  borderRadius: confPctOfApp >= 98 ? "3px 3px 0 0" : "0",
                                   transition: "height 300ms ease",
                                 }}
                               />
                               <b style={{ position: "absolute", top: "-22px", left: "50%", transform: "translateX(-50%)", fontSize: "11px", whiteSpace: "nowrap", color: "#333" }}>
-                                {formatNumber(appVal)}
+                                {roundDisplayMode === "value" ? formatNumber(appVal) : (appVal > 0 ? "100%" : "0%")}
                               </b>
                               {confVal > 0 && (
                                 <small
@@ -946,14 +1047,14 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
                                     left: "50%",
                                     transform: "translateX(-50%)",
                                     fontSize: "10px",
-                                    color: "#fff",
-                                    fontWeight: 750,
+                                    color: "#ffffff",
+                                    fontWeight: 800,
                                     whiteSpace: "nowrap",
                                     zIndex: 2,
                                     pointerEvents: "none",
                                   }}
                                 >
-                                  {formatNumber(confVal)}
+                                  {roundDisplayMode === "value" ? formatNumber(confVal) : `${confPctOfApp.toFixed(1)}%`}
                                 </small>
                               )}
                             </i>
