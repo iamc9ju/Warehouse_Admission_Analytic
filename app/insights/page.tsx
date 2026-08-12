@@ -1,6 +1,7 @@
-import { DashboardPage } from "../dashboard-page";
+import { AdmissionsDecisionCenter } from "./admissions-decision-center";
 import { loadDashboardSnapshot } from "../data/load-dashboard-snapshot";
 
 export default async function InsightsPage() {
-  return <DashboardPage activePage="Insights" snapshot={await loadDashboardSnapshot()} />;
+  const snapshot = await loadDashboardSnapshot();
+  return <AdmissionsDecisionCenter snapshot={snapshot} />;
 }

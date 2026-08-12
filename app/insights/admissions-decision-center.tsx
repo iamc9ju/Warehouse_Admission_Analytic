@@ -10,8 +10,8 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import type { DashboardSnapshot } from "./data/dashboard-types";
-import { SidebarNavigation } from "./sidebar-navigation";
+import type { DashboardSnapshot } from "../data/dashboard-types";
+import { SidebarNavigation } from "../sidebar-navigation";
 
 type Question = DashboardSnapshot["businessQuestions"][number];
 type Insight = DashboardSnapshot["decisionInsights"][number];

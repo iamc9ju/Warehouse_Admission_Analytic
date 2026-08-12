@@ -164,7 +164,7 @@ test("renders separate route pages instead of anchor-only sections", async () =>
 });
 
 test("keeps dashboard copy tied to real warehouse data", async () => {
-  const page = await readFile(new URL("../app/dashboard-page.tsx", import.meta.url), "utf8");
+  const page = await readFile(new URL("../app/overview-view.tsx", import.meta.url), "utf8");
   const analyticsPage = await readFile(new URL("../app/analytics-dashboard.tsx", import.meta.url), "utf8");
   const dashboardTypes = await readFile(new URL("../app/data/dashboard-types.ts", import.meta.url), "utf8");
   const validator = await readFile(new URL("../scripts/validate-dashboard-snapshot.mjs", import.meta.url), "utf8");
@@ -228,9 +228,10 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
   assert.match(styles, /tcas-dw-cartoon-logo\.png/);
   assert.doesNotMatch(page, /next\/image/);
   assert.doesNotMatch(page, /<span className="brand-mark">DW<\/span>/);
-  assert.match(page, /Data catalog evidence/);
-  assert.match(page, /Dashboard query contract/);
-  assert.match(page, /ETL validation checks/);
+  const warehousePage = await readFile(new URL("../app/warehouse/page.tsx", import.meta.url), "utf8");
+  assert.match(warehousePage, /Data catalog evidence/);
+  assert.match(warehousePage, /Dashboard query contract/);
+  assert.match(warehousePage, /ETL validation checks/);
   assert.match(page, /SidebarNavigation/);
   assert.match(page, /round-table-wrap/);
   assert.doesNotMatch(page, /compare-summary/);

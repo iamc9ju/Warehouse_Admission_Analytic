@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { PresentationChartLineIcon } from "@heroicons/react/24/outline";
-import type { DashboardSnapshot, MajorRow, Year } from "./data/dashboard-types";
-import { SidebarNavigation } from "./sidebar-navigation";
+import type { DashboardSnapshot, MajorRow, Year } from "../data/dashboard-types";
+import { SidebarNavigation } from "../sidebar-navigation";
 
 type RadarMetric = {
   label: string;
