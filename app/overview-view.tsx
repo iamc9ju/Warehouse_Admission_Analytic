@@ -33,7 +33,7 @@ function radarPolygon(values: number[], radius = 112) {
 }
 
 export function OverviewView({ snapshot }: { snapshot: DashboardSnapshot }) {
-  const { decisionInsights, majorRows, rounds, statuses, years } = snapshot;
+  const { majorRows, rounds, statuses, years } = snapshot;
 
   const selectableYears = useMemo(
     () => [...years].sort((first, second) => second.year - first.year),
@@ -122,8 +122,6 @@ export function OverviewView({ snapshot }: { snapshot: DashboardSnapshot }) {
 
   const maxApplicants = Math.max(...filteredMajors.map((major) => major.applicants), 1);
   const visibleRounds = rounds.filter((round) => round.year === selectedYear);
-  const sortedInsights = decisionInsights.slice().sort((a, b) => a.priority - b.priority);
-  const executivePriorities = sortedInsights.slice(0, 3);
 
   return (
     <main className="app-frame">
@@ -308,27 +306,6 @@ export function OverviewView({ snapshot }: { snapshot: DashboardSnapshot }) {
                     ))}
                   </tbody>
                 </table>
-              </div>
-            </article>
-
-            <article id="insights" className="panel insights-panel" style={{ gridColumn: "1 / -1" }}>
-              <div className="panel-title">
-                <h2>3 ข้อเสนอแนะเชิงบริหาร (Executive Priorities)</h2>
-              </div>
-              <div className="insight-card-grid">
-                {executivePriorities.map((insight) => (
-                  <section className="insight-card" key={insight.id}>
-                    <div className="insight-top">
-                      <span className="priority-pill">Priority #{insight.priority}</span>
-                      <span className="category-tag">{insight.category}</span>
-                    </div>
-                    <h3>{insight.title}</h3>
-                    <p>{insight.summary}</p>
-                    <div className="insight-action">
-                      <strong>ข้อเสนอแนะ:</strong> {insight.recommendedAction}
-                    </div>
-                  </section>
-                ))}
               </div>
             </article>
           </section>

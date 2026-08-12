@@ -5,8 +5,8 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const files = [
   "app/overview-view.tsx",
-  "app/analytics-dashboard.tsx",
-  "app/admissions-decision-center.tsx",
+  "app/dashboard/analytics-dashboard.tsx",
+  "app/insights/admissions-decision-center.tsx",
   "app/page.tsx",
   "app/dashboard/page.tsx",
   "app/warehouse/page.tsx",

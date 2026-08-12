@@ -165,7 +165,7 @@ test("renders separate route pages instead of anchor-only sections", async () =>
 
 test("keeps dashboard copy tied to real warehouse data", async () => {
   const page = await readFile(new URL("../app/overview-view.tsx", import.meta.url), "utf8");
-  const analyticsPage = await readFile(new URL("../app/analytics-dashboard.tsx", import.meta.url), "utf8");
+  const analyticsPage = await readFile(new URL("../app/dashboard/analytics-dashboard.tsx", import.meta.url), "utf8");
   const dashboardTypes = await readFile(new URL("../app/data/dashboard-types.ts", import.meta.url), "utf8");
   const validator = await readFile(new URL("../scripts/validate-dashboard-snapshot.mjs", import.meta.url), "utf8");
   const styles = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");

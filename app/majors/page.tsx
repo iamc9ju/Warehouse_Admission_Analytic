@@ -30,7 +30,6 @@ export default function MajorsPage() {
     [years]
   );
   const [selectedYear, setSelectedYear] = useState<Year>(() => selectableYears[0]?.year ?? 0);
-  const [majorQuery, setMajorQuery] = useState("");
 
   const availableYears = useMemo(
     () => [...years].map((y) => y.year).sort((a, b) => a - b),
@@ -77,19 +76,6 @@ export default function MajorsPage() {
   });
 
   const maxSelectedMajorChartValue = Math.max(...majorStatusValues, 1);
-
-  const filteredMajors = useMemo(() => {
-    const normalizedQuery = majorQuery.trim().toLowerCase();
-    return majorRows
-      .filter((major) => major.year === selectedYear)
-      .filter((major) => {
-        if (!normalizedQuery) return true;
-        return `${major.code} ${major.name} ${major.type}`.toLowerCase().includes(normalizedQuery);
-      })
-      .sort((a, b) => b.applicants - a.applicants);
-  }, [majorQuery, majorRows, selectedYear]);
-
-  const maxApplicants = Math.max(...filteredMajors.map((major) => major.applicants), 1);
 
   return (
     <main className="app-frame">
@@ -183,43 +169,6 @@ export default function MajorsPage() {
                   <span>ปีการศึกษา</span>
                   <small>หน่วย: คน ตามระดับข้อมูลในคลัง</small>
                 </div>
-              </div>
-            </article>
-
-            <article id="majors" className="panel majors-panel" style={{ gridColumn: "1 / -1" }}>
-              <div className="panel-title">
-                <h2>ทุกสาขาวิชา ปี {selectedYear}</h2>
-                <input
-                  aria-label="ค้นหาสาขา"
-                  placeholder="ค้นหาสาขา"
-                  value={majorQuery}
-                  onChange={(event) => setMajorQuery(event.target.value)}
-                />
-              </div>
-              <div className="major-table" role="table" aria-label="Major ranking">
-                <div className="major-head" role="row">
-                  <span>ลำดับ</span>
-                  <span>สาขา</span>
-                  <span>ผู้สมัคร</span>
-                  <span>ยืนยันสิทธิ์</span>
-                  <span>อัตรา</span>
-                  <span>Δ เทียบปีก่อน</span>
-                </div>
-                {filteredMajors.map((major, index) => (
-                  <div className="major-row" role="row" key={`${major.year}-${major.code}-${major.name}`}>
-                    <span>{String(index + 1).padStart(2, "0")}</span>
-                    <strong>{major.name}</strong>
-                    <span className="value-with-bar">
-                      {formatNumber(major.applicants)}
-                      <i style={{ width: `${(major.applicants / maxApplicants) * 100}%` }} />
-                    </span>
-                    <span>{formatNumber(major.confirmed)}</span>
-                    <span>{major.rate.toFixed(2)}%</span>
-                    <span className={`change-chip ${deltaClass(major.applicantChange)}`}>
-                      {formatSigned(major.applicantChange)}
-                    </span>
-                  </div>
-                ))}
               </div>
             </article>
           </section>
