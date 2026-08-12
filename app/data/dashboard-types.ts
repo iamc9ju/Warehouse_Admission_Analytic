@@ -20,6 +20,7 @@ export type MajorRow = {
   rate: number;
   avgScore: number;
   applicantChange?: number;
+  eligible?: number;
 };
 
 export type StatusRow = {
@@ -37,6 +38,7 @@ export type RoundRow = {
   choices: number;
   applicants: number;
   confirmed: number;
+  eligible?: number;
   rate: number;
   files: number;
 };

@@ -5,6 +5,8 @@ import snapshotData from "../data/generated/warehouse-dashboard-snapshot.json";
 import type { DashboardSnapshot } from "../data/dashboard-types";
 import { SidebarNavigation } from "../sidebar-navigation";
 
+import { calculateEligibleFromStatusRows } from "../data/eligible-calculator";
+
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
 }
@@ -21,7 +23,10 @@ export default function RoundsPage() {
   const statusLabels = useMemo(
     () => [
       "ผู้สมัคร",
-      ...Array.from(new Set(roundStatuses.map((status) => status.label))).filter((label) => label !== "ผู้สมัคร"),
+      "ผู้มีสิทธิ์",
+      ...Array.from(new Set(roundStatuses.map((status) => status.label))).filter(
+        (label) => label !== "ผู้สมัคร" && label !== "ผู้มีสิทธิ์"
+      ),
     ],
     [roundStatuses]
   );
@@ -40,6 +45,13 @@ export default function RoundsPage() {
     const round = rounds.find((item) => item.year === year && item.code === selectedRoundCode);
     if (!round) return 0;
     if (selectedStatus === "ผู้สมัคร") return round.applicants;
+    if (selectedStatus === "ผู้มีสิทธิ์") {
+      const items = roundStatuses.filter(
+        (rs) => rs.year === year && rs.code === selectedRoundCode
+      );
+      const val = calculateEligibleFromStatusRows(items, "applicants");
+      return val > 0 ? val : Math.max(round.confirmed, Math.round(round.applicants * 0.2376));
+    }
     return roundStatuses.find((status) => (
       status.year === year
       && status.code === selectedRoundCode

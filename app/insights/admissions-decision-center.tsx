@@ -12,6 +12,11 @@ import {
 } from "@heroicons/react/24/outline";
 import type { DashboardSnapshot } from "../data/dashboard-types";
 import { SidebarNavigation } from "../sidebar-navigation";
+import {
+  ELIGIBLE_STATUS_LABELS,
+  calculateEligibleApplicantsDynamic,
+  calculateEligibleFromStatusRows,
+} from "../data/eligible-calculator";
 
 type Question = DashboardSnapshot["businessQuestions"][number];
 type Insight = DashboardSnapshot["decisionInsights"][number];
@@ -73,7 +78,7 @@ function confidenceLabel(confidence: Insight["confidence"]) {
 }
 
 export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnapshot }) {
-  const { businessQuestions, decisionInsights, majorRows, rounds, warehouseHealth, years } = snapshot;
+  const { businessQuestions, decisionInsights, majorRows, roundStatuses, rounds, statuses, warehouseHealth, years } = snapshot;
   const latestYear = Math.max(...years.map((year) => year.year));
   const latestYearOverview = years.find((year) => year.year === latestYear);
   const activeBusinessQuestions = useMemo(
@@ -123,6 +128,40 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnap
     : ["BQ-002", "BQ-011"].includes(selectedQuestion.id)
       ? rounds.find((round) => round.year === latestYear && round.code === "TCAS3")
       : undefined;
+  const totalEligibleInYear = useMemo(
+    () => calculateEligibleFromStatusRows(
+      statuses.filter((s) => s.year === latestYear),
+      "choices"
+    ),
+    [statuses, latestYear]
+  );
+
+  const totalApplicantsInYear = useMemo(
+    () => years.find((y) => y.year === latestYear)?.applicants || 1,
+    [years, latestYear]
+  );
+
+  const eligibleShareInYear = totalEligibleInYear / totalApplicantsInYear;
+
+  const getRoundEligibleCount = (roundCode: string, year: number) => {
+    const roundStatusItems = roundStatuses.filter(
+      (rs) => rs.year === year && rs.code === roundCode
+    );
+    const eligValFromStatuses = calculateEligibleFromStatusRows(roundStatusItems, "applicants");
+    const round = rounds.find((r) => r.year === year && r.code === roundCode);
+    const appVal = round?.applicants ?? 0;
+    const confVal = round?.confirmed ?? 0;
+    return eligValFromStatuses > 0
+      ? Math.min(appVal, Math.max(confVal, eligValFromStatuses))
+      : Math.max(confVal, Math.round(appVal * eligibleShareInYear));
+  };
+
+  const confirmedCount = selectedRound ? selectedRound.confirmed : (answerMajor?.confirmed ?? 0);
+  const applicantsCount = selectedRound ? selectedRound.applicants : (answerMajor?.applicants ?? 0);
+  const eligibleCount = selectedRound
+    ? getRoundEligibleCount(selectedRound.code, latestYear)
+    : calculateEligibleApplicantsDynamic(answerMajor, eligibleShareInYear);
+
   const selectedRate = selectedRound?.rate ?? selectedMajor?.rate ?? answerMajor?.rate ?? 0;
   const comparisonRate = latestYearOverview?.rate ?? 0;
   const rateGap = Math.max(0, comparisonRate - selectedRate);
@@ -145,6 +184,69 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnap
         thaiRecommendedActions[selectedQuestion.id] ?? selectedInsight.recommendedAction,
         "ติดตามผลในการทบทวนรอบถัดไป",
       ];
+
+  const runnerUps = useMemo(() => {
+    if (selectedQuestion.id === "BQ-001") {
+      return majorRows
+        .filter((m) => m.year === latestYear && m.name !== "วิศวกรรมโยธา-โครงสร้างพื้นฐาน")
+        .sort((a, b) => b.applicants - a.applicants)
+        .slice(0, 4)
+        .map((m) => ({
+          name: m.name,
+          displayValue: `ผู้สมัคร ${formatNumber(m.applicants)} คน (ยืนยันสิทธิ์ ${m.rate.toFixed(2)}%)`,
+        }));
+    }
+    if (selectedQuestion.id === "BQ-002") {
+      const tcasRounds = rounds.filter((r) => r.year === latestYear && r.code !== "TCAS3");
+      return [...tcasRounds]
+        .sort((a, b) => b.rate - a.rate)
+        .map((r) => ({
+          name: `${r.code} — ${r.name}`,
+          displayValue: `ยืนยันสิทธิ์ ${r.rate.toFixed(2)}%`,
+        }));
+    }
+    if (selectedQuestion.id === "BQ-006") {
+      return majorRows
+        .filter((m) => m.year === latestYear && m.name !== "วิศวกรรมโยธา-โครงสร้างพื้นฐาน")
+        .sort((a, b) => a.rate - b.rate)
+        .slice(0, 4)
+        .map((m) => ({
+          name: m.name,
+          displayValue: `ยืนยันสิทธิ์ ${m.rate.toFixed(2)}% (ผู้สมัคร ${formatNumber(m.applicants)} คน)`,
+        }));
+    }
+    if (selectedQuestion.id === "BQ-007") {
+      return majorRows
+        .filter((m) => m.year === latestYear && m.name !== "วิศวกรรมเครื่องกล-เกษตร" && (m.applicantChange ?? 0) < 0)
+        .sort((a, b) => (a.applicantChange ?? 0) - (b.applicantChange ?? 0))
+        .slice(0, 4)
+        .map((m) => ({
+          name: m.name,
+          displayValue: `ลดลง ${Math.abs(m.applicantChange ?? 0)} คน`,
+        }));
+    }
+    if (selectedQuestion.id === "BQ-008") {
+      return majorRows
+        .filter((m) => m.year === latestYear && m.name !== "วิศวกรรมอุตสาหการ-โลจิสติกส์" && (m.applicantChange ?? 0) > 0)
+        .sort((a, b) => (b.applicantChange ?? 0) - (a.applicantChange ?? 0))
+        .slice(0, 4)
+        .map((m) => ({
+          name: m.name,
+          displayValue: `เพิ่มขึ้น +${m.applicantChange} คน`,
+        }));
+    }
+    if (selectedQuestion.id === "BQ-009") {
+      return majorRows
+        .filter((m) => m.year === latestYear && m.name !== "วิศวกรรมนวัตกรรมเพื่อการเกษตรและอุตสาหกรรม")
+        .sort((a, b) => a.applicants - b.applicants)
+        .slice(0, 4)
+        .map((m) => ({
+          name: m.name,
+          displayValue: `ผู้สมัคร ${formatNumber(m.applicants)} คน`,
+        }));
+    }
+    return [];
+  }, [selectedQuestion.id, majorRows, rounds, latestYear]);
 
   const chooseQuestion = (id: string) => {
     setSelectedQuestionId(id);
@@ -256,8 +358,8 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnap
                     <dd>{selectedRate.toFixed(2)}%</dd>
                   </div>
                   <div>
-                    <dt>ต่ำกว่าค่าเฉลี่ย</dt>
-                    <dd>{rateGap.toFixed(1)} <small>จุด</small></dd>
+                    <dt>ผู้มีสิทธิ์</dt>
+                    <dd>{formatNumber(eligibleCount)} <small>คน</small></dd>
                   </div>
                 </>
               ) : (
@@ -279,20 +381,20 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnap
             </dl>
 
             {showsRateComparison ? (
-              <section className="rate-comparison" aria-label="เปรียบเทียบอัตรายืนยันสิทธิ์">
-                <h3>เทียบอัตรายืนยันสิทธิ์</h3>
+              <section className="rate-comparison" aria-label="เปรียบเทียบผู้มีสิทธิ์กับยืนยันสิทธิ์">
+                <h3>เปรียบเทียบผู้มีสิทธิ์กับยืนยันสิทธิ์จริง</h3>
                 <div className="rate-row">
-                  <span>{isPrimaryAnswer ? `${answerTitle} (สาขาที่เลือก)` : answerTitle}</span>
-                  <div className="rate-track"><i style={{ width: `${Math.min(selectedRate * 4, 100)}%` }} /></div>
-                  <b>{selectedRate.toFixed(2)}%</b>
+                  <span>จำนวนคนมีสิทธิ์</span>
+                  <div className="rate-track"><i style={{ width: "100%", background: "#477ca8" }} /></div>
+                  <b>{formatNumber(eligibleCount)} คน (100%)</b>
                 </div>
                 <div className="rate-row average">
-                  <span>{selectedRound ? `อัตรายืนยันสิทธิ์รวมปี ${latestYear}` : "ค่าเฉลี่ยคณะวิศวกรรมศาสตร์"}</span>
-                  <div className="rate-track"><i style={{ width: `${Math.min(comparisonRate * 4, 100)}%` }} /></div>
-                  <b>{comparisonRate.toFixed(2)}%</b>
+                  <span>คนที่ยืนยันจริง</span>
+                  <div className="rate-track"><i style={{ width: `${Math.min((confirmedCount / (eligibleCount || 1)) * 100, 100)}%`, background: "#2e7d32" }} /></div>
+                  <b>{formatNumber(confirmedCount)} คน ({((confirmedCount / (eligibleCount || 1)) * 100).toFixed(1)}%)</b>
                 </div>
                 <div className="rate-axis" aria-hidden="true">
-                  {["0%", "5%", "10%", "15%", "20%", "25%"].map((tick) => <span key={tick}>{tick}</span>)}
+                  {["0%", "20%", "40%", "60%", "80%", "100%"].map((tick) => <span key={tick}>{tick}</span>)}
                 </div>
               </section>
             ) : (
@@ -314,8 +416,27 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnap
                     <span>{action}</span>
                   </p>
                 ))}
-              </div>
-            </section> */}
+              </div> */}
+            {runnerUps.length > 0 && (
+              <section className="runner-ups-section" style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1.5px dashed #eae2d6" }}>
+                <h3 style={{ fontSize: "14px", fontWeight: 800, color: "#111", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span>📊</span> อันดับรองลงมา (Runner-ups)
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {runnerUps.map((item, idx) => (
+                    <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "#fcfaf7", border: "1px solid #eae2d6", borderRadius: "8px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "22px", height: "22px", borderRadius: "50%", background: "#e5ded6", color: "#6f6b64", fontSize: "11px", fontWeight: 800 }}>
+                          {idx + 2}
+                        </span>
+                        <strong style={{ fontSize: "13px", color: "#333", fontWeight: 700 }}>{item.name}</strong>
+                      </div>
+                      <span style={{ fontSize: "12px", fontWeight: 750, color: "#777" }}>{item.displayValue}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </article>
 
           {/* <footer className="answer-footer">

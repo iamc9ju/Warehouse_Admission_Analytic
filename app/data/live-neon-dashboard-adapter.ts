@@ -87,14 +87,63 @@ export async function loadLiveNeonSnapshot(databaseUrl: string): Promise<Dashboa
         order by academic_year
       `),
       client.query<Record<string, unknown>>(`
-        select academic_year, tcas_round_code, tcas_round_name, choices, unique_applicants, confirmed_applicants, confirmed_rate, source_files
-        from admissions_dw.vw_admission_round_overview
-        order by academic_year, tcas_round_code
+        select
+          r.academic_year,
+          r.tcas_round_code,
+          r.tcas_round_name,
+          r.choices,
+          r.unique_applicants,
+          r.confirmed_applicants,
+          r.confirmed_rate,
+          r.source_files,
+          coalesce(e.eligible_count, 0) as eligible_count
+        from admissions_dw.vw_admission_round_overview r
+        left join (
+          select
+            y.academic_year,
+            rd.tcas_round_code,
+            count(distinct case when s.tcas_status in (
+              'ยืนยันสิทธิ์', 'สละสิทธิ์', 'สละสิทธิ์ในรอบ 2',
+              'ยืนยันที่อื่นแล้ว', 'ไม่ใช้สิทธิ์', 'ผ่านการคัดเลือก',
+              'ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2'
+            ) then f.student_key end) as eligible_count
+          from admissions_dw.fact_admission f
+          join admissions_dw.dim_year y on f.year_key = y.year_key
+          join admissions_dw.dim_tcas_round rd on f.round_key = rd.round_key
+          join admissions_dw.dim_tcas_status s on f.status_key = s.status_key
+          group by y.academic_year, rd.tcas_round_code
+        ) e on r.academic_year = e.academic_year and r.tcas_round_code = e.tcas_round_code
+        order by r.academic_year, r.tcas_round_code
       `),
       client.query<Record<string, unknown>>(`
-        select academic_year, major_code, major_name, program_type, applicant_count, confirmed_count, confirmed_rate, avg_score, applicant_change
-        from admissions_dw.mart_major_conversion
-        order by academic_year, applicant_count desc
+        select
+          m.academic_year,
+          m.major_code,
+          m.major_name,
+          m.program_type,
+          m.applicant_count,
+          m.confirmed_count,
+          m.confirmed_rate,
+          m.avg_score,
+          m.applicant_change,
+          coalesce(e.eligible_count, 0) as eligible_count
+        from admissions_dw.mart_major_conversion m
+        left join (
+          select
+            y.academic_year,
+            mj.major_code,
+            count(distinct case when s.tcas_status in (
+              'ยืนยันสิทธิ์', 'สละสิทธิ์', 'สละสิทธิ์ในรอบ 2',
+              'ยืนยันที่อื่นแล้ว', 'ไม่ใช้สิทธิ์', 'ผ่านการคัดเลือก',
+              'ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2'
+            ) then f.student_key end) as eligible_count
+          from admissions_dw.fact_admission f
+          join admissions_dw.dim_year y on f.year_key = y.year_key
+          join admissions_dw.dim_major mj on f.major_key = mj.major_key
+          join admissions_dw.dim_tcas_status s on f.status_key = s.status_key
+          group by y.academic_year, mj.major_code
+        ) e on m.academic_year = e.academic_year and m.major_code = e.major_code
+        order by m.academic_year, m.applicant_count desc
       `),
       client.query<Record<string, unknown>>(`
         select
@@ -166,6 +215,7 @@ export async function loadLiveNeonSnapshot(databaseUrl: string): Promise<Dashboa
       choices: numberValue(row.choices, "choices"),
       applicants: numberValue(row.unique_applicants, "unique_applicants"),
       confirmed: numberValue(row.confirmed_applicants, "confirmed_applicants"),
+      eligible: optionalNumberValue(row.eligible_count, "eligible_count"),
       rate: numberValue(row.confirmed_rate, "confirmed_rate"),
       files: numberValue(row.source_files, "source_files"),
     }));
@@ -177,6 +227,7 @@ export async function loadLiveNeonSnapshot(databaseUrl: string): Promise<Dashboa
       type: String(row.program_type),
       applicants: numberValue(row.applicant_count, "applicant_count"),
       confirmed: numberValue(row.confirmed_count, "confirmed_count"),
+      eligible: optionalNumberValue(row.eligible_count, "eligible_count"),
       rate: numberValue(row.confirmed_rate, "confirmed_rate"),
       avgScore: numberValue(row.avg_score, "avg_score"),
       applicantChange: optionalNumberValue(row.applicant_change, "applicant_change"),

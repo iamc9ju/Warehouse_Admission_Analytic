@@ -2,7 +2,7 @@ import snapshot from "./generated/warehouse-dashboard-snapshot.json";
 import type { DashboardSnapshot } from "./dashboard-types";
 import { loadLiveNeonSnapshot } from "./live-neon-dashboard-adapter";
 
-const SNAPSHOT_CACHE_TTL_MS = 5 * 60 * 1000;
+const SNAPSHOT_CACHE_TTL_MS = process.env.NODE_ENV === "production" ? 5 * 60 * 1000 : 0;
 
 let snapshotCache: { value: DashboardSnapshot; expiresAt: number } | undefined;
 let snapshotRequest: Promise<DashboardSnapshot> | undefined;
