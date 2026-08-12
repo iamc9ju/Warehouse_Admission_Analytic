@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { PresentationChartLineIcon } from "@heroicons/react/24/outline";
-import type { DashboardSnapshot, MajorRow, Year } from "../data/dashboard-types";
+import type { DashboardSnapshot, MajorRow, Year, YearOverview } from "../data/dashboard-types";
 import { SidebarNavigation } from "../sidebar-navigation";
 
 type RadarMetric = {
@@ -669,7 +669,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
     { label: "ตัวเลือกทั้งหมด", key: "choices", format: formatNumber },
     { label: "ผู้สมัครไม่ซ้ำ", key: "applicants", format: formatNumber },
     { label: "ยืนยันสิทธิ์", key: "confirmed", format: formatNumber },
-    { label: "อัตรายืนยันสิทธิ์", key: "rate", format: (value: number) => `${value.toFixed(2)}%` },
+    { label: "สละสิทธิ์", key: "resigned", format: formatNumber },
   ] as const;
 
   const selectedRound = rounds.find((round) => round.code === selectedRoundCode);
@@ -770,9 +770,13 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
   ] : [];
   const radarValues = radarMetrics.map((metric) => metric.value / metric.max);
 
-  const yearDelta = (key: "choices" | "applicants" | "confirmed" | "rate") => {
-    const first = sortedOverviews[0]?.[key] ?? 0;
-    const last = sortedOverviews[sortedOverviews.length - 1]?.[key] ?? 0;
+  const yearDelta = (key: string) => {
+    const first = key === "resigned"
+      ? statuses.filter((s) => s.year === sortedOverviews[0]?.year && (s.label === "สละสิทธิ์" || s.label === "สละสิทธิ์ในรอบ 2")).reduce((sum, s) => sum + s.choices, 0)
+      : sortedOverviews[0]?.[key as keyof YearOverview] ?? 0;
+    const last = key === "resigned"
+      ? statuses.filter((s) => s.year === sortedOverviews[sortedOverviews.length - 1]?.year && (s.label === "สละสิทธิ์" || s.label === "สละสิทธิ์ในรอบ 2")).reduce((sum, s) => sum + s.choices, 0)
+      : sortedOverviews[sortedOverviews.length - 1]?.[key as keyof YearOverview] ?? 0;
     return last - first;
   };
 
@@ -812,9 +816,16 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
         <section className={`analytics-kpis comparison-kpis ${hasManyYears ? "many-years" : ""}`} aria-label="ตัวชี้วัดเปรียบเทียบทุกปี">
           {comparisonKpis.map((kpi) => {
             const delta = yearDelta(kpi.key);
-            const values = sortedOverviews.map((overview) => overview[kpi.key]);
+            const values = kpi.key === "resigned"
+              ? sortedOverviews.map((o) => (
+                  statuses
+                    .filter((s) => s.year === o.year && (s.label === "สละสิทธิ์" || s.label === "สละสิทธิ์ในรอบ 2"))
+                    .reduce((sum, s) => sum + s.choices, 0)
+                ))
+              : sortedOverviews.map((overview) => overview[kpi.key as keyof typeof overview] as number);
             const firstValue = values[0] ?? 0;
             const latestValue = values[values.length - 1] ?? 0;
+            const totalValue = values.reduce((sum, val) => sum + val, 0);
             const percentChange = firstValue === 0 ? 0 : (delta / firstValue) * 100;
             const minimum = Math.min(...values);
             const maximum = Math.max(...values);
@@ -836,8 +847,8 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
                   </b>
                 </header>
                 <div className="kpi-latest-value">
-                  <span>ปีล่าสุด {lastYear}</span>
-                  <strong>{kpi.format(latestValue)}</strong>
+                  <span>ทั้งหมด</span>
+                  <strong>{kpi.format(totalValue)}</strong>
                 </div>
                 <div className="kpi-sparkline-wrap">
                   <svg className="kpi-sparkline" viewBox="0 0 220 70" role="img" aria-label={`แนวโน้ม${kpi.label}ตั้งแต่ปี ${firstYear} ถึง ${lastYear}`}>
@@ -858,11 +869,12 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
                   </svg>
                   <div className="kpi-trend-years" aria-hidden="true">
                     <span>{firstYear}<strong>{kpi.format(firstValue)}</strong></span>
+                    <span style={{ textAlign: "center" }}>2568<strong>{kpi.format(values[1] ?? 0)}</strong></span>
                     <span>{lastYear}<strong>{kpi.format(latestValue)}</strong></span>
                   </div>
                 </div>
                 <footer className={directionClass}>
-                  <strong>{delta > 0 ? "+" : ""}{kpi.key === "rate" ? `${delta.toFixed(2)} จุด` : formatNumber(delta)}</strong>
+                  <strong>{delta > 0 ? "+" : ""}{formatNumber(delta)}</strong>
                   <span>{percentChange > 0 ? "+" : ""}{percentChange.toFixed(1)}% จากปี {firstYear}</span>
                 </footer>
               </article>
@@ -901,10 +913,11 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
 
               <div style={{ display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
                 <div className="analytics-legend" style={{ gap: "12px 18px", margin: 0 }}>
-                  <span><i style={{ background: "#f5c38b", border: "1px solid #c56100" }} />ผู้สมัคร</span>
+                  <span><i style={{ background: "#c56100", border: "1px solid #c56100" }} />ผู้สมัคร</span>
                   <span><i style={{ background: "#477ca8" }} />ผู้มีสิทธิ์</span>
                   <span><i style={{ background: "#2e7d32" }} />ยืนยันสิทธิ์</span>
                 </div>
+                {/* f5c38b */}
 
                 <div style={{ display: "flex", background: "#eae2d6", borderRadius: "8px", padding: "3px" }}>
                   <button
@@ -974,7 +987,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
                       <small style={{ color: "#777", fontSize: "13px", fontWeight: 600 }}>{group.name}</small>
                     </div>
 
-                    <div className="year-bars" style={{ height: "160px", justifyContent: "space-around", borderBottom: "1px solid #ddd7d0", paddingBottom: "4px" }}>
+                    <div className="year-bars" style={{ height: "260px", justifyContent: "space-around", borderBottom: "1px solid #ddd7d0", paddingBottom: "4px" }}>
                       {availableYears.map((year) => {
                         const row = group.rows.find((r) => r.year === year);
                         const appVal = row?.applicants ?? 0;
@@ -991,7 +1004,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
                           ? Math.min(appVal, Math.max(confVal, eligValFromStatuses))
                           : Math.max(confVal, Math.round(appVal * 0.25));
 
-                        const containerH = 135;
+                        const containerH = 220;
                         const appBarHeightPx = appVal > 0 ? Math.max(12, Math.round((appVal / maxOverallApplicants) * containerH)) : 0;
                         const eligPctOfApp = appVal > 0 ? (eligVal / appVal) * 100 : 0;
                         const confPctOfApp = appVal > 0 ? (confVal / appVal) * 100 : 0;
@@ -1003,7 +1016,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
                               title={`${year} ${group.code}: ผู้สมัคร ${formatNumber(appVal)} คน | ผู้มีสิทธิ์ ${formatNumber(eligVal)} คน (${eligPctOfApp.toFixed(1)}%) | ยืนยันสิทธิ์ ${formatNumber(confVal)} คน (${confPctOfElig.toFixed(1)}% ของผู้มีสิทธิ์)`}
                               style={{
                                 height: `${appBarHeightPx}px`,
-                                background: "#f5c38b",
+                                background: "#c56100",
                                 border: "1px solid #c56100",
                                 position: "relative",
                                 overflow: "visible",

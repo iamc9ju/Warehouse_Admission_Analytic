@@ -87,7 +87,7 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.match(dashboardHtml, /Admissions Analytics Dashboard/);
   assert.match(dashboardHtml, /kpi-sparkline/);
   assert.match(dashboardHtml, /แนวโน้ม/);
-  assert.match(dashboardHtml, /ปีล่าสุด/);
+  assert.match(dashboardHtml, /ทั้งหมด/);
   assert.match(dashboardHtml, /Round YoY Comparison/);
   assert.match(dashboardHtml, /1,320/);
   assert.match(dashboardHtml, /1,324/);
