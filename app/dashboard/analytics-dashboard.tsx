@@ -620,6 +620,396 @@ function DonutChartCard({
   );
 }
 
+function Tcas3ScoreScatterPlot({
+  availableYears,
+  majorRows,
+}: {
+  availableYears: Year[];
+  majorRows: MajorRow[];
+}) {
+  // Derive unique majors (code+name) sorted by total applicants desc
+  const uniqueMajors = useMemo(() => {
+    const map = new Map<string, { code: string; name: string; totalApplicants: number }>();
+    majorRows.forEach((m) => {
+      const existing = map.get(m.code) ?? { code: m.code, name: m.name, totalApplicants: 0 };
+      existing.totalApplicants += m.applicants;
+      map.set(m.code, existing);
+    });
+    return Array.from(map.values()).sort((a, b) => b.totalApplicants - a.totalApplicants);
+  }, [majorRows]);
+
+  // Selected majors state — all on by default
+  const [selectedMajors, setSelectedMajors] = useState<Set<string>>(
+    () => new Set(uniqueMajors.map((m) => m.code)),
+  );
+
+  const toggleMajor = (code: string) => {
+    setSelectedMajors((prev) => {
+      const next = new Set(prev);
+      if (next.has(code)) {
+        if (next.size > 1) next.delete(code);
+      } else {
+        next.add(code);
+      }
+      return next;
+    });
+  };
+
+  const selectAll = () => setSelectedMajors(new Set(uniqueMajors.map((m) => m.code)));
+  const clearAll = () => {
+    // keep at least 1
+    setSelectedMajors(new Set([uniqueMajors[0]?.code ?? ""]));
+  };
+
+  const [hoveredPoint, setHoveredPoint] = useState<{
+    svgX: number;
+    svgY: number;
+    major: string;
+    year: Year;
+    avgScore: number;
+    applicants: number;
+    confirmed: number;
+    rate: number;
+    color: string;
+  } | null>(null);
+
+  // SVG dimensions
+  const svgW = 820;
+  const svgH = 460;
+  const padL = 62;
+  const padR = 28;
+  const padT = 44;
+  const padB = 56;
+  const plotW = svgW - padL - padR;
+  const plotH = svgH - padT - padB;
+
+  // X: discrete year positions
+  const activeYears = availableYears; // all years always shown on X
+  const getX = (year: Year) => {
+  const idx = activeYears.indexOf(year);
+
+  if (activeYears.length <= 1) return padL + plotW / 2;
+
+  const xPadding = 30;
+
+  return (
+    padL +
+    xPadding +
+    (idx * (plotW - xPadding * 2)) / (activeYears.length - 1)
+  );
+};
+
+  // Y: avgScore — derive range from filtered data
+  const filteredRows = useMemo(
+    () => majorRows.filter((m) => selectedMajors.has(m.code) && m.avgScore > 0),
+    [majorRows, selectedMajors],
+  );
+
+  const allScores = filteredRows.map((m) => m.avgScore);
+  const rawMin = allScores.length ? Math.min(...allScores) : 0;
+  const rawMax = allScores.length ? Math.max(...allScores) : 50;
+  const scorePad = (rawMax - rawMin || 10) * 0.12;
+  const yMin = Math.max(0, rawMin - scorePad);
+  const yMax = rawMax + scorePad;
+  const yRange = yMax - yMin || 1;
+
+  const getY = (score: number) => padT + plotH - ((score - yMin) / yRange) * plotH;
+
+  // Bubble size ~ applicants
+  const allApplicants = filteredRows.map((m) => m.applicants);
+  const maxApp = allApplicants.length ? Math.max(...allApplicants) : 1;
+  const getR = (app: number) => 6 + (app / maxApp) * 14;
+
+  // Y-axis ticks (5 evenly spaced)
+  const yTicks = [0, 0.25, 0.5, 0.75, 1].map((pct) => ({
+    val: yMin + pct * yRange,
+    y: padT + plotH - pct * plotH,
+  }));
+
+  // Group filtered rows by major code for drawing lines
+  const majorLineData = useMemo(() => {
+    return uniqueMajors
+      .filter((m) => selectedMajors.has(m.code))
+      .map((m, idx) => {
+        const color = getMajorColor(idx);
+        const points = activeYears
+          .map((year) => {
+            const row = majorRows.find((r) => r.code === m.code && r.year === year);
+            return row && row.avgScore > 0
+              ? { year, avgScore: row.avgScore, applicants: row.applicants, confirmed: row.confirmed, rate: row.rate }
+              : null;
+          })
+          .filter((p): p is NonNullable<typeof p> => p !== null);
+        return { ...m, color, points };
+      });
+  }, [uniqueMajors, selectedMajors, majorRows, activeYears]);
+
+  return (
+    <article className="analytics-card major-ranking-card" style={{ gridColumn: "1 / -1" }}>
+      <header>
+        <div>
+          <span>TCAS3 Score Analysis</span>
+          <h2>Scatter Plot คะแนนเฉลี่ยสอบ TCAS รอบ 3 แยกตามสาขาวิชา</h2>
+        </div>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <button
+            type="button"
+            onClick={selectAll}
+            style={{
+              padding: "5px 12px", borderRadius: "7px", border: "1.5px solid #c56100",
+              background: "#fff8f0", color: "#c56100", fontWeight: 800, fontSize: "12px",
+              cursor: "pointer", transition: "all 140ms ease",
+            }}
+          >
+            เลือกทั้งหมด
+          </button>
+          <button
+            type="button"
+            onClick={clearAll}
+            style={{
+              padding: "5px 12px", borderRadius: "7px", border: "1.5px solid #ddd",
+              background: "#f5f5f5", color: "#888", fontWeight: 800, fontSize: "12px",
+              cursor: "pointer", transition: "all 140ms ease",
+            }}
+          >
+            ล้างทั้งหมด
+          </button>
+        </div>
+      </header>
+
+      {/* Major filter pills */}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "7px 10px",
+          margin: "14px 0 20px",
+          padding: "14px 16px",
+          background: "#faf7f2",
+          borderRadius: "12px",
+          border: "1px solid #eae2d6",
+        }}
+      >
+        <span style={{ fontSize: "11.5px", fontWeight: 800, color: "#777", alignSelf: "center", marginRight: "4px" }}>
+          สาขาวิชา:
+        </span>
+        {uniqueMajors.map((m, idx) => {
+          const color = getMajorColor(idx);
+          const active = selectedMajors.has(m.code);
+          return (
+            <button
+              key={m.code}
+              type="button"
+              onClick={() => toggleMajor(m.code)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "5px 11px",
+                borderRadius: "999px",
+                border: `1.5px solid ${active ? color : "#e0d8cc"}`,
+                background: active ? `${color}18` : "#ffffff",
+                color: active ? color : "#999",
+                fontWeight: 750,
+                fontSize: "12px",
+                cursor: "pointer",
+                transition: "all 150ms ease",
+                opacity: active ? 1 : 0.55,
+              }}
+            >
+              <span
+                style={{
+                  width: "9px", height: "9px", borderRadius: "50%",
+                  background: active ? color : "#ccc",
+                  display: "inline-block", flexShrink: 0,
+                }}
+              />
+              {m.name}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Legend info bar */}
+      <div
+        style={{
+          display: "flex", gap: "20px", alignItems: "center",
+          marginBottom: "16px", flexWrap: "wrap",
+        }}
+      >
+        <span style={{ fontSize: "12px", fontWeight: 700, color: "#555" }}>
+          📅 X-axis: ปีการศึกษา
+        </span>
+        <span style={{ fontSize: "12px", fontWeight: 700, color: "#555" }}>
+          📊 Y-axis: คะแนนเฉลี่ย (Avg Score)
+        </span>
+        <span style={{ fontSize: "12px", fontWeight: 700, color: "#555" }}>
+          ⚪ ขนาดวงกลม: จำนวนผู้สมัคร
+        </span>
+        <span style={{ fontSize: "12px", fontWeight: 700, color: "#555" }}>
+          🎨 สี: แยกตามสาขาวิชา
+        </span>
+        <span style={{ marginLeft: "auto", fontSize: "12px", fontWeight: 700, color: "#aaa" }}>
+          {filteredRows.length} จุดข้อมูล · {selectedMajors.size} สาขา
+        </span>
+      </div>
+
+      <div style={{ width: "100%", overflowX: "auto", position: "relative" }}>
+        <svg
+          viewBox={`0 0 ${svgW} ${svgH}`}
+          style={{ width: "100%", height: "auto", display: "block", minWidth: "480px" }}
+        >
+          {/* Horizontal grid lines */}
+          {yTicks.map((tick) => (
+            <g key={`y-${tick.val.toFixed(2)}`}>
+              <line
+                x1={padL} y1={tick.y} x2={svgW - padR} y2={tick.y}
+                stroke={tick.val === yMin ? "#ccc" : "#eee8e1"}
+                strokeDasharray={tick.val === yMin ? "none" : "4 4"}
+                strokeWidth={tick.val === yMin ? "1.5" : "1"}
+              />
+              <text x={padL - 8} y={tick.y + 4} textAnchor="end" fontSize="11" fill="#757575" fontWeight="600">
+                {tick.val.toFixed(1)}
+              </text>
+            </g>
+          ))}
+
+          {/* Vertical year lines */}
+          {activeYears.map((year) => {
+            const x = getX(year);
+            return (
+              <g key={`xgrid-${year}`}>
+                <line x1={x} y1={padT} x2={x} y2={padT + plotH} stroke="#eee8e1" strokeDasharray="4 4" strokeWidth="1" />
+                <text x={x} y={padT + plotH + 22} textAnchor="middle" fontSize="13" fontWeight="800" fill="#333">
+                  ปี {year}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Axis borders */}
+          <line x1={padL} y1={padT} x2={padL} y2={padT + plotH} stroke="#bbb" strokeWidth="1.5" />
+          <line x1={padL} y1={padT + plotH} x2={svgW - padR} y2={padT + plotH} stroke="#bbb" strokeWidth="1.5" />
+
+          {/* Axis labels */}
+          <text x={padL + plotW / 2} y={svgH - 6} textAnchor="middle" fontSize="13" fontWeight="800" fill="#333">
+            ปีการศึกษา
+          </text>
+          <text
+            x={13} y={padT + plotH / 2} textAnchor="middle" fontSize="13" fontWeight="800" fill="#333"
+            transform={`rotate(-90, 13, ${padT + plotH / 2})`}
+          >
+            คะแนนเฉลี่ย (Avg Score)
+          </text>
+
+          {/* Lines connecting each major's points across years */}
+          {/* {majorLineData.map((m) => {
+            if (m.points.length < 2) return null;
+            const pts = m.points.map((p) => `${getX(p.year)},${getY(p.avgScore)}`).join(" ");
+            const isHoveredMajor = hoveredPoint?.major === m.name;
+            const dimmed = hoveredPoint !== null && !isHoveredMajor;
+            return (
+              <polyline
+                key={`line-${m.code}`}
+                points={pts}
+                fill="none"
+                stroke={m.color}
+                strokeWidth={isHoveredMajor ? "2.5" : "1.5"}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray="5 3"
+                opacity={dimmed ? 0.12 : isHoveredMajor ? 1 : 0.45}
+                style={{ transition: "all 160ms ease", pointerEvents: "none" }}
+              />
+            );
+          })} */}
+
+          {/* Scatter bubbles */}
+          {majorLineData.map((m) =>
+            m.points.map((p) => {
+              const cx = getX(p.year);
+              const cy = getY(p.avgScore);
+              const r = 6;
+              const isHovered = hoveredPoint?.major === m.name && hoveredPoint?.year === p.year;
+              const isHoveredMajor = hoveredPoint?.major === m.name;
+              const dimmed = hoveredPoint !== null && !isHoveredMajor;
+              return (
+                <circle
+                  key={`dot-${m.code}-${p.year}`}
+                  cx={cx}
+                  cy={cy}
+                  r={isHovered ? r + 3 : r}
+                  fill={m.color}
+                  opacity={dimmed ? 0.1 : isHovered ? 1 : 0.8}
+                  stroke={isHovered ? "#111" : "#fff"}
+                  strokeWidth={isHovered ? "2" : "1.5"}
+                  style={{
+                    cursor: "pointer",
+                    transition: "all 160ms ease",
+                    filter: isHovered ? "drop-shadow(0 2px 10px rgba(0,0,0,0.3))" : "none",
+                  }}
+                  onMouseEnter={() =>
+                    setHoveredPoint({
+                      svgX: cx, svgY: cy,
+                      major: m.name, year: p.year,
+                      avgScore: p.avgScore, applicants: p.applicants,
+                      confirmed: p.confirmed, rate: p.rate, color: m.color,
+                    })
+                  }
+                  onMouseLeave={() => setHoveredPoint(null)}
+                >
+                  <title>{`${m.name} (ปี ${p.year}) — คะแนนเฉลี่ย: ${p.avgScore.toFixed(2)}, สมัคร: ${formatNumber(p.applicants)}, ยืนยัน: ${formatNumber(p.confirmed)}`}</title>
+                </circle>
+              );
+            })
+          )}
+        </svg>
+
+        {/* Floating Tooltip */}
+        {hoveredPoint && (
+          <div
+            style={{
+              position: "absolute",
+              top: `${(hoveredPoint.svgY / svgH) * 100}%`,
+              left: `${(hoveredPoint.svgX / svgW) * 100}%`,
+              transform: "translate(-50%, -130%)",
+              background: "#111313",
+              color: "#ffffff",
+              padding: "10px 14px",
+              borderRadius: "10px",
+              fontSize: "12px",
+              fontWeight: 700,
+              boxShadow: "0 6px 24px rgba(0,0,0,0.35)",
+              pointerEvents: "none",
+              zIndex: 20,
+              whiteSpace: "nowrap",
+              minWidth: "210px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "6px" }}>
+              <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: hoveredPoint.color, flexShrink: 0 }} />
+              <span style={{ fontSize: "12.5px", fontWeight: 800 }}>{hoveredPoint.major}</span>
+            </div>
+            <div style={{ color: "#aaa", fontSize: "11px", marginBottom: "7px" }}>
+              ปีการศึกษา {hoveredPoint.year} · TCAS รอบ 3
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "auto auto", gap: "4px 16px", fontSize: "12px" }}>
+              <span style={{ color: "#bbb" }}>คะแนนเฉลี่ย</span>
+              <span style={{ color: "#ffd54f", fontWeight: 900 }}>{hoveredPoint.avgScore.toFixed(3)}</span>
+              <span style={{ color: "#bbb" }}>ผู้สมัคร</span>
+              <span style={{ color: "#81d4fa", fontWeight: 900 }}>{formatNumber(hoveredPoint.applicants)} คน</span>
+              <span style={{ color: "#bbb" }}>ยืนยันสิทธิ์</span>
+              <span style={{ color: "#a5d6a7", fontWeight: 900 }}>{formatNumber(hoveredPoint.confirmed)} คน</span>
+              <span style={{ color: "#bbb" }}>อัตราการยืนยัน</span>
+              <span style={{ color: "#f48fb1", fontWeight: 900 }}>{hoveredPoint.rate.toFixed(2)}%</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </article>
+  );
+}
+
 export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: DashboardSnapshot }) {
   const { majorRows, rounds, roundStatuses, statuses, warehouseHealth, years } = snapshot;
   const sortedOverviews = [...years].sort((first, second) => first.year - second.year);
@@ -689,7 +1079,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
     .sort(([, firstRows], [, secondRows]) => (
       secondRows.reduce((sum, row) => sum + row.applicants, 0)
       - firstRows.reduce((sum, row) => sum + row.applicants, 0)
-  ));
+    ));
 
   const tcasRoundSlices = useMemo(() => {
     const tcasColors: Record<string, string> = {
@@ -818,10 +1208,10 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
             const delta = yearDelta(kpi.key);
             const values = kpi.key === "resigned"
               ? sortedOverviews.map((o) => (
-                  statuses
-                    .filter((s) => s.year === o.year && (s.label === "สละสิทธิ์" || s.label === "สละสิทธิ์ในรอบ 2"))
-                    .reduce((sum, s) => sum + s.choices, 0)
-                ))
+                statuses
+                  .filter((s) => s.year === o.year && (s.label === "สละสิทธิ์" || s.label === "สละสิทธิ์ในรอบ 2"))
+                  .reduce((sum, s) => sum + s.choices, 0)
+              ))
               : sortedOverviews.map((overview) => overview[kpi.key as keyof typeof overview] as number);
             const firstValue = values[0] ?? 0;
             const latestValue = values[values.length - 1] ?? 0;
@@ -1083,6 +1473,11 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
           </article>
 
           <MajorTrendLineCharts
+            availableYears={availableYears}
+            majorRows={majorRows}
+          />
+
+          <Tcas3ScoreScatterPlot
             availableYears={availableYears}
             majorRows={majorRows}
           />
