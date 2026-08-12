@@ -3908,7 +3908,7 @@ th {
 
 .rate-row {
   display: grid;
-  grid-template-columns: 295px minmax(220px, 1fr) 66px;
+  grid-template-columns: 160px minmax(200px, 1fr) 130px;
   gap: 10px;
   align-items: center;
   min-height: 37px;
@@ -3948,7 +3948,8 @@ th {
 .rate-axis {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  margin-left: 305px;
+  margin-left: 170px;
+  margin-right: 140px;
   border-top: 1px solid #ddd;
   color: #606060;
   font-size: 12px;

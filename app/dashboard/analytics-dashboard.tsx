@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PresentationChartLineIcon } from "@heroicons/react/24/outline";
 import type { DashboardSnapshot, MajorRow, Year, YearOverview } from "../data/dashboard-types";
 import { SidebarNavigation } from "../sidebar-navigation";
+import { calculateEligibleFromStatusRows } from "../data/eligible-calculator";
 
 type RadarMetric = {
   label: string;
@@ -1016,10 +1017,14 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
   const availableYears = sortedOverviews.map((overview) => overview.year);
   const firstYear = availableYears[0];
   const lastYear = availableYears[availableYears.length - 1];
+  const lastYearOverview = sortedOverviews[sortedOverviews.length - 1];
   const [analysisYear, setAnalysisYear] = useState<Year>(() => lastYear);
   const statusLabels = [
     "ผู้สมัคร",
-    ...Array.from(new Set(roundStatuses.map((status) => status.label))).filter((label) => label !== "ผู้สมัคร"),
+    "ผู้มีสิทธิ์",
+    ...Array.from(new Set(roundStatuses.map((status) => status.label))).filter(
+      (label) => label !== "ผู้สมัคร" && label !== "ผู้มีสิทธิ์"
+    ),
   ];
   const roundCodes = Array.from(new Set(rounds.map((round) => round.code))).sort();
   const [roundDisplayMode, setRoundDisplayMode] = useState<"value" | "percent">("value");
@@ -1028,18 +1033,6 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
     return Math.max(...rounds.map((r) => r.applicants), 1);
   }, [rounds]);
 
-  const eligibleStatusSet = useMemo(
-    () => new Set([
-      "ยืนยันสิทธิ์",
-      "สละสิทธิ์",
-      "สละสิทธิ์ในรอบ 2",
-      "ยืนยันที่อื่นแล้ว",
-      "ไม่ใช้สิทธิ์",
-      "ผ่านการคัดเลือก",
-      "ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2",
-    ]),
-    []
-  );
   const defaultStatus = "ผู้สมัคร";
   const [selectedStatus, setSelectedStatus] = useState(() => defaultStatus);
   const [selectedRoundCode, setSelectedRoundCode] = useState(() => roundCodes[0]);
@@ -1067,6 +1060,13 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
     const round = rounds.find((item) => item.year === year && item.code === selectedRoundCode);
     if (!round) return 0;
     if (selectedStatus === "ผู้สมัคร") return round.applicants;
+    if (selectedStatus === "ผู้มีสิทธิ์") {
+      const items = roundStatuses.filter(
+        (rs) => rs.year === year && rs.code === selectedRoundCode
+      );
+      const val = calculateEligibleFromStatusRows(items, "applicants");
+      return val > 0 ? val : Math.max(round.confirmed, Math.round(round.applicants * 0.2376));
+    }
     return roundStatuses.find((status) => (
       status.year === year
       && status.code === selectedRoundCode
@@ -1386,13 +1386,11 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: Dashboard
                         const roundStatusItems = roundStatuses.filter(
                           (rs) => rs.year === year && rs.code === group.code
                         );
-                        const eligValFromStatuses = roundStatusItems
-                          .filter((rs) => eligibleStatusSet.has(rs.label))
-                          .reduce((sum, rs) => sum + rs.applicants, 0);
+                        const eligValFromStatuses = calculateEligibleFromStatusRows(roundStatusItems, "applicants");
 
                         const eligVal = eligValFromStatuses > 0
                           ? Math.min(appVal, Math.max(confVal, eligValFromStatuses))
-                          : Math.max(confVal, Math.round(appVal * 0.25));
+                          : Math.max(confVal, Math.round(appVal * (lastYearOverview?.rate ? lastYearOverview.rate / 100 : 0.2376)));
 
                         const containerH = 220;
                         const appBarHeightPx = appVal > 0 ? Math.max(12, Math.round((appVal / maxOverallApplicants) * containerH)) : 0;

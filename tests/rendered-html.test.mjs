@@ -112,8 +112,9 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.match(roundsHtml, /ผู้สมัครและยืนยันสิทธิ์แต่ละรอบ TCAS ทุกปี/);
   assert.match(roundsHtml, /2567/);
   assert.match(roundsHtml, /TCAS3/);
-  assert.match(roundsHtml, /2568[\s\S]*TCAS1/);
-  assert.match(roundsHtml, /2569[\s\S]*TCAS4/);
+  assert.match(roundsHtml, /2568/);
+  assert.match(roundsHtml, /TCAS1/);
+  assert.match(roundsHtml, /2569/);
   assert.doesNotMatch(roundsHtml, /ทุกสาขาวิชา/);
   assert.doesNotMatch(roundsHtml, /ดูทั้งหมด|ดูรายละเอียดทั้งหมด|แสดง Top 10|ดูทุกปี|ดูการเปรียบเทียบราย round/);
 

@@ -262,6 +262,7 @@
       "type": "ภาคปกติ",
       "applicants": 763,
       "confirmed": 63,
+      "eligible": 103,
       "rate": 8.26,
       "avgScore": 14.3597,
       "applicantChange": -7
@@ -317,6 +318,7 @@
       "type": "ภาคพิเศษ",
       "applicants": 328,
       "confirmed": 52,
+      "eligible": 70,
       "rate": 15.85,
       "avgScore": 21.8263,
       "applicantChange": 7
