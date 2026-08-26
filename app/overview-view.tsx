@@ -3,33 +3,10 @@
 import { useMemo, useState } from "react";
 import type { DashboardSnapshot, Year } from "./data/dashboard-types";
 import { SidebarNavigation } from "./sidebar-navigation";
+import { DonutChartCard, getMajorColor, tcasColors } from "./donut-chart-card";
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
-}
-
-type RadarMetric = {
-  label: string;
-  value: number;
-  display: string;
-  max: number;
-};
-
-function polarPoint(index: number, total: number, radius: number, center = 180) {
-  const angle = (Math.PI * 2 * index) / total - Math.PI / 2;
-  return {
-    x: center + Math.cos(angle) * radius,
-    y: center + Math.sin(angle) * radius,
-  };
-}
-
-function radarPolygon(values: number[], radius = 112) {
-  return values
-    .map((value, index) => {
-      const point = polarPoint(index, values.length, radius * Math.max(value, 0.08));
-      return `${point.x},${point.y}`;
-    })
-    .join(" ");
 }
 
 export function OverviewView({ snapshot }: { snapshot: DashboardSnapshot }) {
@@ -43,6 +20,12 @@ export function OverviewView({ snapshot }: { snapshot: DashboardSnapshot }) {
   const [majorQuery, setMajorQuery] = useState("");
 
   const current = years.find((year) => year.year === selectedYear) ?? selectableYears[0];
+
+  const resignedCount = useMemo(() => {
+    return statuses
+      .filter((s) => s.year === selectedYear && (s.label === "สละสิทธิ์" || s.label === "สละสิทธิ์ในรอบ 2"))
+      .reduce((sum, s) => sum + s.choices, 0);
+  }, [statuses, selectedYear]);
 
   const statCards = [
     {
@@ -58,8 +41,8 @@ export function OverviewView({ snapshot }: { snapshot: DashboardSnapshot }) {
       changeType: "neutral",
     },
     {
-      name: `อัตราการยืนยัน (${selectedYear})`,
-      value: `${current.rate.toFixed(2)}%`,
+      name: `ผู้สละสิทธิ์ (${selectedYear})`,
+      value: formatNumber(resignedCount),
       change: `เฉพาะปี ${selectedYear}`,
       changeType: "neutral",
     },
@@ -71,41 +54,41 @@ export function OverviewView({ snapshot }: { snapshot: DashboardSnapshot }) {
     },
   ];
 
-  const radarMetrics: RadarMetric[] = current
-    ? [
-        {
-          label: "ตัวเลือก",
-          value: current.choices,
-          display: formatNumber(current.choices),
-          max: Math.max(...years.map((year) => year.choices), 1),
-        },
-        {
-          label: "ผู้สมัคร",
-          value: current.applicants,
-          display: formatNumber(current.applicants),
-          max: Math.max(...years.map((year) => year.applicants), 1),
-        },
-        {
-          label: "ยืนยันสิทธิ์",
-          value: current.confirmed,
-          display: formatNumber(current.confirmed),
-          max: Math.max(...years.map((year) => year.confirmed), 1),
-        },
-        {
-          label: "Conversion",
-          value: current.rate,
-          display: `${current.rate.toFixed(2)}%`,
-          max: Math.max(...years.map((year) => year.rate), 1),
-        },
-        {
-          label: "คะแนนเฉลี่ย",
-          value: current.avgScore,
-          display: current.avgScore.toFixed(2),
-          max: Math.max(...years.map((year) => year.avgScore), 1),
-        },
-      ]
-    : [];
-  const radarValues = radarMetrics.map((metric) => metric.value / metric.max);
+  const tcasRoundSlices = useMemo(() => {
+    const map = new Map<string, { code: string; name: string; applicants: number }>();
+    rounds
+      .filter((r) => r.year === selectedYear)
+      .forEach((r) => {
+        const existing = map.get(r.code) || { code: r.code, name: r.name, applicants: 0 };
+        existing.applicants += r.applicants;
+        map.set(r.code, existing);
+      });
+    return Array.from(map.values())
+      .sort((a, b) => a.code.localeCompare(b.code))
+      .map((item) => ({
+        label: `${item.code} — ${item.name}`,
+        value: item.applicants,
+        color: tcasColors[item.code] || "#666666",
+      }));
+  }, [rounds, selectedYear]);
+
+  const majorSlices = useMemo(() => {
+    const map = new Map<string, { code: string; name: string; applicants: number }>();
+    majorRows
+      .filter((m) => m.year === selectedYear)
+      .forEach((m) => {
+        const existing = map.get(m.code) || { code: m.code, name: m.name, applicants: 0 };
+        existing.applicants += m.applicants;
+        map.set(m.code, existing);
+      });
+    return Array.from(map.values())
+      .sort((a, b) => b.applicants - a.applicants)
+      .map((item, idx) => ({
+        label: item.name,
+        value: item.applicants,
+        color: getMajorColor(idx),
+      }));
+  }, [majorRows, selectedYear]);
 
   const visibleStatuses = statuses.filter((status) => status.year === selectedYear);
 
@@ -163,56 +146,31 @@ export function OverviewView({ snapshot }: { snapshot: DashboardSnapshot }) {
           </section>
 
           <section className="dashboard-grid">
-            <article className="panel analytics-card radar-card" style={{ gridColumn: "1 / -1" }}>
-              <div className="panel-title">
-                <div>
-                  <p className="technical-kicker">5-axis Profile</p>
-                  <h2>โปรไฟล์ภาพรวม 5 ด้าน ปี {selectedYear}</h2>
-                </div>
-                <span className="mini-pill">ปี {selectedYear}</span>
-              </div>
-              <div className="radar-layout">
-                <svg className="radar-chart" role="img" aria-label={`กราฟเรดาร์ 5 ด้าน ปี ${selectedYear}`} viewBox="0 0 360 360">
-                  {[0.25, 0.5, 0.75, 1].map((level) => (
-                    <polygon
-                      className="radar-grid"
-                      key={level}
-                      points={radarMetrics
-                        .map((_, index) => {
-                          const point = polarPoint(index, radarMetrics.length, 112 * level);
-                          return `${point.x},${point.y}`;
-                        })
-                        .join(" ")}
-                    />
-                  ))}
-                  {radarMetrics.map((metric, index) => {
-                    const axis = polarPoint(index, radarMetrics.length, 112);
-                    const label = polarPoint(index, radarMetrics.length, 145);
-                    return (
-                      <g key={metric.label}>
-                        <line className="radar-axis" x1="180" y1="180" x2={axis.x} y2={axis.y} />
-                        <text className="radar-label" x={label.x} y={label.y}>
-                          {metric.label}
-                        </text>
-                      </g>
-                    );
-                  })}
-                  <polygon className="radar-area" points={radarPolygon(radarValues)} />
-                  {radarValues.map((value, index) => {
-                    const point = polarPoint(index, radarValues.length, 112 * Math.max(value, 0.08));
-                    return <circle className="radar-point" cx={point.x} cy={point.y} key={radarMetrics[index].label} r="5" />;
-                  })}
-                </svg>
-                <div className="radar-metrics" aria-label={`ค่าตัวชี้วัดปี ${selectedYear}`}>
-                  {radarMetrics.map((metric) => (
-                    <div key={metric.label}>
-                      <span>{metric.label}</span>
-                      <strong>{metric.display}</strong>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </article>
+            <section
+              style={{
+                gridColumn: "1 / -1",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
+                gap: "22px",
+              }}
+            >
+              <DonutChartCard
+                title={`สัดส่วนผู้สมัครปี ${selectedYear} (TCAS 4 รอบ)`}
+                subtitle={`จำนวนผู้สมัครปีการศึกษา ${selectedYear} แยกตามรอบ TCAS 1 - 4`}
+                slices={tcasRoundSlices}
+                kicker={`YEAR ${selectedYear} BREAKDOWN`}
+                centerLabel={`ผู้สมัครปี ${selectedYear}`}
+                centerSubtext={`100% (ปี ${selectedYear})`}
+              />
+              <DonutChartCard
+                title={`สัดส่วนผู้สมัครปี ${selectedYear} (ทุกสาขาวิชา)`}
+                subtitle={`จำนวนผู้สมัครปีการศึกษา ${selectedYear} แยกตามสาขาวิชา`}
+                slices={majorSlices}
+                kicker={`YEAR ${selectedYear} BREAKDOWN`}
+                centerLabel={`ผู้สมัครปี ${selectedYear}`}
+                centerSubtext={`100% (ปี ${selectedYear})`}
+              />
+            </section>
 
             <article id="quality" className="panel status-panel">
               <div className="panel-title">
