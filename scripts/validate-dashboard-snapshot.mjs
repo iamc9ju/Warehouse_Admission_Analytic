@@ -51,9 +51,7 @@ for (const year of years) {
 }
 
 for (const year of academicYears) {
-  const expectedRounds = year === 2567
-    ? ["TCAS1", "TCAS2", "TCAS3"]
-    : ["TCAS1", "TCAS2", "TCAS3", "TCAS4"];
+  const expectedRounds = ["TCAS1", "TCAS2", "TCAS3", "TCAS4"];
   for (const round of expectedRounds) {
     assert(rounds.some((row) => row.year === year && row.code === round), `missing ${year} ${round}`);
   }

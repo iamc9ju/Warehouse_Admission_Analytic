@@ -1,2 +1,2 @@
 health_id	status	last_refresh_at	freshness_sla_hours	source_rows	source_files	mart_count	quality_checks_passed	quality_checks_failed	pii_exported_columns	artifact_checksum	notes
-WH-001	pass	2026-08-09T21:16:24.462771+07:00	168	13649	15	5	7	0	0	single-fact-admissions-dashboard	Generated artifact reconciles to fact_admission-derived query results
+WH-001	pass	2026-08-26T18:40:06.211158+07:00	168	13799	16	5	7	0	0	single-fact-admissions-dashboard	Generated artifact reconciles to fact_admission-derived query results

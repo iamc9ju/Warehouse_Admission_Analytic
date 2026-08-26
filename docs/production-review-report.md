@@ -10,8 +10,8 @@
 
 ## Data review
 
-- ปี 2567 เพิ่ม 4,217 rows จาก 4 files ครอบคลุม TCAS1-3
-- รวมทุกปี 13,649 fact rows, 15 files และ 10,067 pseudonymous students
+- ปี 2567 มี 4,367 rows จาก 5 files ครอบคลุม TCAS1-4
+- รวมทุกปี 13,799 fact rows, 16 files และ 10,158 pseudonymous students
 - missing score 0, missing major 0 และ exported direct identity/contact columns 0
 
 ## Runtime review

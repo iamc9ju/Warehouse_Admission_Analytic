@@ -1,7 +1,7 @@
 # Admissions Data Warehouse for Engineering Admissions
 
 Data Warehouse และ Web Dashboard สำหรับวิเคราะห์ข้อมูลรับสมัครคณะวิศวกรรมศาสตร์
-กำแพงแสน ครอบคลุม TCAS รอบ 1-3 ปี 2567 และรอบ 1-4 ปี 2568-2569
+กำแพงแสน ครอบคลุม TCAS รอบ 1-4 ปี 2567-2569
 
 ## Architecture
 
@@ -35,10 +35,10 @@ Grain คือหนึ่งแถวต่อหนึ่งตัวเล�
 
 | ปีการศึกษา | รอบ | ไฟล์ | Source rows |
 |---:|---|---:|---:|
-| 2567 | TCAS1-3 | 4 | 4,217 |
+| 2567 | TCAS1-4 | 5 | 4,367 |
 | 2568 | TCAS1-4 | 6 | 4,853 |
 | 2569 | TCAS1-4 | 5 | 4,579 |
-| รวม |  | 15 | 13,649 |
+| รวม |  | 16 | 13,799 |
 
 ไฟล์ปี 2567 ที่เพิ่ม:
 
@@ -46,6 +46,7 @@ Grain คือหนึ่งแถวต่อหนึ่งตัวเล�
 - `1_67_2.xlsx`
 - `2_67.xlsx`
 - `3_67.xlsx`
+- `ku_4_67.xlsx`
 
 ## Privacy boundary
 
@@ -89,7 +90,7 @@ DATABASE_URL="postgresql://..." node outputs/etl/load_admissions_all_rounds_to_n
 
 | ปี | Application choices | Unique applicants | Confirmed | Confirmed rate |
 |---:|---:|---:|---:|---:|
-| 2567 | 4,217 | 3,253 | 498 | 15.31% |
+| 2567 | 4,367 | 3,353 | 524 | 15.63% |
 | 2568 | 4,853 | 3,597 | 528 | 14.68% |
 | 2569 | 4,579 | 3,443 | 545 | 15.83% |
 

@@ -16,7 +16,7 @@ Expected years and row counts:
 
 | Year | Choices | Unique applicants | Confirmed |
 |---:|---:|---:|---:|
-| 2567 | 4,217 | 3,253 | 498 |
+| 2567 | 4,367 | 3,353 | 524 |
 | 2568 | 4,853 | 3,597 | 528 |
 | 2569 | 4,579 | 3,443 | 545 |
 
@@ -29,7 +29,7 @@ from admissions_dw.vw_admission_round_overview
 order by academic_year, tcas_round_code;
 ```
 
-Coverage is TCAS1-3 for 2567 and TCAS1-4 for 2568-2569.
+Coverage is TCAS1-4 for 2567-2569.
 
 ## Major Conversion
 
@@ -48,7 +48,7 @@ from admissions_dw.vw_dw_quality_scorecard
 order by metric_name;
 ```
 
-Critical checks are source rows 13,649, source files 15, missing score 0,
+Critical checks are source rows 13,799, source files 16, missing score 0,
 missing major 0, exported direct identity/contact columns 0 and physical fact tables 1.
 
 ## Export

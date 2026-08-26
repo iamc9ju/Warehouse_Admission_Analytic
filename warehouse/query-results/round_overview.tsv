@@ -2,6 +2,7 @@ academic_year	tcas_round_code	tcas_round_name	choices	unique_applicants	confirme
 2567	TCAS1	Portfolio	1457	1381	157	11.37	2
 2567	TCAS2	Quota	502	502	115	22.91	1
 2567	TCAS3	Admission	2258	1639	226	13.79	1
+2567	TCAS4	Direct Admission	150	150	26	17.33	1
 2568	TCAS1	Portfolio	1385	1320	191	14.47	2
 2568	TCAS2	Quota	519	518	112	21.62	2
 2568	TCAS3	Admission	2711	1810	214	11.82	1

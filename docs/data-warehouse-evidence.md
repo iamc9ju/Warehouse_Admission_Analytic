@@ -4,10 +4,10 @@
 
 | Coverage | Files | Rows |
 |---|---:|---:|
-| TCAS1-3 ปี 2567 | 4 | 4,217 |
+| TCAS1-4 ปี 2567 | 5 | 4,367 |
 | TCAS1-4 ปี 2568 | 6 | 4,853 |
 | TCAS1-4 ปี 2569 | 5 | 4,579 |
-| Total | 15 | 13,649 |
+| Total | 16 | 13,799 |
 
 ## ETL and Cleaning Contract
 
@@ -20,7 +20,7 @@
 
 ## Single Fact Evidence
 
-`fact_admission` เป็น physical fact table เพียงตารางเดียว มี 13,649 แถว และ grain คือ
+`fact_admission` เป็น physical fact table เพียงตารางเดียว มี 13,799 แถว และ grain คือ
 หนึ่งตัวเลือกสมัคร ตารางนี้เชื่อม `dim_student`, `dim_year`, round, project, faculty,
 major, program type, status และ source file dimensions
 
@@ -37,8 +37,8 @@ Primary runtime คือ server-side Neon query และ fallback คือ ge
 
 | Check | Result |
 |---|---|
-| Row reconciliation | 13,649 source rows = 13,649 fact rows |
-| Source files | 15 |
+| Row reconciliation | 13,799 source rows = 13,799 fact rows |
+| Source files | 16 |
 | Missing score | 0 |
 | Missing major | 0 |
 | Exported direct identity/contact columns | 0 |

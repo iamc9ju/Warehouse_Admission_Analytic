@@ -104,6 +104,54 @@ function normalizeQuality(row) {
   };
 }
 
+async function preserveExistingTokens(client, rows) {
+  const existing = await client.query(`
+    SELECT
+      fact.application_token,
+      student.student_token,
+      source.source_file,
+      fact.source_row_number
+    FROM admissions_dw.fact_admission fact
+    JOIN admissions_dw.dim_student student USING (student_key)
+    JOIN admissions_dw.dim_source_file source USING (source_file_key)
+  `);
+
+  const stagedBySourceRow = new Map(
+    rows.map((row) => [`${row.source_file}\u0000${row.source_row_number}`, row])
+  );
+  const studentTokenContinuity = new Map();
+  let preservedApplications = 0;
+
+  for (const prior of existing.rows) {
+    const key = `${prior.source_file}\u0000${prior.source_row_number}`;
+    const staged = stagedBySourceRow.get(key);
+    if (!staged) continue;
+
+    const preservedStudentToken = studentTokenContinuity.get(staged.student_token);
+    if (preservedStudentToken && preservedStudentToken !== prior.student_token) {
+      throw new Error(`Student token continuity conflict at ${prior.source_file}:${prior.source_row_number}`);
+    }
+
+    studentTokenContinuity.set(staged.student_token, prior.student_token);
+    staged.application_token = prior.application_token;
+    preservedApplications += 1;
+  }
+
+  let preservedStudents = 0;
+  for (const staged of rows) {
+    const priorStudentToken = studentTokenContinuity.get(staged.student_token);
+    if (!priorStudentToken) continue;
+    staged.student_token = priorStudentToken;
+    preservedStudents += 1;
+  }
+
+  return {
+    existingApplications: existing.rows.length,
+    preservedApplications,
+    preservedStudents,
+  };
+}
+
 async function stageFacts(client, rows) {
   await client.query(`
     CREATE TEMP TABLE stage_admission_fact (
@@ -336,6 +384,7 @@ async function main() {
   await client.connect();
   try {
     await client.query(fs.readFileSync(coreSchemaPath, "utf8"));
+    const continuity = await preserveExistingTokens(client, facts);
     await client.query("BEGIN");
     await stageFacts(client, facts);
     await loadDimensions(client);
@@ -353,6 +402,10 @@ async function main() {
     }
     await client.query("COMMIT");
     await client.query(fs.readFileSync(governanceSchemaPath, "utf8"));
+    console.log(
+      `Preserved ${continuity.preservedApplications.toLocaleString()} existing application tokens ` +
+      `and student identity on ${continuity.preservedStudents.toLocaleString()} staged rows`
+    );
     console.log(`Loaded ${result.fact_rows.toLocaleString()} rows into admissions_dw.fact_admission`);
     console.log(`Loaded ${quality.length} source quality rows`);
   } catch (error) {

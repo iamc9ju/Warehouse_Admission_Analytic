@@ -116,7 +116,7 @@ export function OverviewView({ snapshot }: { snapshot: DashboardSnapshot }) {
             <div>
               <p className="eyebrow">Engineering Admissions Analytics</p>
               <h1>TCAS Admissions Data Warehouse</h1>
-              <p>ดูภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน: TCAS รอบ 1-3 ปี 2567 และรอบ 1-4 ปี 2568-2569 โดย trace กลับไปยัง single fact และ governed lineage ได้</p>
+              <p>ดูภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน: TCAS รอบ 1-4 ปี 2567-2569 โดย trace กลับไปยัง single fact และ governed lineage ได้</p>
             </div>
             <div className="hero-controls">
               <label className="year-select">

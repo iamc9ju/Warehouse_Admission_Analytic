@@ -181,13 +181,13 @@ test("keeps dashboard copy tied to real warehouse data", async () => {
 
   assert.match(snapshot, /"choices": 4579/);
   assert.match(snapshot, /"year": 2567/);
-  assert.match(snapshot, /"choices": 4217/);
+  assert.match(snapshot, /"choices": 4367/);
   assert.match(snapshot, /"source": "generated-artifact"/);
   assert.match(snapshot, /"applicants": 3443/);
   assert.match(snapshot, /"confirmed": 545/);
   assert.match(snapshot, /"sourceFiles": 5/);
-  assert.match(snapshot, /"sourceRows": 13649/);
-  assert.match(snapshot, /"sourceFiles": 15/);
+  assert.match(snapshot, /"sourceRows": 13799/);
+  assert.match(snapshot, /"sourceFiles": 16/);
   assert.match(snapshot, /mart_admissions_executive_summary/);
   assert.match(snapshot, /vw_admission_round_overview/);
   assert.match(snapshot, /qualityMetricDefinitions/);

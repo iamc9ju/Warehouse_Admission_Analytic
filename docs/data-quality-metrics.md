@@ -2,7 +2,7 @@
 
 | Metric | Expected | Source object | Meaning |
 |---|---:|---|---|
-| Source rows | 13,649 | `admission_round_source_data_quality.source_rows` | แถวที่อ่านจาก 15 workbooks |
+| Source rows | 13,799 | `admission_round_source_data_quality.source_rows` | แถวที่อ่านจาก 16 workbooks |
 | Missing score | 0 | `admission_round_source_data_quality.missing_score_rows` | fact row ที่ไม่มีคะแนน |
 | Missing major | 0 | `admission_round_source_data_quality.missing_major_rows` | แถวที่ resolve `dim_major` ไม่ได้ |
 | PII exported | 0 columns | `admission_round_source_data_quality.pii_exported_columns` | direct identity/contact fields ที่ข้าม privacy boundary |

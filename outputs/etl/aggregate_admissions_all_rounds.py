@@ -26,6 +26,7 @@ SOURCES = [
     SourceWorkbook(2567, "TCAS1", "Portfolio", Path("/Users/iamc9ju/Downloads/1_67_2.xlsx")),
     SourceWorkbook(2567, "TCAS2", "Quota", Path("/Users/iamc9ju/Downloads/2_67.xlsx")),
     SourceWorkbook(2567, "TCAS3", "Admission", Path("/Users/iamc9ju/Downloads/3_67.xlsx")),
+    SourceWorkbook(2567, "TCAS4", "Direct Admission", Path("/Users/iamc9ju/Downloads/ku_4_67.xlsx")),
     SourceWorkbook(2568, "TCAS1", "Portfolio", Path("/Users/iamc9ju/Downloads/รอบ 1 ปี68.xlsx")),
     SourceWorkbook(2568, "TCAS1", "Portfolio", Path("/Users/iamc9ju/Downloads/รอบ 1 ปี68(1).xlsx")),
     SourceWorkbook(2568, "TCAS2", "Quota", Path("/Users/iamc9ju/Downloads/รอบ 2 ปี68.xlsx")),
@@ -48,8 +49,18 @@ COLUMN_ALIASES = {
     "รหัสสาขา": "major_id",
     "ชื่อสาขา": "major_name",
     "สถานะ": "major_type",
+    "รูปแบบการเรียน": "major_type",
     "รหัสคณะ": "fac_id",
     "ชื่อคณะ": "fac_name",
+    "รอบ TCAS": "project_id",
+    "คะแนนรวม": "score",
+    "สถานะการสมัคร": "tcas_status",
+}
+
+LEGACY_TCAS_STATUS_MAP = {
+    "ยืนยันสิทธิ์ clearing-house": "ยืนยันสิทธิ์",
+    "สัมภาษณ์ผ่าน": "ผ่านการคัดเลือก",
+    "ปกติ": "ไม่ผ่านการคัดเลือก",
 }
 
 REQUIRED_COLUMNS = {
@@ -112,6 +123,13 @@ def read_source(source: SourceWorkbook, salt: bytes) -> pd.DataFrame:
 
     df = pd.read_excel(source.path, dtype={"citizen_id": "string", "เลขบัตร ปชช": "string"})
     df = df.rename(columns=COLUMN_ALIASES).copy()
+    if "priority" not in df.columns and source.tcas_round_code == "TCAS4":
+        df["priority"] = 0
+    if "applicant_status" not in df.columns and "tcas_status" in df.columns:
+        selected_statuses = {"ยืนยันสิทธิ์ clearing-house", "สัมภาษณ์ผ่าน"}
+        df["applicant_status"] = df["tcas_status"].isin(selected_statuses).map({True: 2, False: 3})
+    if "tcas_status" in df.columns:
+        df["tcas_status"] = df["tcas_status"].replace(LEGACY_TCAS_STATUS_MAP)
     validate_columns(df, source)
 
     df["citizen_id"] = df["citizen_id"].astype("string").str.strip()
@@ -314,7 +332,7 @@ def build_contract_outputs(df: pd.DataFrame, quality: pd.DataFrame) -> None:
                 ["Missing major", str(missing_major), "admission_round_source_data_quality.missing_major_rows", "จำนวนแถวที่ map ไป dim_major ไม่ได้", "missing_major_rows = 0 before fact load"],
                 ["PII exported", "0 columns", "processed fact column audit", "จำนวนคอลัมน์ข้อมูลส่วนบุคคลใน staging, warehouse และ dashboard", "only irreversible student/application tokens may cross the ETL privacy boundary"],
                 ["Active source groups", "1", "dw_dataset_catalog.source_system", "จำนวน source group ที่ active", "only admissions_excel is active"],
-                ["Source files", str(source_files), "admission_round_source_data_quality.source_file", "จำนวนไฟล์ Excel รอบ 1-3 ปี 2567 และรอบ 1-4 ปี 2568-2569", "source files must reconcile to configured round coverage"],
+                ["Source files", str(source_files), "admission_round_source_data_quality.source_file", "จำนวนไฟล์ Excel รอบ 1-4 ปี 2567-2569", "source files must reconcile to configured round coverage"],
                 ["Catalog rows", str(catalog_rows), "dw_dataset_catalog", "จำนวน dataset catalog records ของ single-fact model", "all dashboard-facing layers require metadata"],
                 ["Lineage edges", str(lineage_edges), "dw_lineage_edge", "จำนวน dependency edges จาก source ถึง dashboard", "all marts must trace to fact_admission"],
             ],
@@ -363,7 +381,7 @@ def build_contract_outputs(df: pd.DataFrame, quality: pd.DataFrame) -> None:
                 ["Dimension coverage", "every fact row resolves student, year, round, project, faculty, major, program, status and source dimensions", "pass"],
                 ["Major mapping", f"{missing_major} missing major rows before fact load", "pass" if missing_major == 0 else "fail"],
                 ["Score completeness", f"{missing_score} missing score rows in active snapshot", "pass" if missing_score == 0 else "fail"],
-                ["Round coverage", "TCAS1-3 represented for 2567; TCAS1-4 represented for 2568 and 2569", "pass"],
+                ["Round coverage", "TCAS1-4 represented for 2567-2569", "pass"],
                 ["Single fact", "fact_admission is the only physical fact table", "pass"],
             ],
             columns=["check_name", "evidence", "result"],

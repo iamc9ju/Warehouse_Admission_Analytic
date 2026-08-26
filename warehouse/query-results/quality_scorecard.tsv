@@ -1,9 +1,9 @@
 metric_name	metric_value	source_object	definition	validation_rule
-Source rows	13,649	admission_round_source_data_quality.source_rows	จำนวนแถวจาก Excel admissions source ทั้งหมดก่อนโหลด fact	sum(source_rows) across 15 files must equal fact row count
+Source rows	13,799	admission_round_source_data_quality.source_rows	จำนวนแถวจาก Excel admissions source ทั้งหมดก่อนโหลด fact	sum(source_rows) across 16 files must equal fact row count
 Missing score	0	admission_round_source_data_quality.missing_score_rows	จำนวนแถวที่ score เป็นค่าว่าง	missing_score_rows = 0 for every active source file
 Missing major	0	admission_round_source_data_quality.missing_major_rows	จำนวนแถวที่ map ไป dim_major ไม่ได้	missing_major_rows = 0 before fact load
 PII exported	0 columns	processed fact column audit	จำนวนคอลัมน์ข้อมูลส่วนบุคคลใน staging, warehouse และ dashboard	only irreversible student/application tokens may cross the ETL privacy boundary
 Active source groups	1	dw_dataset_catalog.source_system	จำนวน source group ที่ active	only admissions_excel is active
-Source files	15	admission_round_source_data_quality.source_file	จำนวนไฟล์ Excel รอบ 1-3 ปี 2567 และรอบ 1-4 ปี 2568-2569	source files must reconcile to configured round coverage
+Source files	16	admission_round_source_data_quality.source_file	จำนวนไฟล์ Excel รอบ 1-4 ปี 2567-2569	source files must reconcile to configured round coverage
 Catalog rows	8	dw_dataset_catalog	จำนวน dataset catalog records ของ single-fact model	all dashboard-facing layers require metadata
 Lineage edges	6	dw_lineage_edge	จำนวน dependency edges จาก source ถึง dashboard	all marts must trace to fact_admission

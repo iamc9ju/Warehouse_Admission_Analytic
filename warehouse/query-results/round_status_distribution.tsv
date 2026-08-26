@@ -18,6 +18,9 @@ academic_year	tcas_round_code	tcas_round_name	status_label	choices	unique_applic
 2567	TCAS3	Admission	ไม่ผ่านการคัดเลือก	1121	879
 2567	TCAS3	Admission	ไม่เข้าระบบมาดำเนินการใดๆ	2	2
 2567	TCAS3	Admission	ไม่ใช้สิทธิ์	5	5
+2567	TCAS4	Direct Admission	ผ่านการคัดเลือก	34	34
+2567	TCAS4	Direct Admission	ยืนยันสิทธิ์	26	26
+2567	TCAS4	Direct Admission	ไม่ผ่านการคัดเลือก	90	90
 2568	TCAS1	Portfolio	ยืนยันที่อื่นแล้ว	170	170
 2568	TCAS1	Portfolio	ยืนยันสิทธิ์	191	191
 2568	TCAS1	Portfolio	สละสิทธิ์	1	1

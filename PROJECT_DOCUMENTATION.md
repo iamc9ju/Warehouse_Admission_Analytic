@@ -3,7 +3,7 @@
 ## Objective
 
 ระบบนี้วิเคราะห์ข้อมูลรับสมัคร TCAS ของคณะวิศวกรรมศาสตร์ กำแพงแสน
-โดยรวมข้อมูลรอบ 1-3 ปี 2567 และรอบ 1-4 ปี 2568-2569 ไว้ใน dimensional warehouse
+โดยรวมข้อมูลรอบ 1-4 ปี 2567-2569 ไว้ใน dimensional warehouse
 ที่มี physical fact table เพียงตารางเดียว
 
 ## Data model
@@ -23,7 +23,7 @@ Grain ของ `fact_admission` คือหนึ่งตัวเลือ�
 
 `outputs/etl/aggregate_admissions_all_rounds.py` ทำงานดังนี้:
 
-1. อ่าน 15 source workbooks
+1. อ่าน 16 source workbooks
 2. map หัวคอลัมน์ภาษาไทยของปี 2567 ให้ตรง canonical schema
 3. ตรวจ required columns และ source identity
 4. แปลง score, priority และ applicant status เป็นชนิดตัวเลข
@@ -33,9 +33,9 @@ Grain ของ `fact_admission` คือหนึ่งตัวเลือ�
 
 ผลตรวจล่าสุด:
 
-- 13,649 source/fact rows
-- 15 source files
-- 10,067 pseudonymous students ข้ามปี/รอบ
+- 13,799 source/fact rows
+- 16 source files
+- 10,158 pseudonymous students ข้ามปี/รอบ
 - missing score 0
 - missing major 0
 - exported direct-identity columns 0
@@ -44,12 +44,13 @@ Grain ของ `fact_admission` คือหนึ่งตัวเลือ�
 
 `outputs/etl/load_admissions_all_rounds_to_neon.cjs` โหลดข้อมูลผ่าน temporary staging table แล้ว:
 
-1. upsert dimensions ทั้งหมด
-2. resolve dimension keys ทุกแถว
-3. upsert `fact_admission` ด้วย `application_token`
-4. ลบ fact rows ที่ไม่อยู่ใน active staging snapshot
-5. upsert source quality rows
-6. ตรวจว่า staging rows เท่ากับ fact rowsและ score ไม่มี null
+1. รักษา application/student tokens เดิมด้วย `source_file + source_row_number` และเชื่อมผู้สมัครซ้ำข้ามไฟล์
+2. upsert dimensions ทั้งหมด
+3. resolve dimension keys ทุกแถว
+4. upsert `fact_admission` ด้วย `application_token`
+5. ลบ fact rows ที่ไม่อยู่ใน active staging snapshot
+6. upsert source quality rows
+7. ตรวจว่า staging rows เท่ากับ fact rowsและ score ไม่มี null
 
 Legacy aggregate facts และ secondary analytics facts ถูกถอดออกจาก active schema โดย migration SQL
 

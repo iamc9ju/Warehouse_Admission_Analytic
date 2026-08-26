@@ -81,7 +81,7 @@ export default async function TechnicalPage() {
                   ["04", "Semantic", "Business-ready metrics", ["Executive mart", "Major conversion", "Decision insights"]],
                   ["03", "Warehouse", "Governed dimensional model", ["fact_admission", "Conformed dimensions", "Quality & lineage"]],
                   ["02", "Integration", "Clean and privacy-safe data", ["ETL", "Normalized staging", "PII boundary"]],
-                  ["01", "Source", "Owned raw evidence", ["Admissions Excel 2567-2569", "15 governed workbooks"]],
+                  ["01", "Source", "Owned raw evidence", ["Admissions Excel 2567-2569", "16 governed workbooks"]],
                 ] as const).map(([level, title, description, items]) => (
                   <li className={`technical-hierarchy-level level-${level}`} key={level}>
                     <span className="technical-hierarchy-number">L{level}</span>

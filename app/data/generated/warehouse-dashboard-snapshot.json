@@ -1,16 +1,16 @@
 {
   "runtime": {
     "source": "generated-artifact",
-    "loadedAt": "2026-08-09T00:00:00+07:00"
+    "loadedAt": "2026-08-26T00:00:00+07:00"
   },
   "warehouseSnapshot": {
-    "exportedAt": "2026-08-09",
+    "exportedAt": "2026-08-26",
     "sourceSystem": "Neon PostgreSQL",
     "schema": "admissions_dw",
     "dashboardMode": "generated warehouse mart artifact",
-    "sourceRows": 13649,
+    "sourceRows": 13799,
     "activeSourceGroups": 1,
-    "sourceFiles": 15,
+    "sourceFiles": 16,
     "catalogRows": 8,
     "lineageEdges": 6,
     "piiExportedColumns": 0,
@@ -19,12 +19,12 @@
   "years": [
     {
       "year": 2567,
-      "choices": 4217,
-      "applicants": 3253,
-      "confirmed": 498,
-      "rate": 15.31,
-      "sourceFiles": 4,
-      "avgScore": 19.7939
+      "choices": 4367,
+      "applicants": 3353,
+      "confirmed": 524,
+      "rate": 15.63,
+      "sourceFiles": 5,
+      "avgScore": 19.9683
     },
     {
       "year": 2568,
@@ -106,10 +106,21 @@
       "code": "E37",
       "name": "วิศวกรรมเครื่องกล-เกษตร",
       "type": "ภาคปกติ",
-      "applicants": 235,
-      "confirmed": 55,
-      "rate": 23.4,
-      "avgScore": 22.0527,
+      "applicants": 256,
+      "confirmed": 61,
+      "rate": 23.83,
+      "avgScore": 20.0249,
+      "applicantChange": 0
+    },
+    {
+      "year": 2567,
+      "code": "E38",
+      "name": "วิศวกรรมโยธา-โครงสร้างพื้นฐาน (ภาคพิเศษ)",
+      "type": "ภาคพิเศษ",
+      "applicants": 252,
+      "confirmed": 53,
+      "rate": 21.03,
+      "avgScore": 24.9951,
       "applicantChange": 0
     },
     {
@@ -125,24 +136,13 @@
     },
     {
       "year": 2567,
-      "code": "E38",
-      "name": "วิศวกรรมโยธา-โครงสร้างพื้นฐาน (ภาคพิเศษ)",
-      "type": "ภาคพิเศษ",
-      "applicants": 172,
-      "confirmed": 50,
-      "rate": 29.07,
-      "avgScore": 15.8302,
-      "applicantChange": 0
-    },
-    {
-      "year": 2567,
       "code": "E03",
       "name": "วิศวกรรมเครื่องกล (ภาคพิเศษ)",
       "type": "ภาคพิเศษ",
-      "applicants": 93,
-      "confirmed": 26,
-      "rate": 27.96,
-      "avgScore": 13.8712,
+      "applicants": 134,
+      "confirmed": 43,
+      "rate": 32.09,
+      "avgScore": 9.5557,
       "applicantChange": 0
     },
     {
@@ -209,7 +209,7 @@
       "confirmed": 56,
       "rate": 13.66,
       "avgScore": 34.2795,
-      "applicantChange": 175
+      "applicantChange": 154
     },
     {
       "year": 2568,
@@ -220,7 +220,7 @@
       "confirmed": 52,
       "rate": 16.2,
       "avgScore": 20.7864,
-      "applicantChange": 149
+      "applicantChange": 69
     },
     {
       "year": 2568,
@@ -242,7 +242,7 @@
       "confirmed": 35,
       "rate": 11.99,
       "avgScore": 24.0275,
-      "applicantChange": 199
+      "applicantChange": 158
     },
     {
       "year": 2568,
@@ -370,50 +370,57 @@
     {
       "year": 2567,
       "label": "ไม่ผ่านการคัดเลือก",
-      "choices": 2633,
-      "share": 62.44,
+      "choices": 2723,
+      "share": 62.35,
       "tone": "green"
     },
     {
       "year": 2567,
       "label": "ผ่านการคัดเลือกในลำดับที่ดีกว่า",
       "choices": 883,
-      "share": 20.94,
+      "share": 20.22,
       "tone": "amber"
     },
     {
       "year": 2567,
       "label": "ยืนยันสิทธิ์",
-      "choices": 498,
-      "share": 11.81,
+      "choices": 524,
+      "share": 12,
       "tone": "orange"
     },
     {
       "year": 2567,
       "label": "ยืนยันที่อื่นแล้ว",
       "choices": 123,
-      "share": 2.92,
+      "share": 2.82,
       "tone": "blue"
+    },
+    {
+      "year": 2567,
+      "label": "ผ่านการคัดเลือก",
+      "choices": 42,
+      "share": 0.96,
+      "tone": "muted"
     },
     {
       "year": 2567,
       "label": "ไม่ใช้สิทธิ์",
       "choices": 22,
-      "share": 0.52,
+      "share": 0.5,
       "tone": "muted"
     },
     {
       "year": 2567,
       "label": "สละสิทธิ์",
       "choices": 21,
-      "share": 0.5,
+      "share": 0.48,
       "tone": "red"
     },
     {
       "year": 2567,
       "label": "ไม่เข้าระบบมาดำเนินการใดๆ",
       "choices": 19,
-      "share": 0.45,
+      "share": 0.44,
       "tone": "purple"
     },
     {
@@ -421,13 +428,6 @@
       "label": "สละสิทธิ์ในรอบ 2",
       "choices": 9,
       "share": 0.21,
-      "tone": "muted"
-    },
-    {
-      "year": 2567,
-      "label": "ผ่านการคัดเลือก",
-      "choices": 8,
-      "share": 0.19,
       "tone": "muted"
     },
     {
@@ -607,6 +607,16 @@
       "applicants": 1639,
       "confirmed": 226,
       "rate": 13.79,
+      "files": 1
+    },
+    {
+      "year": 2567,
+      "code": "TCAS4",
+      "name": "Direct Admission",
+      "choices": 150,
+      "applicants": 150,
+      "confirmed": 26,
+      "rate": 17.33,
       "files": 1
     },
     {
@@ -842,6 +852,30 @@
       "label": "ไม่ใช้สิทธิ์",
       "choices": 5,
       "applicants": 5
+    },
+    {
+      "year": 2567,
+      "code": "TCAS4",
+      "name": "Direct Admission",
+      "label": "ผ่านการคัดเลือก",
+      "choices": 34,
+      "applicants": 34
+    },
+    {
+      "year": 2567,
+      "code": "TCAS4",
+      "name": "Direct Admission",
+      "label": "ยืนยันสิทธิ์",
+      "choices": 26,
+      "applicants": 26
+    },
+    {
+      "year": 2567,
+      "code": "TCAS4",
+      "name": "Direct Admission",
+      "label": "ไม่ผ่านการคัดเลือก",
+      "choices": 90,
+      "applicants": 90
     },
     {
       "year": 2568,
@@ -1231,10 +1265,10 @@
   "qualityMetricDefinitions": [
     {
       "label": "Source rows",
-      "value": "13,649",
+      "value": "13,799",
       "sourceObject": "admission_round_source_data_quality.source_rows",
       "definition": "จำนวนแถวจาก Excel admissions source ทั้งหมดก่อนโหลด fact",
-      "rule": "sum(source_rows) across 15 files must equal fact row count"
+      "rule": "sum(source_rows) across 16 files must equal fact row count"
     },
     {
       "label": "Missing score",
@@ -1266,9 +1300,9 @@
     },
     {
       "label": "Source files",
-      "value": "15",
+      "value": "16",
       "sourceObject": "admission_round_source_data_quality.source_file",
-      "definition": "จำนวนไฟล์ Excel รอบ 1-3 ปี 2567 และรอบ 1-4 ปี 2568-2569",
+      "definition": "จำนวนไฟล์ Excel รอบ 1-4 ปี 2567-2569",
       "rule": "source files must reconcile to configured round coverage"
     },
     {
@@ -1291,7 +1325,7 @@
       "admissions_excel_files",
       "Source",
       "source_file + source_row",
-      "15 files / 13,649 rows",
+      "16 files / 13,799 rows",
       "PII at source only"
     ],
     [
@@ -1326,7 +1360,7 @@
       "fact_admission",
       "Core fact",
       "one application choice",
-      "13,649 rows with score",
+      "13,799 rows with score",
       "Pseudonymous"
     ],
     [
@@ -1379,7 +1413,7 @@
   "etlValidationChecks": [
     [
       "Row reconciliation",
-      "13,649 source rows read from 15 files and mapped 1:1 to fact grain",
+      "13,799 source rows read from 16 files and mapped 1:1 to fact grain",
       "pass"
     ],
     [
@@ -1404,7 +1438,7 @@
     ],
     [
       "Round coverage",
-      "TCAS1-3 represented for 2567; TCAS1-4 represented for 2568 and 2569",
+      "TCAS1-4 represented for 2567-2569",
       "pass"
     ],
     [
@@ -1869,10 +1903,10 @@
   "warehouseHealth": {
     "id": "WH-001",
     "status": "pass",
-    "lastRefreshAt": "2026-08-09T21:16:24.462771+07:00",
+    "lastRefreshAt": "2026-08-26T18:40:06.211158+07:00",
     "freshnessSlaHours": 168,
-    "sourceRows": 13649,
-    "sourceFiles": 15,
+    "sourceRows": 13799,
+    "sourceFiles": 16,
     "martCount": 5,
     "qualityChecksPassed": 7,
     "qualityChecksFailed": 0,
