@@ -6,9 +6,8 @@
 `warehouse_governance_marts.sql` defines dashboard-facing marts.
 All metrics aggregate from `fact_admission`; no summary fact tables are persisted.
 
-`decision_support_catalog.sql` stores business questions, decision insights and mart contracts in Neon.
 `normalize_dashboard_people_metrics.sql` applies the distinct-person metric views and removes obsolete
-governance tables and views.
+governance and decision-support tables and views.
 
 Apply and load through:
 

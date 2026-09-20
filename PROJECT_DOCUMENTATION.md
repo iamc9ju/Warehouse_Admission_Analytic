@@ -10,7 +10,8 @@
 
 Grain ของ `fact_admission` คือหนึ่งตัวเลือกสมัครต่อหนึ่งแถวใน Excel ต้นทาง ตาราง fact มี:
 
-- foreign key ครบทุก dimension: student, year, round, project, faculty, major, program type, status และ source file
+- foreign key ไปยัง dimension หลัก: student, year, round, faculty, major, program type และ status
+- `source_file` เป็น degenerate dimension บน fact เพื่อใช้นับไฟล์และรักษา token continuity
 - `source_row_number`
 - `priority`
 - `score` แบบ `NUMERIC(12,4)` และ `NOT NULL`
@@ -38,12 +39,11 @@ tokenization แล้ว จากนั้น loader จะนำ staging เ�
 `outputs/etl/load_admissions_all_rounds_to_neon.cjs` โหลดข้อมูลผ่าน temporary staging table แล้ว:
 
 1. รักษา application/student tokens เดิมด้วย `source_file + source_row_number` และเชื่อมผู้สมัครซ้ำข้ามไฟล์
-2. upsert dimensions ทั้งหมด
+2. upsert dimensions หลัก
 3. resolve dimension keys ทุกแถว
 4. upsert `fact_admission` ด้วย `application_token`
 5. ลบ fact rows ที่ไม่อยู่ใน active staging snapshot
-6. upsert source quality rows
-7. ตรวจว่า staging rows เท่ากับ fact rowsและ score ไม่มี null
+6. ตรวจว่า staging rows เท่ากับ fact rows และ score ไม่มี null
 
 Legacy aggregate facts และ secondary analytics facts ถูกถอดออกจาก active schema โดย migration SQL
 
@@ -71,7 +71,7 @@ Core views และ marts ทั้งหมด aggregate จาก `fact_admis
 ```text
 fact_admission
   -> warehouse views/marts
-  -> server-side TypeScript repositories
+  -> server-side TypeScript repositories (รวม Question definitions ในโค้ด)
   -> route-level Neon loader
   -> dashboard pages
 ```

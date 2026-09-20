@@ -5,8 +5,8 @@ Excel 2567-2569
   -> canonical column mapping
   -> HMAC tokenization and PII boundary
   -> application fact staging
-  -> dimensions (student, year, round, project, faculty, major, program, status, source)
-  -> fact_admission (one application choice + score)
+  -> dimensions (student, year, round, faculty, major, program, status)
+  -> fact_admission (one application choice + score + source_file)
   -> views/marts
   -> live server-side Neon query
   -> dashboard routes

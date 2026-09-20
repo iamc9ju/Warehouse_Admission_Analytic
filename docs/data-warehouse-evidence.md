@@ -21,8 +21,8 @@
 ## Single Fact Evidence
 
 `fact_admission` เป็น physical fact table เพียงตารางเดียว มี 13,799 แถว และ grain คือ
-หนึ่งตัวเลือกสมัคร ตารางนี้เชื่อม `dim_student`, `dim_year`, round, project, faculty,
-major, program type, status และ source file dimensions
+หนึ่งตัวเลือกสมัคร ตารางนี้เชื่อม `dim_student`, `dim_year`, round, faculty,
+major, program type และ status ส่วน `source_file` เก็บตรงบน fact ในรูป degenerate dimension
 
 ## Live Dashboard Contract
 

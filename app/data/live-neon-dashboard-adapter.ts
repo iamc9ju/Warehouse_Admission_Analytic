@@ -29,7 +29,7 @@ export async function queryPageSnapshot(
     majorStatuses: () => getMajorStatuses(client, year),
     statuses: () => getYearStatuses(client, year),
     roundStatuses: () => getRoundStatuses(client, year),
-    businessQuestions: () => getBusinessQuestions(client),
+    businessQuestions: () => getBusinessQuestions(),
     decisionInsights: () => getDecisionInsights(client),
   };
 

@@ -14,7 +14,7 @@ SELECT
     ) AS confirmed_unique_rate,
     COUNT(DISTINCT f.major_key)::BIGINT AS unique_majors,
     COUNT(DISTINCT f.round_key)::BIGINT AS tcas_rounds,
-    COUNT(DISTINCT f.source_file_key)::BIGINT AS source_files,
+    COUNT(DISTINCT f.source_file)::BIGINT AS source_files,
     ROUND(AVG(f.score), 4) AS avg_score,
     COUNT(DISTINCT f.student_key) FILTER (
         WHERE s.tcas_status IN ('สละสิทธิ์', 'สละสิทธิ์ในรอบ 2')
@@ -43,7 +43,7 @@ SELECT
         COUNT(DISTINCT f.student_key) FILTER (WHERE s.tcas_status = 'ยืนยันสิทธิ์')::NUMERIC
         * 100 / NULLIF(COUNT(DISTINCT f.student_key), 0), 2
     ) AS confirmed_rate,
-    COUNT(DISTINCT f.source_file_key)::BIGINT AS source_files,
+    COUNT(DISTINCT f.source_file)::BIGINT AS source_files,
     ROUND(AVG(f.score), 4) AS avg_score,
     COUNT(DISTINCT f.student_key) FILTER (
         WHERE s.tcas_status IN (
@@ -165,3 +165,6 @@ DROP TABLE IF EXISTS admissions_dw.admission_round_source_data_quality;
 DROP TABLE IF EXISTS admissions_dw.dw_dataset_catalog;
 DROP TABLE IF EXISTS admissions_dw.dw_lineage_edge;
 DROP TABLE IF EXISTS admissions_dw.dw_refresh_run;
+DROP TABLE IF EXISTS admissions_dw.mart_decision_insight;
+DROP TABLE IF EXISTS admissions_dw.dw_decision_mart_contract;
+DROP TABLE IF EXISTS admissions_dw.dw_business_question_catalog;

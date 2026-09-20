@@ -72,7 +72,6 @@ function normalizeFact(row) {
     academic_year: Number(row.academic_year),
     tcas_round_code: row.tcas_round_code,
     tcas_round_name: row.tcas_round_name,
-    project_id: row.project_id,
     fac_id: row.fac_id,
     fac_name: row.fac_name,
     major_id: row.major_id,
@@ -92,11 +91,10 @@ async function preserveExistingTokens(client, rows) {
     SELECT
       fact.application_token,
       student.student_token,
-      source.source_file,
+      fact.source_file,
       fact.source_row_number
     FROM admissions_dw.fact_admission fact
     JOIN admissions_dw.dim_student student USING (student_key)
-    JOIN admissions_dw.dim_source_file source USING (source_file_key)
   `);
 
   const stagedBySourceRow = new Map(
@@ -143,7 +141,6 @@ async function stageFacts(client, rows) {
       academic_year INTEGER NOT NULL,
       tcas_round_code TEXT NOT NULL,
       tcas_round_name TEXT NOT NULL,
-      project_id TEXT NOT NULL,
       fac_id TEXT NOT NULL,
       fac_name TEXT NOT NULL,
       major_id TEXT NOT NULL,
@@ -171,7 +168,6 @@ async function stageFacts(client, rows) {
           academic_year INTEGER,
           tcas_round_code TEXT,
           tcas_round_name TEXT,
-          project_id TEXT,
           fac_id TEXT,
           fac_name TEXT,
           major_id TEXT,
@@ -204,10 +200,6 @@ async function loadDimensions(client) {
     SELECT DISTINCT tcas_round_code, tcas_round_name FROM stage_admission_fact
     ON CONFLICT (tcas_round_code) DO UPDATE SET tcas_round_name = EXCLUDED.tcas_round_name;
 
-    INSERT INTO admissions_dw.dim_project (project_id)
-    SELECT DISTINCT project_id FROM stage_admission_fact
-    ON CONFLICT (project_id) DO NOTHING;
-
     INSERT INTO admissions_dw.dim_faculty (fac_id, fac_name)
     SELECT DISTINCT fac_id, fac_name FROM stage_admission_fact
     ON CONFLICT (fac_id) DO UPDATE SET fac_name = EXCLUDED.fac_name;
@@ -224,9 +216,6 @@ async function loadDimensions(client) {
     SELECT DISTINCT tcas_status, applicant_status FROM stage_admission_fact
     ON CONFLICT (tcas_status, applicant_status) DO NOTHING;
 
-    INSERT INTO admissions_dw.dim_source_file (source_file)
-    SELECT DISTINCT source_file FROM stage_admission_fact
-    ON CONFLICT (source_file) DO NOTHING;
   `);
 }
 
@@ -237,12 +226,11 @@ async function loadFact(client) {
       student_key,
       year_key,
       round_key,
-      project_key,
       faculty_key,
       major_key,
       program_type_key,
       status_key,
-      source_file_key,
+      source_file,
       source_row_number,
       priority,
       score,
@@ -253,12 +241,11 @@ async function loadFact(client) {
       ds.student_key,
       dy.year_key,
       dr.round_key,
-      dp.project_key,
       df.faculty_key,
       dm.major_key,
       dpt.program_type_key,
       dts.status_key,
-      dsf.source_file_key,
+      st.source_file,
       st.source_row_number,
       st.priority,
       st.score,
@@ -267,7 +254,6 @@ async function loadFact(client) {
     JOIN admissions_dw.dim_student ds ON ds.student_token = st.student_token
     JOIN admissions_dw.dim_year dy ON dy.academic_year = st.academic_year
     JOIN admissions_dw.dim_tcas_round dr ON dr.tcas_round_code = st.tcas_round_code
-    JOIN admissions_dw.dim_project dp ON dp.project_id = st.project_id
     JOIN admissions_dw.dim_faculty df ON df.fac_id = st.fac_id
     JOIN admissions_dw.dim_major dm
       ON dm.major_id = st.major_id
@@ -277,17 +263,15 @@ async function loadFact(client) {
     JOIN admissions_dw.dim_tcas_status dts
       ON dts.tcas_status = st.tcas_status
      AND dts.applicant_status IS NOT DISTINCT FROM st.applicant_status
-    JOIN admissions_dw.dim_source_file dsf ON dsf.source_file = st.source_file
     ON CONFLICT (application_token) DO UPDATE SET
       student_key = EXCLUDED.student_key,
       year_key = EXCLUDED.year_key,
       round_key = EXCLUDED.round_key,
-      project_key = EXCLUDED.project_key,
       faculty_key = EXCLUDED.faculty_key,
       major_key = EXCLUDED.major_key,
       program_type_key = EXCLUDED.program_type_key,
       status_key = EXCLUDED.status_key,
-      source_file_key = EXCLUDED.source_file_key,
+      source_file = EXCLUDED.source_file,
       source_row_number = EXCLUDED.source_row_number,
       priority = EXCLUDED.priority,
       score = EXCLUDED.score,

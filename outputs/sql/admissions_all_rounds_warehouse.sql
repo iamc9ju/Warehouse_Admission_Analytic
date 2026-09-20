@@ -16,6 +16,50 @@ DROP TABLE IF EXISTS admissions_dw.dim_social_platform CASCADE;
 DROP TABLE IF EXISTS admissions_dw.dim_social_keyword CASCADE;
 DROP TABLE IF EXISTS admissions_dw.dim_sentiment CASCADE;
 
+-- Replace project/source-file dimensions with a source-file degenerate dimension on the fact.
+-- The file identifier is retained because the dashboard counts source files and the loader uses
+-- source_file + source_row_number to preserve pseudonymous tokens across reloads.
+DROP VIEW IF EXISTS admissions_dw.vw_admission_year_overview CASCADE;
+DROP VIEW IF EXISTS admissions_dw.vw_admission_round_overview CASCADE;
+DROP VIEW IF EXISTS admissions_dw.vw_admission_round_status_distribution CASCADE;
+DROP VIEW IF EXISTS admissions_dw.vw_admission_year_status_distribution CASCADE;
+DROP VIEW IF EXISTS admissions_dw.vw_admission_major_status_distribution CASCADE;
+DROP VIEW IF EXISTS admissions_dw.mart_tcas_year_summary CASCADE;
+DROP VIEW IF EXISTS admissions_dw.mart_tcas_round_summary CASCADE;
+DROP VIEW IF EXISTS admissions_dw.mart_major_round_conversion CASCADE;
+
+ALTER TABLE IF EXISTS admissions_dw.fact_admission
+    ADD COLUMN IF NOT EXISTS source_file TEXT;
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'admissions_dw'
+          AND table_name = 'fact_admission'
+          AND column_name = 'source_file_key'
+    ) AND to_regclass('admissions_dw.dim_source_file') IS NOT NULL THEN
+        UPDATE admissions_dw.fact_admission f
+        SET source_file = s.source_file
+        FROM admissions_dw.dim_source_file s
+        WHERE s.source_file_key = f.source_file_key
+          AND f.source_file IS NULL;
+    END IF;
+END $$;
+
+ALTER TABLE IF EXISTS admissions_dw.fact_admission
+    ALTER COLUMN source_file SET NOT NULL;
+
+ALTER TABLE IF EXISTS admissions_dw.fact_admission
+    ALTER COLUMN source_file SET NOT NULL;
+
+ALTER TABLE IF EXISTS admissions_dw.fact_admission
+    DROP COLUMN IF EXISTS project_key,
+    DROP COLUMN IF EXISTS source_file_key;
+
+DROP TABLE IF EXISTS admissions_dw.dim_project;
+DROP TABLE IF EXISTS admissions_dw.dim_source_file;
+
 CREATE TABLE IF NOT EXISTS admissions_dw.dim_student (
     student_key BIGSERIAL PRIMARY KEY,
     student_token CHAR(64) NOT NULL UNIQUE,
@@ -33,11 +77,6 @@ CREATE TABLE IF NOT EXISTS admissions_dw.dim_tcas_round (
     round_key BIGSERIAL PRIMARY KEY,
     tcas_round_code TEXT NOT NULL UNIQUE,
     tcas_round_name TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS admissions_dw.dim_project (
-    project_key BIGSERIAL PRIMARY KEY,
-    project_id TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS admissions_dw.dim_faculty (
@@ -66,23 +105,17 @@ CREATE TABLE IF NOT EXISTS admissions_dw.dim_tcas_status (
     CONSTRAINT dim_tcas_status_unique UNIQUE NULLS NOT DISTINCT (tcas_status, applicant_status)
 );
 
-CREATE TABLE IF NOT EXISTS admissions_dw.dim_source_file (
-    source_file_key BIGSERIAL PRIMARY KEY,
-    source_file TEXT NOT NULL UNIQUE
-);
-
 CREATE TABLE IF NOT EXISTS admissions_dw.fact_admission (
     admission_key BIGSERIAL PRIMARY KEY,
     application_token CHAR(64) NOT NULL UNIQUE,
     student_key BIGINT NOT NULL REFERENCES admissions_dw.dim_student(student_key),
     year_key BIGINT NOT NULL REFERENCES admissions_dw.dim_year(year_key),
     round_key BIGINT NOT NULL REFERENCES admissions_dw.dim_tcas_round(round_key),
-    project_key BIGINT NOT NULL REFERENCES admissions_dw.dim_project(project_key),
     faculty_key BIGINT NOT NULL REFERENCES admissions_dw.dim_faculty(faculty_key),
     major_key BIGINT NOT NULL REFERENCES admissions_dw.dim_major(major_key),
     program_type_key BIGINT NOT NULL REFERENCES admissions_dw.dim_program_type(program_type_key),
     status_key BIGINT NOT NULL REFERENCES admissions_dw.dim_tcas_status(status_key),
-    source_file_key BIGINT NOT NULL REFERENCES admissions_dw.dim_source_file(source_file_key),
+    source_file TEXT NOT NULL,
     source_row_number INTEGER NOT NULL CHECK (source_row_number >= 2),
     priority NUMERIC(10, 4),
     score NUMERIC(12, 4) NOT NULL,
@@ -110,7 +143,7 @@ SELECT
     ) AS confirmed_unique_rate,
     COUNT(DISTINCT f.major_key)::BIGINT AS unique_majors,
     COUNT(DISTINCT f.round_key)::BIGINT AS tcas_rounds,
-    COUNT(DISTINCT f.source_file_key)::BIGINT AS source_files,
+    COUNT(DISTINCT f.source_file)::BIGINT AS source_files,
     ROUND(AVG(f.score), 4) AS avg_score,
     COUNT(DISTINCT f.student_key) FILTER (
         WHERE s.tcas_status IN ('สละสิทธิ์', 'สละสิทธิ์ในรอบ 2')
@@ -140,7 +173,7 @@ SELECT
         * 100 / NULLIF(COUNT(DISTINCT f.student_key), 0),
         2
     ) AS confirmed_rate,
-    COUNT(DISTINCT f.source_file_key)::BIGINT AS source_files,
+    COUNT(DISTINCT f.source_file)::BIGINT AS source_files,
     ROUND(AVG(f.score), 4) AS avg_score,
     COUNT(DISTINCT f.student_key) FILTER (
         WHERE s.tcas_status IN (

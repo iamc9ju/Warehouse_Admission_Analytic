@@ -14,7 +14,7 @@ Loader จะรักษา token เดิมของแถวที่มี
 ```bash
 export ADMISSIONS_STUDENT_HASH_SALT="replace-with-a-secret-value"
 DATABASE_URL="postgresql://..." node outputs/etl/load_admissions_all_rounds_to_neon.cjs
-# Apply outputs/sql/warehouse_governance_marts.sql and outputs/sql/decision_support_catalog.sql
+# Apply outputs/sql/warehouse_governance_marts.sql
 npm run data:check-static
 npm test
 ```

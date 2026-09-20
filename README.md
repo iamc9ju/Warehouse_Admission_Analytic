@@ -22,12 +22,12 @@ Excel admissions files
 - `dim_student`
 - `dim_year`
 - `dim_tcas_round`
-- `dim_project`
 - `dim_faculty`
 - `dim_major`
 - `dim_program_type`
 - `dim_tcas_status`
-- `dim_source_file`
+
+`source_file` เก็บเป็น degenerate dimension ใน `fact_admission` โดยตรง เพราะไม่มี attribute อื่นที่ต้องแยกเป็นตาราง
 
 Grain คือหนึ่งแถวต่อหนึ่งตัวเลือกสมัครจาก source workbook และเก็บ `score` ที่ grain นี้โดยตรง
 
@@ -58,10 +58,9 @@ ETL ใช้เลขประจำตัวผู้สมัครเฉพ�
 
 | Path | Purpose |
 |---|---|
-| `outputs/etl/load_admissions_all_rounds_to_neon.cjs` | โหลด dimensions, single fact และ source quality เข้า Neon แบบ idempotent |
+| `outputs/etl/load_admissions_all_rounds_to_neon.cjs` | โหลด dimensions และ single fact เข้า Neon แบบ idempotent |
 | `outputs/sql/admissions_all_rounds_warehouse.sql` | สคีมา dimensions, `fact_admission` และ core views |
 | `outputs/sql/warehouse_governance_marts.sql` | presentation marts สำหรับ Dashboard และ Insights |
-| `outputs/sql/decision_support_catalog.sql` | Business questions, decision insights และ mart contracts ใน Neon |
 | `app/data/repositories/*.ts` | Query แต่ละ domain จาก Neon |
 | `app/data/live-neon-dashboard-adapter.ts` | server-side Neon adapter สำหรับแต่ละหน้า |
 

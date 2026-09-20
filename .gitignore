@@ -42,5 +42,4 @@ next-env.d.ts
 !/outputs/sql/
 /outputs/sql/*
 !/outputs/sql/normalize_dashboard_people_metrics.sql
-!/outputs/sql/decision_support_catalog.sql
 /work/

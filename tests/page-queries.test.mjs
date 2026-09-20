@@ -47,15 +47,14 @@ function fakeClient({ fail, empty } = {}) {
     calls,
     async end() {},
     async query(sql, values = []) {
-      const kind = sql.includes("select distinct academic_year") ? "availableYears"
+      const kind = sql.includes("decision-insights-from-marts") ? "decisionInsights"
+        : sql.includes("select distinct academic_year") ? "availableYears"
         : sql.includes("mart_admissions_executive_summary") ? "years"
         : sql.includes("vw_admission_round_overview") ? "rounds"
         : sql.includes("mart_major_conversion") ? "majorRows"
         : sql.includes("vw_admission_major_status_distribution") ? "majorStatuses"
         : sql.includes("vw_admission_year_status_distribution") ? "statuses"
         : sql.includes("vw_admission_round_status_distribution") ? "roundStatuses"
-        : sql.includes("dw_business_question_catalog") ? "businessQuestions"
-        : sql.includes("mart_decision_insight") ? "decisionInsights"
         : "unknown";
       calls.push({ kind, sql, values });
       assert.notEqual(kind, "unknown", sql);
@@ -70,8 +69,14 @@ function fakeClient({ fail, empty } = {}) {
         majorStatuses: () => filteredYears.map((row) => ({ academic_year: row.year, major_code: "CE", major_name: "Civil", tcas_status: "ยืนยันสิทธิ์", application_choices: row.confirmed, unique_applicants: row.confirmed })),
         statuses: () => filteredYears.map((row) => ({ academic_year: row.year, status_label: "ยืนยันสิทธิ์", choices: row.confirmed, unique_applicants: row.confirmed, share_pct: 10, tone: "green" })),
         roundStatuses: () => filteredYears.map((row) => ({ academic_year: row.year, tcas_round_code: "TCAS1", tcas_round_name: "Portfolio", tcas_status: "ยืนยันสิทธิ์", application_choices: row.confirmed, unique_applicants: row.confirmed })),
-        businessQuestions: () => [{ question_id: "BQ-001", domain: "Demand", question: "Question", mart_object: "mart_major_conversion", metrics: "applicant_count", decision_owner: "Admissions", decision_use: "Plan", quality_gate: "pass" }],
-        decisionInsights: () => [{ insight_id: "DI-001", business_question_id: "BQ-001", priority: 1, category: "Demand", title: "Title", summary: "Summary", mart_object: "mart_major_conversion", metric_label: "Applicants", metric_value: "100", decision: "Decide", recommended_action: "Act", confidence: "High", quality_gate: "pass" }],
+        decisionInsights: () => [
+          { business_question_id: "BQ-001", payload: { academic_year: 2569, major_name: "Civil", applicant_count: 825, confirmed_count: 63, confirmed_rate: 7.64, applicant_change: 10 } },
+          { business_question_id: "BQ-002", payload: { academic_year: 2569, tcas_round_code: "TCAS3", confirmed_applicants: 283, confirmed_rate: 17.47 } },
+          { business_question_id: "BQ-006", payload: { academic_year: 2569, major_name: "Civil", applicant_count: 825, confirmed_count: 63, confirmed_rate: 7.64, applicant_change: 10 } },
+          { business_question_id: "BQ-007", payload: { academic_year: 2569, major_name: "Mechanical", applicant_count: 200, confirmed_count: 20, confirmed_rate: 10, applicant_change: -197 } },
+          { business_question_id: "BQ-008", payload: { academic_year: 2569, major_name: "Logistics", applicant_count: 300, confirmed_count: 40, confirmed_rate: 13.33, applicant_change: 157 } },
+          { business_question_id: "BQ-009", payload: { academic_year: 2569, major_name: "Innovation", applicant_count: 108, confirmed_count: 36, confirmed_rate: 33.33, applicant_change: 5 } },
+        ],
       }[kind]();
       return { rows };
     },
@@ -83,7 +88,7 @@ test("each page queries only live Neon dependencies", async (t) => {
   const expected = {
     overview: ["availableYears", "years", "rounds", "majorRows", "statuses"],
     dashboard: ["availableYears", "years", "rounds", "majorRows", "roundStatuses"],
-    insights: ["availableYears", "years", "rounds", "majorRows", "businessQuestions", "decisionInsights"],
+    insights: ["availableYears", "years", "rounds", "majorRows", "decisionInsights"],
     majors: ["availableYears", "years", "majorRows", "majorStatuses"],
     rounds: ["availableYears", "years", "rounds", "roundStatuses"],
   };

@@ -17,7 +17,7 @@ import { SidebarNavigation } from "../sidebar-navigation";
 type Question = DashboardSnapshot["businessQuestions"][number];
 type Insight = DashboardSnapshot["decisionInsights"][number];
 
-const recommendedQuestionIds = ["BQ-001", /* "BQ-004", "BQ-003", */ "BQ-007", "BQ-008"];
+const recommendedQuestionIds = ["BQ-001", "BQ-007", "BQ-008"];
 const visibleCategories = [
   "ทั้งหมด",
   // "แนะนำ",
@@ -29,28 +29,13 @@ const visibleCategories = [
 
 const thaiRecommendedActions: Record<string, string> = {
   "BQ-002": "เพิ่มทรัพยากรด้านการสื่อสารก่อนและระหว่างช่วงยืนยันสิทธิ์ TCAS3",
-  // "BQ-003": "สื่อสารเกณฑ์คุณสมบัติให้ชัดเจนและติดตามสาขาที่มี demand สูง",
-  // "BQ-004": "แยกแผนสร้าง demand ออกจากแผนเพิ่ม confirmation conversion",
   "BQ-006": "ทบทวน quota และ seat allocation ควบคู่กับการติดตามหลังได้รับ offer",
   "BQ-007": "ทบทวนข้อความของหลักสูตรและเปรียบเทียบ positioning กับคู่แข่ง",
   "BQ-008": "สื่อสารผลลัพธ์ด้านโลจิสติกส์และรักษาข้อความที่สร้าง conversion",
   "BQ-009": "เพิ่ม awareness แบบเจาะกลุ่ม โดยรักษาความตรงกับผู้สมัคร",
-  // "BQ-010": "เสริมการสื่อสารหลัง shortlist และลดความไม่แน่นอนก่อนยืนยันสิทธิ์",
-  // "BQ-011": "เพิ่ม communication และทีมติดตามในช่วงยืนยันสิทธิ์ TCAS3",
-  // "BQ-012": "ย้ายการสื่อสารเรื่องความเหมาะสมของหลักสูตรให้เร็วขึ้น",
-  // "BQ-013": "เพิ่มตัวกรองประเภทหลักสูตร และเปรียบเทียบด้านราคาและเวลาเรียน",
 };
 
-const rateQuestionIds = new Set(["BQ-001", "BQ-002", "BQ-006", "BQ-009" /* , "BQ-010", "BQ-011" */]);
-
-const commentedQuestionIds = new Set([
-  "BQ-003",
-  "BQ-004",
-  "BQ-010",
-  "BQ-011",
-  "BQ-012",
-  "BQ-013",
-]);
+const rateQuestionIds = new Set(["BQ-001", "BQ-002", "BQ-006", "BQ-009"]);
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
@@ -70,10 +55,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
   const { businessQuestions, decisionInsights, majorRows, rounds, years } = snapshot;
   const latestYear = Math.max(...years.map((year) => year.year));
   const latestYearOverview = years.find((year) => year.year === latestYear);
-  const activeBusinessQuestions = useMemo(
-    () => businessQuestions.filter((q) => !commentedQuestionIds.has(q.id)),
-    [businessQuestions]
-  );
+  const activeBusinessQuestions = businessQuestions;
   const [selectedQuestionId, setSelectedQuestionId] = useState("BQ-001");
   const [activeCategory, setActiveCategory] = useState("ทั้งหมด");
   const [query, setQuery] = useState("");
@@ -112,11 +94,9 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
   );
   const answerMajor = selectedMajor ?? defaultMajor;
   const isPrimaryAnswer = selectedQuestion.id === "BQ-001";
-  const selectedRound = selectedQuestion.id === "BQ-010"
-    ? rounds.find((round) => round.year === latestYear && round.code === "TCAS1")
-    : ["BQ-002", "BQ-011"].includes(selectedQuestion.id)
-      ? rounds.find((round) => round.year === latestYear && round.code === "TCAS3")
-      : undefined;
+  const selectedRound = selectedQuestion.id === "BQ-002"
+    ? [...rounds.filter((round) => round.year === latestYear)].sort((a, b) => b.confirmed - a.confirmed)[0]
+    : undefined;
   const confirmedCount = selectedRound ? selectedRound.confirmed : (answerMajor?.confirmed ?? 0);
   const applicantsCount = selectedRound ? selectedRound.applicants : (answerMajor?.applicants ?? 0);
   const eligibleCount = selectedRound
