@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { DashboardSnapshot, Year } from "./data/dashboard-types";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { OverviewPageData } from "./data/page-data-types";
 import { SidebarNavigation } from "./sidebar-navigation";
 import { DonutChartCard, getMajorColor, tcasColors } from "./donut-chart-card";
 
@@ -9,17 +10,24 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
-export function OverviewView({ snapshot }: { snapshot: DashboardSnapshot }) {
+export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
   const { majorRows, rounds, statuses, years } = snapshot;
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const selectableYears = useMemo(
-    () => [...years].sort((first, second) => second.year - first.year),
-    [years]
+    () => snapshot.availableYears.map((year) => ({ year })).sort((first, second) => second.year - first.year),
+    [snapshot.availableYears]
   );
-  const [selectedYear, setSelectedYear] = useState<Year>(() => selectableYears[0]?.year ?? 0);
+  const selectedYear = snapshot.selectedYear;
+  const setSelectedYear = (year: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("year", String(year));
+    router.push(`/?${params.toString()}`, { scroll: false });
+  };
   const [majorQuery, setMajorQuery] = useState("");
 
-  const current = years.find((year) => year.year === selectedYear) ?? selectableYears[0];
+  const current = years.find((year) => year.year === selectedYear) ?? years[0];
 
   const resignedCount = useMemo(() => {
     return statuses
@@ -121,7 +129,7 @@ export function OverviewView({ snapshot }: { snapshot: DashboardSnapshot }) {
             <div className="hero-controls">
               <label className="year-select">
                 <span>ปีการศึกษา</span>
-                <select value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value) as Year)}>
+                <select value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value))}>
                   {selectableYears.map((year) => (
                     <option value={year.year} key={year.year}>
                       {year.year}

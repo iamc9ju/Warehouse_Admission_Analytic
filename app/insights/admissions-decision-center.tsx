@@ -11,6 +11,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import type { DashboardSnapshot } from "../data/dashboard-types";
+import type { PageData } from "../data/page-data-types";
 import { SidebarNavigation } from "../sidebar-navigation";
 import {
   ELIGIBLE_STATUS_LABELS,
@@ -77,7 +78,7 @@ function confidenceLabel(confidence: Insight["confidence"]) {
   return "ความเชื่อมั่นต่ำ";
 }
 
-export function AdmissionsDecisionCenter({ snapshot }: { snapshot: DashboardSnapshot }) {
+export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"insights"> }) {
   const { businessQuestions, decisionInsights, majorRows, roundStatuses, rounds, statuses, warehouseHealth, years } = snapshot;
   const latestYear = Math.max(...years.map((year) => year.year));
   const latestYearOverview = years.find((year) => year.year === latestYear);

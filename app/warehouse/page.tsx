@@ -1,8 +1,8 @@
 import { SidebarNavigation } from "../sidebar-navigation";
-import { loadDashboardSnapshot } from "../data/load-dashboard-snapshot";
+import { loadWarehousePageData } from "../data/load-dashboard-snapshot";
 
 export default async function WarehousePage() {
-  const snapshot = await loadDashboardSnapshot();
+  const snapshot = await loadWarehousePageData();
   const { dataCatalogRows, etlValidationChecks, lineageEdges, warehouseQueries, warehouseSnapshot } = snapshot;
 
   return (

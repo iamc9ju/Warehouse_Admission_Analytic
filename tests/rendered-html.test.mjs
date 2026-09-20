@@ -164,6 +164,27 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.match(insightsHtml, /mart_major_opportunity/);
 });
 
+test("Overview loads the requested year while Dashboard retains all years", async () => {
+  const snapshot = JSON.parse(await readFile(new URL("../app/data/generated/warehouse-dashboard-snapshot.json", import.meta.url), "utf8"));
+  for (const year of [2567, 2568]) {
+    const response = await renderPath(`/?year=${year}`);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    const overview = snapshot.years.find((row) => row.year === year);
+    assert.match(html, new RegExp(`เฉพาะปี ${year}`));
+    assert.match(html, new RegExp(overview.applicants.toLocaleString("en-US")));
+    assert.match(html, new RegExp(overview.confirmed.toLocaleString("en-US")));
+    assert.match(html, /value="2567"/);
+    assert.match(html, /value="2568"/);
+    assert.match(html, /value="2569"/);
+  }
+  const response = await renderPath("/dashboard?year=2567");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /data-year-count="3"/);
+  assert.match(html, /เปรียบเทียบทุกปี/);
+});
+
 test("keeps dashboard copy tied to real warehouse data", async () => {
   const page = await readFile(new URL("../app/overview-view.tsx", import.meta.url), "utf8");
   const analyticsPage = await readFile(new URL("../app/dashboard/analytics-dashboard.tsx", import.meta.url), "utf8");

@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { PresentationChartLineIcon } from "@heroicons/react/24/outline";
-import type { DashboardSnapshot, MajorRow, Year, YearOverview } from "../data/dashboard-types";
+import type { MajorRow, Year, YearOverview } from "../data/dashboard-types";
+import type { PageData } from "../data/page-data-types";
 import { SidebarNavigation } from "../sidebar-navigation";
 import { calculateEligibleFromStatusRows } from "../data/eligible-calculator";
 import { DonutChartCard, getMajorColor, tcasColors } from "../donut-chart-card";
@@ -829,7 +830,7 @@ function Tcas3ScoreScatterPlot({
   );
 }
 
-export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: DashboardSnapshot }) {
+export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<"dashboard"> }) {
   const { majorRows, rounds, roundStatuses, statuses, warehouseHealth, years } = snapshot;
   const sortedOverviews = [...years].sort((first, second) => first.year - second.year);
   const availableYears = sortedOverviews.map((overview) => overview.year);

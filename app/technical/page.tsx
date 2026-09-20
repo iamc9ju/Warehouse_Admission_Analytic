@@ -1,12 +1,12 @@
 import { SidebarNavigation } from "../sidebar-navigation";
-import { loadDashboardSnapshot } from "../data/load-dashboard-snapshot";
+import { loadTechnicalPageData } from "../data/load-dashboard-snapshot";
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
 export default async function TechnicalPage() {
-  const snapshot = await loadDashboardSnapshot();
+  const snapshot = await loadTechnicalPageData();
   const { warehouseHealth, warehouseSnapshot } = snapshot;
 
   return (
