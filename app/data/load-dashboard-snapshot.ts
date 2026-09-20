@@ -8,7 +8,12 @@ const snapshotRequests = new Map<string, Promise<LoadedPageSnapshot>>();
 async function loadFreshPage(page: DashboardPage, year?: number): Promise<LoadedPageSnapshot> {
   const databaseUrl = process.env.DATABASE_URL?.trim();
   if (!databaseUrl) throw new Error("DATABASE_URL is required because the dashboard runs in Neon-only mode");
-  return loadLiveNeonSnapshot(databaseUrl, page, year);
+  try {
+    return await loadLiveNeonSnapshot(databaseUrl, page, year);
+  } catch (error) {
+    console.error(`Failed to load live Neon data for ${page}`, error);
+    throw error;
+  }
 }
 
 async function loadPageSnapshot(page: DashboardPage, year?: number): Promise<LoadedPageSnapshot> {

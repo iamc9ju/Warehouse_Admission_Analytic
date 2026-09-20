@@ -1,6 +1,6 @@
 import type { QueryClient } from "../db/neon-client";
 import type { RoundRow, RoundStatusRow } from "../dashboard-types";
-import { numberValue, optionalRows, requiredRows } from "./query-helpers";
+import { numberValue, requiredRows } from "./query-helpers";
 
 export async function getRoundOverview(client: QueryClient, year?: number): Promise<RoundRow[]> {
   const rows = await requiredRows(client, `
@@ -24,14 +24,14 @@ export async function getRoundOverview(client: QueryClient, year?: number): Prom
   }));
 }
 
-export async function getRoundStatuses(client: QueryClient, year?: number): Promise<RoundStatusRow[] | undefined> {
-  const rows = await optionalRows(client, `
+export async function getRoundStatuses(client: QueryClient, year?: number): Promise<RoundStatusRow[]> {
+  const rows = await requiredRows(client, `
     select academic_year, tcas_round_code, tcas_round_name, tcas_status, application_choices, unique_applicants
     from admissions_dw.vw_admission_round_status_distribution
     ${year === undefined ? "" : "where academic_year = $1"}
     order by academic_year, tcas_round_code, tcas_status
   `, year);
-  return rows?.map((row) => ({
+  return rows.map((row) => ({
     year: numberValue(row.academic_year, "academic_year"),
     code: String(row.tcas_round_code),
     name: String(row.tcas_round_name),
