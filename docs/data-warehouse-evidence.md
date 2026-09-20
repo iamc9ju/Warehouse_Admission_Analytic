@@ -24,14 +24,10 @@
 หนึ่งตัวเลือกสมัคร ตารางนี้เชื่อม `dim_student`, `dim_year`, round, project, faculty,
 major, program type, status และ source file dimensions
 
-## Dashboard Snapshot Contract
+## Live Dashboard Contract
 
-Dashboard artifact สร้างจาก `warehouse/query-results/*.tsv` ซึ่ง export จาก views/marts
-ที่ aggregate จาก `fact_admission` เท่านั้น Output คือ
-`app/data/generated/warehouse-dashboard-snapshot.json`
-
-Primary runtime คือ server-side Neon query และ fallback คือ generated artifact
-โดยทั้งสองเส้นทางใช้ shape เดียวกัน
+Dashboard ใช้ server-side TypeScript repositories query views/marts ใน Neon โดยตรง
+ไม่มี TSV หรือ JSON fallback หาก Neon ไม่พร้อมระบบจะ fail อย่างชัดเจนและไม่แสดงข้อมูลเก่า
 
 ## Validation Evidence
 

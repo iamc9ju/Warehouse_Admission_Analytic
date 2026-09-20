@@ -9,10 +9,6 @@ DROP TABLE IF EXISTS admissions_dw.fact_admission_round_overview CASCADE;
 DROP TABLE IF EXISTS admissions_dw.fact_website_analytics_monthly CASCADE;
 DROP TABLE IF EXISTS admissions_dw.fact_social_media_monthly_summary CASCADE;
 DROP TABLE IF EXISTS admissions_dw.admission_round_data_quality CASCADE;
--- The legacy source-quality table used round_key/unique_applicants and an
--- incompatible PII-removal text column. It is fully derived, so rebuild it
--- with the single-fact quality grain before loading the current snapshot.
-DROP TABLE IF EXISTS admissions_dw.admission_round_source_data_quality CASCADE;
 
 DROP TABLE IF EXISTS admissions_dw.dim_website_channel CASCADE;
 DROP TABLE IF EXISTS admissions_dw.dim_website_landing_page CASCADE;
@@ -95,21 +91,6 @@ CREATE TABLE IF NOT EXISTS admissions_dw.fact_admission (
     CONSTRAINT fact_admission_token_format CHECK (application_token ~ '^[0-9a-f]{64}$')
 );
 
-CREATE TABLE IF NOT EXISTS admissions_dw.admission_round_source_data_quality (
-    source_file TEXT PRIMARY KEY,
-    academic_year INTEGER NOT NULL,
-    tcas_round_code TEXT NOT NULL,
-    tcas_round_name TEXT NOT NULL,
-    source_rows INTEGER NOT NULL CHECK (source_rows >= 0),
-    unique_students INTEGER NOT NULL CHECK (unique_students >= 0),
-    duplicate_application_rows INTEGER NOT NULL CHECK (duplicate_application_rows >= 0),
-    missing_score_rows INTEGER NOT NULL CHECK (missing_score_rows >= 0),
-    missing_priority_rows INTEGER NOT NULL CHECK (missing_priority_rows >= 0),
-    missing_major_rows INTEGER NOT NULL CHECK (missing_major_rows >= 0),
-    pii_exported_columns INTEGER NOT NULL DEFAULT 0 CHECK (pii_exported_columns = 0),
-    loaded_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
 CREATE INDEX IF NOT EXISTS idx_fact_admission_year ON admissions_dw.fact_admission (year_key);
 CREATE INDEX IF NOT EXISTS idx_fact_admission_round ON admissions_dw.fact_admission (round_key);
 CREATE INDEX IF NOT EXISTS idx_fact_admission_major ON admissions_dw.fact_admission (major_key);
@@ -130,7 +111,17 @@ SELECT
     COUNT(DISTINCT f.major_key)::BIGINT AS unique_majors,
     COUNT(DISTINCT f.round_key)::BIGINT AS tcas_rounds,
     COUNT(DISTINCT f.source_file_key)::BIGINT AS source_files,
-    ROUND(AVG(f.score), 4) AS avg_score
+    ROUND(AVG(f.score), 4) AS avg_score,
+    COUNT(DISTINCT f.student_key) FILTER (
+        WHERE s.tcas_status IN ('สละสิทธิ์', 'สละสิทธิ์ในรอบ 2')
+    )::BIGINT AS resigned_unique_applicants,
+    COUNT(DISTINCT f.student_key) FILTER (
+        WHERE s.tcas_status IN (
+            'ยืนยันสิทธิ์', 'สละสิทธิ์', 'สละสิทธิ์ในรอบ 2',
+            'ยืนยันที่อื่นแล้ว', 'ไม่ใช้สิทธิ์', 'ผ่านการคัดเลือก',
+            'ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2'
+        )
+    )::BIGINT AS eligible_unique_applicants
 FROM admissions_dw.fact_admission f
 JOIN admissions_dw.dim_year y ON y.year_key = f.year_key
 JOIN admissions_dw.dim_tcas_status s ON s.status_key = f.status_key
@@ -150,7 +141,14 @@ SELECT
         2
     ) AS confirmed_rate,
     COUNT(DISTINCT f.source_file_key)::BIGINT AS source_files,
-    ROUND(AVG(f.score), 4) AS avg_score
+    ROUND(AVG(f.score), 4) AS avg_score,
+    COUNT(DISTINCT f.student_key) FILTER (
+        WHERE s.tcas_status IN (
+            'ยืนยันสิทธิ์', 'สละสิทธิ์', 'สละสิทธิ์ในรอบ 2',
+            'ยืนยันที่อื่นแล้ว', 'ไม่ใช้สิทธิ์', 'ผ่านการคัดเลือก',
+            'ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2'
+        )
+    )::BIGINT AS eligible_applicants
 FROM admissions_dw.fact_admission f
 JOIN admissions_dw.dim_year y ON y.year_key = f.year_key
 JOIN admissions_dw.dim_tcas_round r ON r.round_key = f.round_key
@@ -187,19 +185,44 @@ JOIN admissions_dw.dim_tcas_round r ON r.round_key = f.round_key
 JOIN admissions_dw.dim_tcas_status s ON s.status_key = f.status_key
 GROUP BY y.academic_year, r.tcas_round_code, r.tcas_round_name, s.tcas_status;
 
-CREATE OR REPLACE VIEW admissions_dw.vw_admission_source_quality AS
+CREATE OR REPLACE VIEW admissions_dw.vw_admission_year_status_distribution AS
 SELECT
-    q.*,
+    y.academic_year,
+    s.tcas_status,
+    COUNT(*)::BIGINT AS application_choices,
+    COUNT(DISTINCT f.student_key)::BIGINT AS unique_applicants,
+    ROUND(
+        COUNT(*)::NUMERIC * 100
+        / NULLIF(SUM(COUNT(*)) OVER (PARTITION BY y.academic_year), 0),
+        2
+    ) AS choice_share_pct,
     CASE
-        WHEN q.source_rows > 0
-         AND q.duplicate_application_rows = 0
-         AND q.missing_score_rows = 0
-         AND q.missing_major_rows = 0
-         AND q.pii_exported_columns = 0
-        THEN 'pass'
-        ELSE 'review'
-    END AS quality_status
-FROM admissions_dw.admission_round_source_data_quality q;
+        WHEN s.tcas_status = 'ยืนยันสิทธิ์' THEN 'orange'
+        WHEN s.tcas_status = 'ไม่ผ่านการคัดเลือก' THEN 'green'
+        WHEN s.tcas_status = 'ผ่านการคัดเลือกในลำดับที่ดีกว่า' THEN 'amber'
+        WHEN s.tcas_status IN ('ผู้สมัคร', 'ยืนยันที่อื่นแล้ว') THEN 'blue'
+        WHEN s.tcas_status IN ('สละสิทธิ์', 'สละสิทธิ์ในรอบ 2') THEN 'red'
+        WHEN s.tcas_status = 'ไม่เข้าระบบมาดำเนินการใดๆ' THEN 'purple'
+        ELSE 'muted'
+    END AS tone
+FROM admissions_dw.fact_admission f
+JOIN admissions_dw.dim_year y ON y.year_key = f.year_key
+JOIN admissions_dw.dim_tcas_status s ON s.status_key = f.status_key
+GROUP BY y.academic_year, s.tcas_status;
+
+CREATE OR REPLACE VIEW admissions_dw.vw_admission_major_status_distribution AS
+SELECT
+    y.academic_year,
+    m.major_id AS major_code,
+    m.major_name,
+    s.tcas_status,
+    COUNT(*)::BIGINT AS application_choices,
+    COUNT(DISTINCT f.student_key)::BIGINT AS unique_applicants
+FROM admissions_dw.fact_admission f
+JOIN admissions_dw.dim_year y ON y.year_key = f.year_key
+JOIN admissions_dw.dim_major m ON m.major_key = f.major_key
+JOIN admissions_dw.dim_tcas_status s ON s.status_key = f.status_key
+GROUP BY y.academic_year, m.major_id, m.major_name, s.tcas_status;
 
 CREATE OR REPLACE VIEW admissions_dw.mart_tcas_year_summary AS
 SELECT

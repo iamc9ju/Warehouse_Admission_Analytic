@@ -13,8 +13,8 @@ Excel admissions files
   -> conformed dimensions
   -> fact_admission (one application choice, includes score)
   -> governed views and marts
-  -> generated dashboard artifact
-  -> web dashboard
+  -> server-side TypeScript repositories
+  -> web dashboard (Neon-only)
 ```
 
 `fact_admission` เป็น physical fact table เพียงตารางเดียว และมี foreign key ไปยัง:
@@ -58,22 +58,17 @@ ETL ใช้เลขประจำตัวผู้สมัครเฉพ�
 
 | Path | Purpose |
 |---|---|
-| `outputs/etl/aggregate_admissions_all_rounds.py` | อ่านไฟล์ปี 2567-2569 สร้าง PII-safe fact staging และ dashboard query results |
 | `outputs/etl/load_admissions_all_rounds_to_neon.cjs` | โหลด dimensions, single fact และ source quality เข้า Neon แบบ idempotent |
 | `outputs/sql/admissions_all_rounds_warehouse.sql` | สคีมา dimensions, `fact_admission` และ core views |
-| `outputs/sql/warehouse_governance_marts.sql` | catalog, lineage, quality scorecard และ presentation marts |
-| `warehouse/query-results/*.tsv` | query-result contract สำหรับ generated dashboard artifact |
-| `scripts/build-dashboard-snapshot.mjs` | สร้าง dashboard artifact |
-| `scripts/validate-dashboard-snapshot.mjs` | ตรวจ coverage, score, PII boundary และ single-fact contract |
-| `app/data/live-neon-dashboard-adapter.ts` | live server-side Neon adapter พร้อม artifact fallback |
+| `outputs/sql/warehouse_governance_marts.sql` | presentation marts สำหรับ Dashboard และ Insights |
+| `outputs/sql/decision_support_catalog.sql` | Business questions, decision insights และ mart contracts ใน Neon |
+| `app/data/repositories/*.ts` | Query แต่ละ domain จาก Neon |
+| `app/data/live-neon-dashboard-adapter.ts` | server-side Neon adapter สำหรับแต่ละหน้า |
 
 ## Local workflow
 
 ```bash
 export ADMISSIONS_STUDENT_HASH_SALT="replace-with-a-secret-value"
-python3 outputs/etl/aggregate_admissions_all_rounds.py
-npm run data:build
-npm run data:validate
 npm run data:check-static
 npm run build
 ```
@@ -94,5 +89,5 @@ DATABASE_URL="postgresql://..." node outputs/etl/load_admissions_all_rounds_to_n
 | 2568 | 4,853 | 3,597 | 528 | 14.68% |
 | 2569 | 4,579 | 3,443 | 545 | 15.83% |
 
-Dashboard runtime ใช้ Neon marts ฝั่ง server เป็น primary และใช้ generated artifact เป็น fallback
-โดยไม่ส่ง database credentials ไปยัง browser
+Dashboard runtime ใช้ Neon marts ฝั่ง server เท่านั้น โดยไม่ส่ง database credentials ไปยัง browser
+หากไม่ได้กำหนด `DATABASE_URL` หรือ Neon ใช้งานไม่ได้ หน้าเว็บจะแสดงข้อผิดพลาดแทนข้อมูลเก่า

@@ -29,12 +29,6 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
 
   const current = years.find((year) => year.year === selectedYear) ?? years[0];
 
-  const resignedCount = useMemo(() => {
-    return statuses
-      .filter((s) => s.year === selectedYear && (s.label === "สละสิทธิ์" || s.label === "สละสิทธิ์ในรอบ 2"))
-      .reduce((sum, s) => sum + s.choices, 0);
-  }, [statuses, selectedYear]);
-
   const statCards = [
     {
       name: `ผู้สมัครไม่ซ้ำ (${selectedYear})`,
@@ -50,7 +44,7 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
     },
     {
       name: `ผู้สละสิทธิ์ (${selectedYear})`,
-      value: formatNumber(resignedCount),
+      value: formatNumber(current.resigned),
       change: `เฉพาะปี ${selectedYear}`,
       changeType: "neutral",
     },
@@ -63,37 +57,38 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
   ];
 
   const tcasRoundSlices = useMemo(() => {
-    const map = new Map<string, { code: string; name: string; applicants: number }>();
+    const map = new Map<string, { code: string; name: string; choices: number }>();
     rounds
       .filter((r) => r.year === selectedYear)
       .forEach((r) => {
-        const existing = map.get(r.code) || { code: r.code, name: r.name, applicants: 0 };
-        existing.applicants += r.applicants;
+        const existing = map.get(r.code) || { code: r.code, name: r.name, choices: 0 };
+        existing.choices += r.choices;
         map.set(r.code, existing);
       });
     return Array.from(map.values())
       .sort((a, b) => a.code.localeCompare(b.code))
       .map((item) => ({
         label: `${item.code} — ${item.name}`,
-        value: item.applicants,
+        value: item.choices,
         color: tcasColors[item.code] || "#666666",
       }));
   }, [rounds, selectedYear]);
 
   const majorSlices = useMemo(() => {
-    const map = new Map<string, { code: string; name: string; applicants: number }>();
+    const map = new Map<string, { code: string; name: string; choices: number }>();
     majorRows
       .filter((m) => m.year === selectedYear)
       .forEach((m) => {
-        const existing = map.get(m.code) || { code: m.code, name: m.name, applicants: 0 };
-        existing.applicants += m.applicants;
-        map.set(m.code, existing);
+        const key = `${m.code}::${m.name}`;
+        const existing = map.get(key) || { code: m.code, name: m.name, choices: 0 };
+        existing.choices += m.choices;
+        map.set(key, existing);
       });
     return Array.from(map.values())
-      .sort((a, b) => b.applicants - a.applicants)
+      .sort((a, b) => b.choices - a.choices)
       .map((item, idx) => ({
         label: item.name,
-        value: item.applicants,
+        value: item.choices,
         color: getMajorColor(idx),
       }));
   }, [majorRows, selectedYear]);
@@ -163,19 +158,19 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
               }}
             >
               <DonutChartCard
-                title={`สัดส่วนผู้สมัครปี ${selectedYear} (TCAS 4 รอบ)`}
-                subtitle={`จำนวนผู้สมัครปีการศึกษา ${selectedYear} แยกตามรอบ TCAS 1 - 4`}
+                title={`สัดส่วนรายการสมัครปี ${selectedYear} (TCAS 4 รอบ)`}
+                subtitle={`จำนวนตัวเลือกสมัครปีการศึกษา ${selectedYear} แยกตามรอบ TCAS 1 - 4`}
                 slices={tcasRoundSlices}
                 kicker={`YEAR ${selectedYear} BREAKDOWN`}
-                centerLabel={`ผู้สมัครปี ${selectedYear}`}
+                centerLabel={`รายการสมัครปี ${selectedYear}`}
                 centerSubtext={`100% (ปี ${selectedYear})`}
               />
               <DonutChartCard
-                title={`สัดส่วนผู้สมัครปี ${selectedYear} (ทุกสาขาวิชา)`}
-                subtitle={`จำนวนผู้สมัครปีการศึกษา ${selectedYear} แยกตามสาขาวิชา`}
+                title={`สัดส่วนรายการสมัครปี ${selectedYear} (ทุกสาขาวิชา)`}
+                subtitle={`จำนวนตัวเลือกสมัครปีการศึกษา ${selectedYear} แยกตามสาขาวิชา`}
                 slices={majorSlices}
                 kicker={`YEAR ${selectedYear} BREAKDOWN`}
-                centerLabel={`ผู้สมัครปี ${selectedYear}`}
+                centerLabel={`รายการสมัครปี ${selectedYear}`}
                 centerSubtext={`100% (ปี ${selectedYear})`}
               />
             </section>

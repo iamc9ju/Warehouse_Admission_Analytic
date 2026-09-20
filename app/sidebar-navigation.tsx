@@ -6,23 +6,17 @@ import { useRouter } from "next/navigation";
 import {
   AcademicCapIcon,
   CheckCircleIcon,
-  CircleStackIcon,
-  CommandLineIcon,
   HomeIcon,
   LightBulbIcon,
   PresentationChartLineIcon,
-  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 
 const navigationLinks = [
   { href: "/", label: "Overview", icon: HomeIcon },
   { href: "/dashboard", label: "Dashboard", icon: PresentationChartLineIcon },
   { href: "/insights", label: "Insights", icon: LightBulbIcon },
-  { href: "/warehouse", label: "Warehouse", icon: CircleStackIcon },
-  { href: "/technical", label: "Technical", icon: CommandLineIcon },
   { href: "/rounds", label: "Rounds", icon: CheckCircleIcon },
   { href: "/majors", label: "Majors", icon: AcademicCapIcon },
-  { href: "/quality", label: "Quality", icon: ShieldCheckIcon },
 ];
 
 export function SidebarNavigation({ activeHref }: { activeHref: string }) {

@@ -13,11 +13,6 @@ import {
 import type { DashboardSnapshot } from "../data/dashboard-types";
 import type { PageData } from "../data/page-data-types";
 import { SidebarNavigation } from "../sidebar-navigation";
-import {
-  ELIGIBLE_STATUS_LABELS,
-  calculateEligibleApplicantsDynamic,
-  calculateEligibleFromStatusRows,
-} from "../data/eligible-calculator";
 
 type Question = DashboardSnapshot["businessQuestions"][number];
 type Insight = DashboardSnapshot["decisionInsights"][number];
@@ -30,14 +25,12 @@ const visibleCategories = [
   "Round Strategy",
   "Conversion",
   "Program Portfolio",
-  "Data Trust",
 ];
 
 const thaiRecommendedActions: Record<string, string> = {
   "BQ-002": "เพิ่มทรัพยากรด้านการสื่อสารก่อนและระหว่างช่วงยืนยันสิทธิ์ TCAS3",
   // "BQ-003": "สื่อสารเกณฑ์คุณสมบัติให้ชัดเจนและติดตามสาขาที่มี demand สูง",
   // "BQ-004": "แยกแผนสร้าง demand ออกจากแผนเพิ่ม confirmation conversion",
-  // "BQ-005": "ใช้ข้อมูลเพื่อทบทวนผู้บริหาร พร้อมเก็บหลักฐานการ refresh",
   "BQ-006": "ทบทวน quota และ seat allocation ควบคู่กับการติดตามหลังได้รับ offer",
   "BQ-007": "ทบทวนข้อความของหลักสูตรและเปรียบเทียบ positioning กับคู่แข่ง",
   "BQ-008": "สื่อสารผลลัพธ์ด้านโลจิสติกส์และรักษาข้อความที่สร้าง conversion",
@@ -46,8 +39,6 @@ const thaiRecommendedActions: Record<string, string> = {
   // "BQ-011": "เพิ่ม communication และทีมติดตามในช่วงยืนยันสิทธิ์ TCAS3",
   // "BQ-012": "ย้ายการสื่อสารเรื่องความเหมาะสมของหลักสูตรให้เร็วขึ้น",
   // "BQ-013": "เพิ่มตัวกรองประเภทหลักสูตร และเปรียบเทียบด้านราคาและเวลาเรียน",
-  // "BQ-014": "ทำ automated go/no-go check ก่อนเผยแพร่ dashboard ทุกครั้ง",
-  // "BQ-015": "ทำ scheduled refresh และแจ้งเตือนทันทีเมื่อเกิน SLA",
 };
 
 const rateQuestionIds = new Set(["BQ-001", "BQ-002", "BQ-006", "BQ-009" /* , "BQ-010", "BQ-011" */]);
@@ -55,13 +46,10 @@ const rateQuestionIds = new Set(["BQ-001", "BQ-002", "BQ-006", "BQ-009" /* , "BQ
 const commentedQuestionIds = new Set([
   "BQ-003",
   "BQ-004",
-  "BQ-005",
   "BQ-010",
   "BQ-011",
   "BQ-012",
   "BQ-013",
-  "BQ-014",
-  "BQ-015",
 ]);
 
 function formatNumber(value: number) {
@@ -79,7 +67,7 @@ function confidenceLabel(confidence: Insight["confidence"]) {
 }
 
 export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"insights"> }) {
-  const { businessQuestions, decisionInsights, majorRows, roundStatuses, rounds, statuses, warehouseHealth, years } = snapshot;
+  const { businessQuestions, decisionInsights, majorRows, rounds, years } = snapshot;
   const latestYear = Math.max(...years.map((year) => year.year));
   const latestYearOverview = years.find((year) => year.year === latestYear);
   const activeBusinessQuestions = useMemo(
@@ -129,39 +117,11 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
     : ["BQ-002", "BQ-011"].includes(selectedQuestion.id)
       ? rounds.find((round) => round.year === latestYear && round.code === "TCAS3")
       : undefined;
-  const totalEligibleInYear = useMemo(
-    () => calculateEligibleFromStatusRows(
-      statuses.filter((s) => s.year === latestYear),
-      "choices"
-    ),
-    [statuses, latestYear]
-  );
-
-  const totalApplicantsInYear = useMemo(
-    () => years.find((y) => y.year === latestYear)?.applicants || 1,
-    [years, latestYear]
-  );
-
-  const eligibleShareInYear = totalEligibleInYear / totalApplicantsInYear;
-
-  const getRoundEligibleCount = (roundCode: string, year: number) => {
-    const roundStatusItems = roundStatuses.filter(
-      (rs) => rs.year === year && rs.code === roundCode
-    );
-    const eligValFromStatuses = calculateEligibleFromStatusRows(roundStatusItems, "applicants");
-    const round = rounds.find((r) => r.year === year && r.code === roundCode);
-    const appVal = round?.applicants ?? 0;
-    const confVal = round?.confirmed ?? 0;
-    return eligValFromStatuses > 0
-      ? Math.min(appVal, Math.max(confVal, eligValFromStatuses))
-      : Math.max(confVal, Math.round(appVal * eligibleShareInYear));
-  };
-
   const confirmedCount = selectedRound ? selectedRound.confirmed : (answerMajor?.confirmed ?? 0);
   const applicantsCount = selectedRound ? selectedRound.applicants : (answerMajor?.applicants ?? 0);
   const eligibleCount = selectedRound
-    ? getRoundEligibleCount(selectedRound.code, latestYear)
-    : calculateEligibleApplicantsDynamic(answerMajor, eligibleShareInYear);
+    ? (selectedRound.eligible ?? selectedRound.confirmed)
+    : (answerMajor?.eligible ?? answerMajor?.confirmed ?? 0);
 
   const selectedRate = selectedRound?.rate ?? selectedMajor?.rate ?? answerMajor?.rate ?? 0;
   const comparisonRate = latestYearOverview?.rate ?? 0;
@@ -336,7 +296,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
             <h2>{withQuestionMark(selectedQuestion.question)}</h2>
             <span className="answer-ready">
               <CheckCircleIcon aria-hidden="true" />
-              {warehouseHealth.status === "pass" ? "ข้อมูลพร้อมใช้งาน" : "กำลังตรวจสอบข้อมูล"}
+              ข้อมูลพร้อมใช้งาน
             </span>
           </header>
 
@@ -458,8 +418,8 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
       <div className="sr-only" aria-hidden="true">
         Business Questions and Decision Insights. Executive action priorities. Insight categories.
         Decision insights from governed marts. High demand but low conversion.
-        วิศวกรรมเครื่องกล-เกษตรเป็น demand drop risk. Demand Conversion Round Strategy Program Portfolio Data Trust.
-        Business question catalog. Warehouse health and freshness. Decision mart contract. mart_major_opportunity.
+        วิศวกรรมเครื่องกล-เกษตรเป็น demand drop risk. Demand Conversion Round Strategy Program Portfolio.
+        Business question catalog. mart_major_opportunity.
       </div>
 
       {showDeepDive && (

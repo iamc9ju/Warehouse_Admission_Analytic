@@ -40,26 +40,8 @@ from admissions_dw.mart_major_conversion
 order by academic_year, applicant_count desc;
 ```
 
-## Quality Scorecard
+## Runtime
 
-```sql
-select metric_name, metric_value, source_object, validation_rule
-from admissions_dw.vw_dw_quality_scorecard
-order by metric_name;
-```
-
-Critical checks are source rows 13,799, source files 16, missing score 0,
-missing major 0, exported direct identity/contact columns 0 and physical fact tables 1.
-
-## Export
-
-Export query results to `warehouse/query-results/*.tsv`, then run:
-
-```bash
-npm run data:build
-npm run data:validate
-```
-
-Generated output: `app/data/generated/warehouse-dashboard-snapshot.json`
-
-The query results and artifact must never include direct identity/contact fields or hash salt.
+Server-side TypeScript repositories query these live Neon views directly. There is no TSV or JSON
+dashboard fallback. `DATABASE_URL` is required at runtime, and direct identity/contact fields or
+the hash salt must never be selected by dashboard queries.

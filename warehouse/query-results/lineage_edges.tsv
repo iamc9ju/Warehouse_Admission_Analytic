@@ -1,7 +1,0 @@
-from_object	to_object	transform
-Excel admissions files	PII-safe application staging	extract, normalize, tokenize
-PII-safe application staging	dim_student + dim_year	load conformed dimensions
-PII-safe application staging	conformed admissions dimensions	load round/project/faculty/major/program/status/source
-All conformed dimensions	fact_admission	load one application-choice fact with score
-fact_admission	admissions presentation marts	aggregate for year/round/major/status
-Admissions presentation marts	app/data/generated/warehouse-dashboard-snapshot.json	publish generated dashboard artifact

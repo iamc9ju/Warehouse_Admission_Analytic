@@ -1,14 +1,14 @@
 import type { QueryClient } from "../db/neon-client";
 import type { DashboardSnapshot } from "../dashboard-types";
-import { numberValue, optionalRows } from "./query-helpers";
+import { numberValue, requiredRows } from "./query-helpers";
 
-export async function getBusinessQuestions(client: QueryClient): Promise<DashboardSnapshot["businessQuestions"] | undefined> {
-  const rows = await optionalRows(client, `
+export async function getBusinessQuestions(client: QueryClient): Promise<DashboardSnapshot["businessQuestions"]> {
+  const rows = await requiredRows(client, `
     select question_id, domain, question, mart_object, metrics, decision_owner, decision_use, quality_gate
     from admissions_dw.dw_business_question_catalog
     order by question_id
   `);
-  return rows?.map((row) => ({
+  return rows.map((row) => ({
     id: String(row.question_id),
     domain: String(row.domain),
     question: String(row.question),
@@ -20,14 +20,14 @@ export async function getBusinessQuestions(client: QueryClient): Promise<Dashboa
   }));
 }
 
-export async function getDecisionInsights(client: QueryClient): Promise<DashboardSnapshot["decisionInsights"] | undefined> {
-  const rows = await optionalRows(client, `
+export async function getDecisionInsights(client: QueryClient): Promise<DashboardSnapshot["decisionInsights"]> {
+  const rows = await requiredRows(client, `
     select insight_id, business_question_id, priority, category, title, summary, mart_object, metric_label, metric_value,
       decision, recommended_action, confidence, quality_gate
     from admissions_dw.mart_decision_insight
     order by priority, insight_id
   `);
-  return rows?.map((row) => ({
+  return rows.map((row) => ({
     id: String(row.insight_id),
     businessQuestionId: String(row.business_question_id),
     priority: numberValue(row.priority, "priority"),

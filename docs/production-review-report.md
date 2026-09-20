@@ -16,5 +16,5 @@
 
 ## Runtime review
 
-Dashboard ใช้ presentation marts จาก fact เดียวผ่าน server-side adapter และ generated artifact fallback
-การ regenerate ผ่าน `data:build`, `data:validate`, `data:check-static` และ production build
+Dashboard ใช้ presentation marts จาก fact เดียวผ่าน server-side Neon adapter โดยไม่มี TSV/JSON fallback
+การตรวจ release ใช้ `data:check-static`, live query tests และ production build

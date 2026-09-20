@@ -38,5 +38,9 @@ yarn-error.log*
 next-env.d.ts
 /dist/
 /.wrangler/
-/outputs/
+/outputs/*
+!/outputs/sql/
+/outputs/sql/*
+!/outputs/sql/normalize_dashboard_people_metrics.sql
+!/outputs/sql/decision_support_catalog.sql
 /work/

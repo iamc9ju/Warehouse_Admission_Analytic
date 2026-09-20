@@ -22,7 +22,7 @@ function deltaClass(value?: number) {
 }
 
 export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
-  const { majorRows, roundStatuses, statuses, years } = snapshot;
+  const { majorRows, majorStatuses, years } = snapshot;
 
   const selectableYears = useMemo(
     () => [...years].sort((first, second) => second.year - first.year),
@@ -36,10 +36,11 @@ export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
   );
 
   const uniqueMajors = useMemo(() => {
-    const map = new Map<string, { code: string; name: string }>();
+    const map = new Map<string, { key: string; code: string; name: string }>();
     majorRows.forEach((m) => {
-      if (!map.has(m.code)) {
-        map.set(m.code, { code: m.code, name: m.name });
+      const key = `${m.code}::${m.name}`;
+      if (!map.has(key)) {
+        map.set(key, { key, code: m.code, name: m.name });
       }
     });
     return Array.from(map.values());
@@ -50,28 +51,29 @@ export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
       "ผู้สมัคร",
       ...Array.from(
         new Set([
-          ...statuses.map((s) => s.label),
-          ...roundStatuses.map((s) => s.label),
+          ...majorStatuses.map((s) => s.label),
         ])
       ).filter((label) => label !== "ผู้สมัคร"),
     ],
-    [statuses, roundStatuses]
+    [majorStatuses]
   );
 
   const [selectedMajorStatus, setSelectedMajorStatus] = useState(() => "ผู้สมัคร");
-  const [selectedMajorCode, setSelectedMajorCode] = useState(() => uniqueMajors[0]?.code ?? "");
+  const [selectedMajorKey, setSelectedMajorKey] = useState(() => uniqueMajors[0]?.key ?? "");
 
-  const selectedMajorMeta = uniqueMajors.find((m) => m.code === selectedMajorCode);
+  const selectedMajorMeta = uniqueMajors.find((m) => m.key === selectedMajorKey);
 
   const majorStatusValues = availableYears.map((year) => {
-    const row = majorRows.find((m) => m.year === year && m.code === selectedMajorCode);
+    const row = majorRows.find((m) => m.year === year && `${m.code}::${m.name}` === selectedMajorKey);
     if (!row) return 0;
     if (selectedMajorStatus === "ผู้สมัคร") return row.applicants;
     if (selectedMajorStatus === "ยืนยันสิทธิ์") return row.confirmed;
-    const statusRow = statuses.find((s) => s.year === year && s.label === selectedMajorStatus);
-    const totalApplicantsInYear = years.find((y) => y.year === year)?.applicants || 1;
-    const totalStatusInYear = statusRow?.choices || 0;
-    return Math.round((row.applicants / totalApplicantsInYear) * totalStatusInYear);
+    return majorStatuses.find((status) => (
+      status.year === year
+      && status.code === selectedMajorMeta?.code
+      && status.name === selectedMajorMeta?.name
+      && status.label === selectedMajorStatus
+    ))?.applicants ?? 0;
   });
 
   const maxSelectedMajorChartValue = Math.max(...majorStatusValues, 1);
@@ -122,9 +124,9 @@ export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
                   </label>
                   <label className="round-chart-select">
                     <span>สาขาวิชา</span>
-                    <select value={selectedMajorCode} onChange={(event) => setSelectedMajorCode(event.target.value)}>
+                    <select value={selectedMajorKey} onChange={(event) => setSelectedMajorKey(event.target.value)}>
                       {uniqueMajors.map((m) => (
-                        <option key={m.code} value={m.code}>
+                        <option key={m.key} value={m.key}>
                           {m.name}
                         </option>
                       ))}

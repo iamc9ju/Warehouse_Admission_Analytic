@@ -1,5 +1,4 @@
 import { loadLiveNeonSnapshot } from "./live-neon-dashboard-adapter";
-import { fallbackPageSnapshot } from "./snapshot-fallback";
 import { pickPageData, type DashboardPage, type LoadedPageSnapshot, type OverviewPageData } from "./page-data-types";
 
 const SNAPSHOT_CACHE_TTL_MS = process.env.NODE_ENV === "production" ? 5 * 60 * 1000 : 0;
@@ -8,15 +7,8 @@ const snapshotRequests = new Map<string, Promise<LoadedPageSnapshot>>();
 
 async function loadFreshPage(page: DashboardPage, year?: number): Promise<LoadedPageSnapshot> {
   const databaseUrl = process.env.DATABASE_URL?.trim();
-  if (page === "warehouse") return fallbackPageSnapshot(page);
-  if (!databaseUrl) return fallbackPageSnapshot(page, year, "DATABASE_URL is not configured");
-  try {
-    return await loadLiveNeonSnapshot(databaseUrl, page, year);
-  } catch (error) {
-    // The generated warehouse-dashboard-snapshot.json remains the fallback source.
-    const fallbackReason = error instanceof Error ? error.message : "Unknown live Neon query error";
-    return fallbackPageSnapshot(page, year, fallbackReason);
-  }
+  if (!databaseUrl) throw new Error("DATABASE_URL is required because the dashboard runs in Neon-only mode");
+  return loadLiveNeonSnapshot(databaseUrl, page, year);
 }
 
 async function loadPageSnapshot(page: DashboardPage, year?: number): Promise<LoadedPageSnapshot> {
@@ -61,6 +53,3 @@ export const loadAnalyticsPageData = () => loadPageData("dashboard");
 export const loadInsightsPageData = () => loadPageData("insights");
 export const loadMajorsPageData = () => loadPageData("majors");
 export const loadRoundsPageData = () => loadPageData("rounds");
-export const loadQualityPageData = () => loadPageData("quality");
-export const loadTechnicalPageData = () => loadPageData("technical");
-export const loadWarehousePageData = () => loadPageData("warehouse");

@@ -4,8 +4,6 @@ import { useMemo, useState } from "react";
 import type { PageData } from "../data/page-data-types";
 import { SidebarNavigation } from "../sidebar-navigation";
 
-import { calculateEligibleFromStatusRows } from "../data/eligible-calculator";
-
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
 }
@@ -44,17 +42,13 @@ export function RoundsView({ snapshot }: { snapshot: PageData<"rounds"> }) {
     if (!round) return 0;
     if (selectedStatus === "ผู้สมัคร") return round.applicants;
     if (selectedStatus === "ผู้มีสิทธิ์") {
-      const items = roundStatuses.filter(
-        (rs) => rs.year === year && rs.code === selectedRoundCode
-      );
-      const val = calculateEligibleFromStatusRows(items, "applicants");
-      return val > 0 ? val : Math.max(round.confirmed, Math.round(round.applicants * 0.2376));
+      return round.eligible ?? round.confirmed;
     }
     return roundStatuses.find((status) => (
       status.year === year
       && status.code === selectedRoundCode
       && status.label === selectedStatus
-    ))?.choices ?? 0;
+    ))?.applicants ?? 0;
   });
 
   const maxRoundChartValue = Math.max(...roundStatusValues, 1);

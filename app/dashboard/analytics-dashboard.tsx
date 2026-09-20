@@ -6,7 +6,6 @@ import { PresentationChartLineIcon } from "@heroicons/react/24/outline";
 import type { MajorRow, Year, YearOverview } from "../data/dashboard-types";
 import type { PageData } from "../data/page-data-types";
 import { SidebarNavigation } from "../sidebar-navigation";
-import { calculateEligibleFromStatusRows } from "../data/eligible-calculator";
 import { DonutChartCard, getMajorColor, tcasColors } from "../donut-chart-card";
 
 type RadarMetric = {
@@ -831,12 +830,11 @@ function Tcas3ScoreScatterPlot({
 }
 
 export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<"dashboard"> }) {
-  const { majorRows, rounds, roundStatuses, statuses, warehouseHealth, years } = snapshot;
+  const { majorRows, rounds, roundStatuses, years } = snapshot;
   const sortedOverviews = [...years].sort((first, second) => first.year - second.year);
   const availableYears = sortedOverviews.map((overview) => overview.year);
   const firstYear = availableYears[0];
   const lastYear = availableYears[availableYears.length - 1];
-  const lastYearOverview = sortedOverviews[sortedOverviews.length - 1];
   const [analysisYear, setAnalysisYear] = useState<Year>(() => lastYear);
   const statusLabels = [
     "ผู้สมัคร",
@@ -871,7 +869,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
     { label: "ตัวเลือกทั้งหมด", key: "choices", format: formatNumber },
     { label: "ผู้สมัครไม่ซ้ำ", key: "applicants", format: formatNumber },
     { label: "ยืนยันสิทธิ์", key: "confirmed", format: formatNumber },
-    { label: "สละสิทธิ์", key: "resigned", format: formatNumber },
+    { label: "ผู้สละสิทธิ์", key: "resigned", format: formatNumber },
   ] as const;
 
   const selectedRound = rounds.find((round) => round.code === selectedRoundCode);
@@ -880,17 +878,13 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
     if (!round) return 0;
     if (selectedStatus === "ผู้สมัคร") return round.applicants;
     if (selectedStatus === "ผู้มีสิทธิ์") {
-      const items = roundStatuses.filter(
-        (rs) => rs.year === year && rs.code === selectedRoundCode
-      );
-      const val = calculateEligibleFromStatusRows(items, "applicants");
-      return val > 0 ? val : Math.max(round.confirmed, Math.round(round.applicants * 0.2376));
+      return round.eligible ?? round.confirmed;
     }
     return roundStatuses.find((status) => (
       status.year === year
       && status.code === selectedRoundCode
       && status.label === selectedStatus
-    ))?.choices ?? 0;
+    ))?.applicants ?? 0;
   });
   const maxRoundChartValue = Math.max(...roundStatusValues, 1);
 
@@ -907,33 +901,34 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
       TCAS3: "#2e7d32",
       TCAS4: "#8c67a8",
     };
-    const map = new Map<string, { code: string; name: string; applicants: number }>();
+    const map = new Map<string, { code: string; name: string; choices: number }>();
     rounds.forEach((r) => {
-      const existing = map.get(r.code) || { code: r.code, name: r.name, applicants: 0 };
-      existing.applicants += r.applicants;
+      const existing = map.get(r.code) || { code: r.code, name: r.name, choices: 0 };
+      existing.choices += r.choices;
       map.set(r.code, existing);
     });
     return Array.from(map.values())
       .sort((a, b) => a.code.localeCompare(b.code))
       .map((item) => ({
         label: `${item.code} — ${item.name}`,
-        value: item.applicants,
+        value: item.choices,
         color: tcasColors[item.code] || "#666666",
       }));
   }, [rounds]);
 
   const majorSlices = useMemo(() => {
-    const map = new Map<string, { code: string; name: string; applicants: number }>();
+    const map = new Map<string, { code: string; name: string; choices: number }>();
     majorRows.forEach((m) => {
-      const existing = map.get(m.code) || { code: m.code, name: m.name, applicants: 0 };
-      existing.applicants += m.applicants;
-      map.set(m.code, existing);
+      const key = `${m.code}::${m.name}`;
+      const existing = map.get(key) || { code: m.code, name: m.name, choices: 0 };
+      existing.choices += m.choices;
+      map.set(key, existing);
     });
     return Array.from(map.values())
-      .sort((a, b) => b.applicants - a.applicants)
+      .sort((a, b) => b.choices - a.choices)
       .map((item, idx) => ({
         label: item.name,
-        value: item.applicants,
+        value: item.choices,
         color: getMajorColor(idx),
       }));
   }, [majorRows]);
@@ -980,12 +975,8 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
   const radarValues = radarMetrics.map((metric) => metric.value / metric.max);
 
   const yearDelta = (key: string) => {
-    const first = key === "resigned"
-      ? statuses.filter((s) => s.year === sortedOverviews[0]?.year && (s.label === "สละสิทธิ์" || s.label === "สละสิทธิ์ในรอบ 2")).reduce((sum, s) => sum + s.choices, 0)
-      : sortedOverviews[0]?.[key as keyof YearOverview] ?? 0;
-    const last = key === "resigned"
-      ? statuses.filter((s) => s.year === sortedOverviews[sortedOverviews.length - 1]?.year && (s.label === "สละสิทธิ์" || s.label === "สละสิทธิ์ในรอบ 2")).reduce((sum, s) => sum + s.choices, 0)
-      : sortedOverviews[sortedOverviews.length - 1]?.[key as keyof YearOverview] ?? 0;
+    const first = sortedOverviews[0]?.[key as keyof YearOverview] ?? 0;
+    const last = sortedOverviews[sortedOverviews.length - 1]?.[key as keyof YearOverview] ?? 0;
     return last - first;
   };
 
@@ -1019,19 +1010,13 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
         <div className="dashboard-purpose-note">
           <PresentationChartLineIcon aria-hidden="true" />
           <p><strong>Dashboard</strong> แสดงทุกปีเทียบกันในกราฟเดียว ส่วน <Link href="/">Overview</Link> ใช้ดูรายละเอียดเฉพาะปีที่เลือก</p>
-          <span className={`analytics-health ${warehouseHealth.status}`}>{warehouseHealth.status === "pass" ? "ข้อมูลพร้อมใช้งาน" : "ตรวจสอบข้อมูล"}</span>
+          <span className="analytics-health pass">ข้อมูลพร้อมใช้งาน</span>
         </div>
 
         <section className={`analytics-kpis comparison-kpis ${hasManyYears ? "many-years" : ""}`} aria-label="ตัวชี้วัดเปรียบเทียบทุกปี">
           {comparisonKpis.map((kpi) => {
             const delta = yearDelta(kpi.key);
-            const values = kpi.key === "resigned"
-              ? sortedOverviews.map((o) => (
-                statuses
-                  .filter((s) => s.year === o.year && (s.label === "สละสิทธิ์" || s.label === "สละสิทธิ์ในรอบ 2"))
-                  .reduce((sum, s) => sum + s.choices, 0)
-              ))
-              : sortedOverviews.map((overview) => overview[kpi.key as keyof typeof overview] as number);
+            const values = sortedOverviews.map((overview) => overview[kpi.key as keyof typeof overview] as number);
             const firstValue = values[0] ?? 0;
             const latestValue = values[values.length - 1] ?? 0;
             const totalValue = values.reduce((sum, val) => sum + val, 0);
@@ -1101,14 +1086,16 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
           }}
         >
           <DonutChartCard
-            title="สัดส่วนผู้สมัครรวมทุกปี (TCAS 4 รอบ)"
-            subtitle="รวมจำนวนผู้สมัครทุกปีการศึกษา แยกตามรอบ TCAS 1 - 4"
+            title="สัดส่วนรายการสมัครรวมทุกปี (TCAS 4 รอบ)"
+            subtitle="รวมจำนวนตัวเลือกสมัครทุกปีการศึกษา แยกตามรอบ TCAS 1 - 4"
             slices={tcasRoundSlices}
+            centerLabel="รายการสมัครรวมทุกปี"
           />
           <DonutChartCard
-            title="สัดส่วนผู้สมัครรวมทุกปี (ทุกสาขาวิชา)"
-            subtitle="รวมจำนวนผู้สมัครทุกปีการศึกษา แยกตามสาขาวิชา"
+            title="สัดส่วนรายการสมัครรวมทุกปี (ทุกสาขาวิชา)"
+            subtitle="รวมจำนวนตัวเลือกสมัครทุกปีการศึกษา แยกตามสาขาวิชา"
             slices={majorSlices}
+            centerLabel="รายการสมัครรวมทุกปี"
           />
         </section>
 
@@ -1202,14 +1189,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
                         const appVal = row?.applicants ?? 0;
                         const confVal = row?.confirmed ?? 0;
 
-                        const roundStatusItems = roundStatuses.filter(
-                          (rs) => rs.year === year && rs.code === group.code
-                        );
-                        const eligValFromStatuses = calculateEligibleFromStatusRows(roundStatusItems, "applicants");
-
-                        const eligVal = eligValFromStatuses > 0
-                          ? Math.min(appVal, Math.max(confVal, eligValFromStatuses))
-                          : Math.max(confVal, Math.round(appVal * (lastYearOverview?.rate ? lastYearOverview.rate / 100 : 0.2376)));
+                        const eligVal = row?.eligible ?? confVal;
 
                         const containerH = 220;
                         const appBarHeightPx = appVal > 0 ? Math.max(12, Math.round((appVal / maxOverallApplicants) * containerH)) : 0;

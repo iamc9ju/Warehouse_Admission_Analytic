@@ -2,7 +2,7 @@
 
 ## Status
 
-Superseded by [ADR 0009](0009-ban-embedded-dashboard-data.md)
+Superseded by [ADR 0009](0009-ban-embedded-dashboard-data.md) and the Neon-only runtime.
 
 ## Context
 
@@ -12,13 +12,8 @@ Superseded by [ADR 0009](0009-ban-embedded-dashboard-data.md)
 
 แนวทางเดิมใช้ข้อมูล aggregate ที่ export จาก Neon แล้วเก็บเป็น typed dashboard snapshot ใน `app/data/warehouse-snapshot.ts`
 
-กฎ production ปัจจุบันยกเลิกแนวทางนี้แล้ว ห้ามฝัง dashboard data ใน TypeScript source และต้องใช้ generated warehouse artifact เท่านั้น:
-
-```text
-warehouse/query-results/*.tsv
-  -> npm run data:build
-  -> app/data/generated/warehouse-dashboard-snapshot.json
-```
+กฎ production ปัจจุบันยกเลิกแนวทางนี้ทั้งหมด Dashboard query Neon ผ่าน server-side repositories โดยตรง
+และไม่มี static/generated fallback
 
 snapshot ต้องระบุ provenance อย่างน้อย:
 
@@ -32,21 +27,8 @@ snapshot ต้องระบุ provenance อย่างน้อย:
 
 ## Consequences
 
-ข้อดี:
+เหตุผลที่เลิกใช้:
 
-- ไม่มี database credentials ใน browser หรือ source deploy
-- Dashboard โหลดเร็วและ deploy ง่าย
-- เหมาะกับการนำเสนอโปรเจค
-- ไม่ทำให้ตัวเลขดูเป็น hardcoded demo เพราะแยกเป็น warehouse snapshot พร้อม query contract
-- ผู้ตรวจสามารถอ่าน `docs/warehouse-query-contract.md` เพื่อดูว่าแต่ละส่วนของ UI มาจาก warehouse object ไหน
-
-ข้อจำกัด:
-
-- หากข้อมูลใน Neon เปลี่ยน ต้อง export/update dashboard ใหม่
-- ยังไม่ใช่ real-time dashboard
-- ต้องรักษา `warehouse/query-results/*.tsv` และ generated artifact ให้ตรงกับ query contract ทุกครั้งที่ refresh ข้อมูล
-
-แนวทางขยายในอนาคต:
-
-- เพิ่ม server-side API route ที่อ่านจาก Neon ด้วย environment variable
-- เพิ่ม scheduled export สำหรับ dashboard data
+- snapshot มีโอกาสล้าสมัยจาก Neon
+- ต้องดูแล TSV, JSON และ pipeline ซ้ำกับ live query
+- Runtime ปัจจุบันเก็บ credential ฝั่ง server และ fail ชัดเจนเมื่อ Neon ไม่พร้อม

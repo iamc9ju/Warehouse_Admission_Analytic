@@ -19,17 +19,10 @@ Grain ของ `fact_admission` คือหนึ่งตัวเลือ�
 `dim_student` เก็บเฉพาะ token แบบ HMAC-SHA256 ไม่เก็บเลขประจำตัว ชื่อ เบอร์โทร หรืออีเมล
 `dim_year` แยกปีการศึกษาออกจาก fact อย่างชัดเจน
 
-## ETL
+## ETL boundary
 
-`outputs/etl/aggregate_admissions_all_rounds.py` ทำงานดังนี้:
-
-1. อ่าน 16 source workbooks
-2. map หัวคอลัมน์ภาษาไทยของปี 2567 ให้ตรง canonical schema
-3. ตรวจ required columns และ source identity
-4. แปลง score, priority และ applicant status เป็นชนิดตัวเลข
-5. สร้าง `student_token` และ `application_token` ด้วย HMAC-SHA256
-6. ส่งออก PII-safe fact staging และ source quality
-7. สร้าง warehouse query results สำหรับ dashboard
+Repository นี้รับ PII-safe fact staging ที่ผ่าน canonical mapping, validation และ HMAC-SHA256
+tokenization แล้ว จากนั้น loader จะนำ staging เข้า Neon โดยไม่มีการสร้าง TSV สำหรับ Dashboard
 
 ผลตรวจล่าสุด:
 
@@ -78,22 +71,18 @@ Core views และ marts ทั้งหมด aggregate จาก `fact_admis
 ```text
 fact_admission
   -> warehouse views/marts
-  -> warehouse/query-results/*.tsv
-  -> app/data/generated/warehouse-dashboard-snapshot.json
-  -> route-level loader
+  -> server-side TypeScript repositories
+  -> route-level Neon loader
   -> dashboard pages
 ```
 
-เมื่อมี `DATABASE_URL` ตัว loader จะ query Neon ฝั่ง server ก่อน หาก query ไม่พร้อมจึง fallback ไป generated artifact
+ต้องมี `DATABASE_URL` และทุกหน้าจะ query Neon ฝั่ง server โดยตรง ไม่มี TSV/JSON fallback
 
 ## Refresh runbook
 
 ```bash
 export ADMISSIONS_STUDENT_HASH_SALT="replace-with-a-secret-value"
-python3 outputs/etl/aggregate_admissions_all_rounds.py
 DATABASE_URL="postgresql://..." node outputs/etl/load_admissions_all_rounds_to_neon.cjs
-npm run data:build
-npm run data:validate
 npm run data:check-static
 npm test
 ```

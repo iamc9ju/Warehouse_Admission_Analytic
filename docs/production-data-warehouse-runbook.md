@@ -2,21 +2,19 @@
 
 ## Refresh
 
-1. วาง source files ตาม path ที่กำหนดใน `aggregate_admissions_all_rounds.py`
+1. เตรียม PII-safe fact staging ด้วย ingestion process ที่ได้รับอนุมัติ
 2. กำหนด `ADMISSIONS_STUDENT_HASH_SALT` อย่างน้อย 16 ตัวอักษร
-3. รัน ETL เพื่อสร้าง PII-safe fact staging และ query results
-4. โหลด dimensions และ `fact_admission` เข้า Neon
-5. สร้างและตรวจ dashboard artifact
+3. โหลด dimensions และ `fact_admission` เข้า Neon
+4. รัน SQL schema/views/marts
+5. ตรวจ live dashboard queries และ quality gates
 
 Loader จะรักษา token เดิมของแถวที่มี `source_file + source_row_number` ตรงกับฐานข้อมูล
 และใช้ mapping นี้เชื่อมผู้สมัครเดิมที่ปรากฏในไฟล์ใหม่ เพื่อไม่ให้ pseudonymous identity เปลี่ยนเมื่อหมุน hash salt
 
 ```bash
 export ADMISSIONS_STUDENT_HASH_SALT="replace-with-a-secret-value"
-python3 outputs/etl/aggregate_admissions_all_rounds.py
 DATABASE_URL="postgresql://..." node outputs/etl/load_admissions_all_rounds_to_neon.cjs
-npm run data:build
-npm run data:validate
+# Apply outputs/sql/warehouse_governance_marts.sql and outputs/sql/decision_support_catalog.sql
 npm run data:check-static
 npm test
 ```

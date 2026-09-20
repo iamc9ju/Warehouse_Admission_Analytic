@@ -9,14 +9,10 @@ const files = [
   "app/insights/admissions-decision-center.tsx",
   "app/page.tsx",
   "app/dashboard/page.tsx",
-  "app/warehouse/page.tsx",
-  "app/technical/page.tsx",
   "app/rounds/page.tsx",
   "app/rounds/rounds-view.tsx",
   "app/majors/page.tsx",
   "app/majors/majors-view.tsx",
-  "app/quality/page.tsx",
-  "app/quality/quality-view.tsx",
   "app/insights/page.tsx",
 ];
 

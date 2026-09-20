@@ -5,6 +5,8 @@ export type YearOverview = {
   choices: number;
   applicants: number;
   confirmed: number;
+  resigned: number;
+  eligible: number;
   rate: number;
   sourceFiles: number;
   avgScore: number;
@@ -16,6 +18,7 @@ export type MajorRow = {
   name: string;
   type: string;
   applicants: number;
+  choices: number;
   confirmed: number;
   rate: number;
   avgScore: number;
@@ -27,8 +30,18 @@ export type StatusRow = {
   year: Year;
   label: string;
   choices: number;
+  applicants: number;
   share: number;
   tone: "green" | "amber" | "blue" | "red" | "muted" | "purple" | "orange";
+};
+
+export type MajorStatusRow = {
+  year: Year;
+  code: string;
+  name: string;
+  label: string;
+  choices: number;
+  applicants: number;
 };
 
 export type RoundRow = {
@@ -54,43 +67,15 @@ export type RoundStatusRow = {
 
 export type DashboardSnapshot = {
   runtime: {
-    source: "live-neon" | "generated-artifact";
+    source: "live-neon";
     loadedAt: string;
-    fallbackReason?: string;
-  };
-  warehouseSnapshot: {
-    exportedAt: string;
-    sourceSystem: string;
-    schema: string;
-    dashboardMode: string;
-    sourceRows: number;
-    activeSourceGroups: number;
-    sourceFiles: number;
-    catalogRows: number;
-    lineageEdges: number;
-    piiExportedColumns: number;
-    sourceQuery: string;
   };
   years: YearOverview[];
   majorRows: MajorRow[];
+  majorStatuses: MajorStatusRow[];
   statuses: StatusRow[];
   rounds: RoundRow[];
   roundStatuses: RoundStatusRow[];
-  qualityMetricDefinitions: {
-    label: string;
-    value: string;
-    sourceObject: string;
-    definition: string;
-    rule: string;
-  }[];
-  dataCatalogRows: string[][];
-  lineageEdges: string[][];
-  etlValidationChecks: string[][];
-  warehouseQueries: {
-    name: string;
-    object: string;
-    sql: string;
-  }[];
   businessQuestions: {
     id: string;
     domain: string;
@@ -115,25 +100,5 @@ export type DashboardSnapshot = {
     recommendedAction: string;
     confidence: "High" | "Medium" | "Low";
     qualityGate: string;
-  }[];
-  warehouseHealth: {
-    id: string;
-    status: "pass" | "warn" | "fail";
-    lastRefreshAt: string;
-    freshnessSlaHours: number;
-    sourceRows: number;
-    sourceFiles: number;
-    martCount: number;
-    qualityChecksPassed: number;
-    qualityChecksFailed: number;
-    piiExportedColumns: number;
-    artifactChecksum: string;
-    notes: string;
-  };
-  decisionMartContract: {
-    martObject: string;
-    grain: string;
-    sourceObjects: string;
-    purpose: string;
   }[];
 };

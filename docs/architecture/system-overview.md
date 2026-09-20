@@ -8,7 +8,7 @@ Excel 2567-2569
   -> dimensions (student, year, round, project, faculty, major, program, status, source)
   -> fact_admission (one application choice + score)
   -> views/marts
-  -> generated artifact or live server query
+  -> live server-side Neon query
   -> dashboard routes
 ```
 

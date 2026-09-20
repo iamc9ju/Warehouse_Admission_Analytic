@@ -14,7 +14,7 @@ export async function getAvailableYears(client: QueryClient): Promise<number[]> 
 export async function getYearOverview(client: QueryClient, year?: number): Promise<YearOverview[]> {
   const rows = await requiredRows(client, `
     select academic_year, application_choices, unique_applicants, confirmed_applicants,
-      confirmed_rate, source_files, avg_score
+      confirmed_rate, source_files, avg_score, resigned_applicants, eligible_applicants
     from admissions_dw.mart_admissions_executive_summary
     ${year === undefined ? "" : "where academic_year = $1"}
     order by academic_year
@@ -24,6 +24,8 @@ export async function getYearOverview(client: QueryClient, year?: number): Promi
     choices: numberValue(row.application_choices, "application_choices"),
     applicants: numberValue(row.unique_applicants, "unique_applicants"),
     confirmed: numberValue(row.confirmed_applicants, "confirmed_applicants"),
+    resigned: numberValue(row.resigned_applicants, "resigned_applicants"),
+    eligible: numberValue(row.eligible_applicants, "eligible_applicants"),
     rate: numberValue(row.confirmed_rate, "confirmed_rate"),
     sourceFiles: numberValue(row.source_files, "source_files"),
     avgScore: numberValue(row.avg_score, "avg_score"),
@@ -32,19 +34,17 @@ export async function getYearOverview(client: QueryClient, year?: number): Promi
 
 export async function getYearStatuses(client: QueryClient, year?: number): Promise<StatusRow[]> {
   const rows = await requiredRows(client, `
-    select academic_year, status_label, sum(choices) as choices,
-      round(sum(choices)::numeric * 100
-        / nullif(sum(sum(choices)) over (partition by academic_year), 0), 2) as share_pct,
-      max(tone) as tone
-    from admissions_dw.vw_admission_round_status_distribution
+    select academic_year, tcas_status as status_label, application_choices as choices,
+      unique_applicants, choice_share_pct as share_pct, tone
+    from admissions_dw.vw_admission_year_status_distribution
     ${year === undefined ? "" : "where academic_year = $1"}
-    group by academic_year, status_label
     order by academic_year, choices desc
   `, year);
   return rows.map((row) => ({
     year: numberValue(row.academic_year, "academic_year"),
     label: String(row.status_label),
     choices: numberValue(row.choices, "choices"),
+    applicants: numberValue(row.unique_applicants, "unique_applicants"),
     share: numberValue(row.share_pct, "share_pct"),
     tone: String(row.tone || "muted") as StatusRow["tone"],
   }));

@@ -5,7 +5,6 @@ const { Client } = require("pg");
 const rootDir = path.resolve(__dirname, "../..");
 const processedDir = path.join(rootDir, "outputs", "processed");
 const factPath = path.join(processedDir, "admissions_fact_2567_2569.csv");
-const qualityPath = path.join(processedDir, "admissions_source_quality_2567_2569.csv");
 const coreSchemaPath = path.join(rootDir, "outputs", "sql", "admissions_all_rounds_warehouse.sql");
 const governanceSchemaPath = path.join(rootDir, "outputs", "sql", "warehouse_governance_marts.sql");
 
@@ -54,7 +53,7 @@ function parseCsv(text) {
 
 function readCsv(filePath) {
   if (!fs.existsSync(filePath)) {
-    throw new Error(`Missing processed input: ${filePath}. Run aggregate_admissions_all_rounds.py first.`);
+    throw new Error(`Missing processed input: ${filePath}. Prepare the PII-safe admissions staging file first.`);
   }
   return parseCsv(fs.readFileSync(filePath, "utf8"));
 }
@@ -85,22 +84,6 @@ function normalizeFact(row) {
     source_row_number: Number(row.source_row_number),
     priority: nullableNumber(row.priority),
     score: nullableNumber(row.score),
-  };
-}
-
-function normalizeQuality(row) {
-  return {
-    source_file: row.source_file,
-    academic_year: Number(row.academic_year),
-    tcas_round_code: row.tcas_round_code,
-    tcas_round_name: row.tcas_round_name,
-    source_rows: Number(row.source_rows),
-    unique_students: Number(row.unique_students),
-    duplicate_application_rows: Number(row.duplicate_application_rows),
-    missing_score_rows: Number(row.missing_score_rows),
-    missing_priority_rows: Number(row.missing_priority_rows),
-    missing_major_rows: Number(row.missing_major_rows),
-    pii_exported_columns: Number(row.pii_exported_columns),
   };
 }
 
@@ -318,66 +301,11 @@ async function loadFact(client) {
   `);
 }
 
-async function loadQuality(client, rows) {
-  await client.query(
-    `
-      INSERT INTO admissions_dw.admission_round_source_data_quality (
-        source_file, academic_year, tcas_round_code, tcas_round_name,
-        source_rows, unique_students, duplicate_application_rows,
-        missing_score_rows, missing_priority_rows, missing_major_rows,
-        pii_exported_columns, loaded_at
-      )
-      SELECT
-        source_file, academic_year, tcas_round_code, tcas_round_name,
-        source_rows, unique_students, duplicate_application_rows,
-        missing_score_rows, missing_priority_rows, missing_major_rows,
-        pii_exported_columns, now()
-      FROM jsonb_to_recordset($1::jsonb) AS x(
-        source_file TEXT,
-        academic_year INTEGER,
-        tcas_round_code TEXT,
-        tcas_round_name TEXT,
-        source_rows INTEGER,
-        unique_students INTEGER,
-        duplicate_application_rows INTEGER,
-        missing_score_rows INTEGER,
-        missing_priority_rows INTEGER,
-        missing_major_rows INTEGER,
-        pii_exported_columns INTEGER
-      )
-      ON CONFLICT (source_file) DO UPDATE SET
-        academic_year = EXCLUDED.academic_year,
-        tcas_round_code = EXCLUDED.tcas_round_code,
-        tcas_round_name = EXCLUDED.tcas_round_name,
-        source_rows = EXCLUDED.source_rows,
-        unique_students = EXCLUDED.unique_students,
-        duplicate_application_rows = EXCLUDED.duplicate_application_rows,
-        missing_score_rows = EXCLUDED.missing_score_rows,
-        missing_priority_rows = EXCLUDED.missing_priority_rows,
-        missing_major_rows = EXCLUDED.missing_major_rows,
-        pii_exported_columns = EXCLUDED.pii_exported_columns,
-        loaded_at = now()
-    `,
-    [JSON.stringify(rows)]
-  );
-  await client.query(
-    `
-      DELETE FROM admissions_dw.admission_round_source_data_quality q
-      WHERE NOT EXISTS (
-        SELECT 1 FROM jsonb_to_recordset($1::jsonb) AS active(source_file TEXT)
-        WHERE active.source_file = q.source_file
-      )
-    `,
-    [JSON.stringify(rows)]
-  );
-}
-
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) throw new Error("DATABASE_URL is required");
 
   const facts = readCsv(factPath).map(normalizeFact);
-  const quality = readCsv(qualityPath).map(normalizeQuality);
   if (facts.some((row) => row.score === null)) throw new Error("fact_admission.score cannot be null");
 
   const client = new Client({ connectionString: databaseUrl, ssl: { rejectUnauthorized: false } });
@@ -389,7 +317,6 @@ async function main() {
     await stageFacts(client, facts);
     await loadDimensions(client);
     await loadFact(client);
-    await loadQuality(client, quality);
     const validation = await client.query(`
       SELECT
         (SELECT COUNT(*) FROM stage_admission_fact)::INTEGER AS staged_rows,
@@ -407,7 +334,6 @@ async function main() {
       `and student identity on ${continuity.preservedStudents.toLocaleString()} staged rows`
     );
     console.log(`Loaded ${result.fact_rows.toLocaleString()} rows into admissions_dw.fact_admission`);
-    console.log(`Loaded ${quality.length} source quality rows`);
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
     throw error;
