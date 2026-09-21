@@ -46,6 +46,7 @@ function fakeClient({ fail, empty } = {}) {
     calls,
     async query(sql, values = []) {
       const kind = sql.includes("decision-insights-from-marts") ? "decisionInsights"
+        : sql.includes("all-year-distinct-people") ? "allYearPeople"
         : sql.includes("select distinct academic_year") ? "availableYears"
         : sql.includes("mart_admissions_executive_summary") ? "years"
         : sql.includes("vw_admission_round_overview") ? "rounds"
@@ -60,6 +61,7 @@ function fakeClient({ fail, empty } = {}) {
       if (empty === kind) return { rows: [] };
       const filteredYears = fixtureYears.filter((row) => values.length === 0 || row.year === values[0]);
       const rows = {
+        allYearPeople: () => [{ applicants: 9000, confirmed: 1400, resigned: 60 }],
         availableYears: () => [...fixtureYears].reverse().map((row) => ({ academic_year: row.year })),
         years: () => filteredYears.map((row) => ({ academic_year: row.year, application_choices: row.choices, unique_applicants: row.applicants, confirmed_applicants: row.confirmed, resigned_applicants: row.resigned, eligible_applicants: row.eligible, confirmed_rate: row.rate, source_files: row.sourceFiles, avg_score: row.avgScore })),
         rounds: () => filteredYears.map((row) => ({ academic_year: row.year, tcas_round_code: "TCAS1", tcas_round_name: "Portfolio", choices: row.choices, unique_applicants: row.applicants, confirmed_applicants: row.confirmed, confirmed_rate: row.rate, source_files: row.sourceFiles, eligible_applicants: row.eligible })),
@@ -85,7 +87,7 @@ test("each page queries only live Neon dependencies", async (t) => {
   const dataModule = await loadModule();
   const expected = {
     overview: ["availableYears", "years", "rounds", "majorRows", "statuses"],
-    dashboard: ["availableYears", "years", "rounds", "majorRows", "roundStatuses"],
+    dashboard: ["availableYears", "years", "rounds", "majorRows", "roundStatuses", "allYearPeople"],
     insights: ["availableYears", "years", "rounds", "majorRows", "decisionInsights"],
     majors: ["availableYears", "years", "majorRows", "majorStatuses"],
     rounds: ["availableYears", "years", "rounds", "roundStatuses"],
@@ -105,6 +107,18 @@ test("each page queries only live Neon dependencies", async (t) => {
     const result = await dataModule.queryPageSnapshot(client, "overview", 9999);
     assert.equal(result.selectedYear, 2569);
     assert.deepEqual(client.calls.find((call) => call.kind === "years").values, [2569]);
+  });
+
+  await t.test("Dashboard keeps all-year people totals separate from annual sums", async () => {
+    const client = fakeClient();
+    const result = await dataModule.queryPageSnapshot(client, "dashboard", 2567);
+    assert.deepEqual(result.snapshot.allYearPeople, { applicants: 9000, confirmed: 1400, resigned: 60 });
+    assert.equal(result.snapshot.years.length, 3);
+    const query = client.calls.find((call) => call.kind === "allYearPeople");
+    assert.deepEqual(query.values, []);
+    assert.equal((query.sql.match(/count\(distinct f.student_key\)/g) ?? []).length, 3);
+    assert.doesNotMatch(query.sql, /group by/i);
+    await assert.rejects(dataModule.queryPageSnapshot(fakeClient({ fail: "allYearPeople" }), "dashboard"), /Unavailable/);
   });
 
   await t.test("query failures and empty required results reject instead of falling back", async () => {

@@ -1,6 +1,24 @@
 import type { QueryClient } from "../db/neon-client";
-import type { StatusRow, YearOverview } from "../dashboard-types";
+import type { DashboardSnapshot, StatusRow, YearOverview } from "../dashboard-types";
 import { numberValue, requiredRows } from "./query-helpers";
+
+export async function getAllYearPeople(client: QueryClient): Promise<DashboardSnapshot["allYearPeople"]> {
+  const [row] = await requiredRows(client, `
+    /* all-year-distinct-people */
+    select count(distinct f.student_key) as applicants,
+      count(distinct f.student_key) filter (where s.tcas_status = 'ยืนยันสิทธิ์') as confirmed,
+      count(distinct f.student_key) filter (
+        where s.tcas_status in ('สละสิทธิ์', 'สละสิทธิ์ในรอบ 2')
+      ) as resigned
+    from admissions_dw.fact_admission f
+    join admissions_dw.dim_tcas_status s on s.status_key = f.status_key
+  `);
+  return {
+    applicants: numberValue(row.applicants, "applicants"),
+    confirmed: numberValue(row.confirmed, "confirmed"),
+    resigned: numberValue(row.resigned, "resigned"),
+  };
+}
 
 export async function getAvailableYears(client: QueryClient): Promise<number[]> {
   const rows = await requiredRows(client, `

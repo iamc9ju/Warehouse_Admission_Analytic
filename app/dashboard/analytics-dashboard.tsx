@@ -1019,7 +1019,9 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
             const values = sortedOverviews.map((overview) => overview[kpi.key as keyof typeof overview] as number);
             const firstValue = values[0] ?? 0;
             const latestValue = values[values.length - 1] ?? 0;
-            const totalValue = values.reduce((sum, val) => sum + val, 0);
+            const totalValue = kpi.key === "choices"
+              ? values.reduce((sum, val) => sum + val, 0)
+              : snapshot.allYearPeople[kpi.key];
             const percentChange = firstValue === 0 ? 0 : (delta / firstValue) * 100;
             const minimum = Math.min(...values);
             const maximum = Math.max(...values);

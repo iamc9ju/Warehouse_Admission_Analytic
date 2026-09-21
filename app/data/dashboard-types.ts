@@ -66,6 +66,7 @@ export type RoundStatusRow = {
 };
 
 export type DashboardSnapshot = {
+  allYearPeople: { applicants: number; confirmed: number; resigned: number };
   runtime: {
     source: "live-neon";
     loadedAt: string;
