@@ -2,33 +2,42 @@ export type QueryRow = Record<string, unknown>;
 
 export type QueryClient = {
   query<T extends QueryRow = QueryRow>(sql: string, values?: number[]): Promise<{ rows: T[] }>;
-  end(): Promise<void>;
 };
 
 type PgModule = {
-  Client: new (config: {
+  Pool: new (config: {
     connectionString: string;
     ssl?: { rejectUnauthorized: boolean };
     connectionTimeoutMillis: number;
     query_timeout: number;
     statement_timeout: number;
-  }) => QueryClient & { connect(): Promise<void> };
+    max: number;
+    idleTimeoutMillis: number;
+    allowExitOnIdle: boolean;
+  }) => QueryClient;
+};
+
+const poolRegistryKey = Symbol.for("admissions.neon.pool-registry");
+const globalWithPools = globalThis as typeof globalThis & {
+  [poolRegistryKey]?: Map<string, QueryClient>;
 };
 
 export async function connectNeon(databaseUrl: string): Promise<QueryClient> {
+  const pools = globalWithPools[poolRegistryKey] ??= new Map<string, QueryClient>();
+  const existing = pools.get(databaseUrl);
+  if (existing) return existing;
+
   const pg = (await import("pg")) as unknown as PgModule;
-  const client = new pg.Client({
+  const pool = new pg.Pool({
     connectionString: databaseUrl,
     ssl: databaseUrl.includes("sslmode=disable") ? undefined : { rejectUnauthorized: false },
-    connectionTimeoutMillis: 3000,
-    query_timeout: 5000,
-    statement_timeout: 5000,
+    connectionTimeoutMillis: 15000,
+    query_timeout: 15000,
+    statement_timeout: 15000,
+    max: 5,
+    idleTimeoutMillis: 30000,
+    allowExitOnIdle: true,
   });
-  try {
-    await client.connect();
-    return client;
-  } catch (error) {
-    await client.end().catch(() => undefined);
-    throw error;
-  }
+  pools.set(databaseUrl, pool);
+  return pool;
 }

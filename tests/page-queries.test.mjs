@@ -29,10 +29,9 @@ async function loadModule() {
       setup(plugin) {
         plugin.onResolve({ filter: /^pg$/ }, () => ({ path: "pg", namespace: "test" }));
         plugin.onLoad({ filter: /.*/, namespace: "test" }, () => ({ contents: `
-          export class Client {
-            async connect() { globalThis[Symbol.for('admissions.page-query-tests')].connections++; }
+          export class Pool {
+            constructor() { globalThis[Symbol.for('admissions.page-query-tests')].connections++; }
             query(sql, values) { return globalThis[Symbol.for('admissions.page-query-tests')].client.query(sql, values); }
-            async end() { globalThis[Symbol.for('admissions.page-query-tests')].closed++; }
           }
         ` }));
       },
@@ -45,7 +44,6 @@ function fakeClient({ fail, empty } = {}) {
   const calls = [];
   return {
     calls,
-    async end() {},
     async query(sql, values = []) {
       const kind = sql.includes("decision-insights-from-marts") ? "decisionInsights"
         : sql.includes("select distinct academic_year") ? "availableYears"
@@ -115,18 +113,17 @@ test("each page queries only live Neon dependencies", async (t) => {
   });
 });
 
-test("page loaders cache live requests and require DATABASE_URL", async () => {
+test("page loaders cache live requests, reuse one pool and require DATABASE_URL", async () => {
   const oldEnv = { DATABASE_URL: process.env.DATABASE_URL, NODE_ENV: process.env.NODE_ENV };
   process.env.NODE_ENV = "production";
   process.env.DATABASE_URL = "postgresql://test-only";
-  const state = { client: fakeClient(), connections: 0, closed: 0 };
+  const state = { client: fakeClient(), connections: 0 };
   globalThis[mockKey] = state;
   try {
     const dataModule = await loadModule();
     const [first, second] = await Promise.all([dataModule.loadOverviewPageData(2567), dataModule.loadOverviewPageData(2567)]);
     assert.deepEqual(first, second);
     assert.equal(state.connections, 1);
-    assert.equal(state.closed, 1);
     delete process.env.DATABASE_URL;
     await assert.rejects(dataModule.loadRoundsPageData(), /DATABASE_URL is required/);
   } finally {

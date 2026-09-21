@@ -18,28 +18,42 @@ export async function queryPageSnapshot(
   page: DashboardPage,
   requestedYear?: number,
 ): Promise<LoadedPageSnapshot> {
-  const availableYears = await getAvailableYears(client);
-  const selectedYear = selectOverviewYear(availableYears, requestedYear);
-  const year = page === "overview" ? selectedYear : undefined;
+  const loadPageEntries = async (year?: number): Promise<[string, unknown][]> => {
+    const queries: Partial<{ [K in keyof DashboardSnapshot]: () => Promise<DashboardSnapshot[K]> }> = {
+      years: () => getYearOverview(client, year),
+      rounds: () => getRoundOverview(client, year),
+      majorRows: () => getMajorConversion(client, year),
+      majorStatuses: () => getMajorStatuses(client, year),
+      statuses: () => getYearStatuses(client, year),
+      roundStatuses: () => getRoundStatuses(client, year),
+      businessQuestions: () => getBusinessQuestions(),
+      decisionInsights: () => getDecisionInsights(client),
+    };
 
-  const queries: Partial<{ [K in keyof DashboardSnapshot]: () => Promise<DashboardSnapshot[K]> }> = {
-    years: () => getYearOverview(client, year),
-    rounds: () => getRoundOverview(client, year),
-    majorRows: () => getMajorConversion(client, year),
-    majorStatuses: () => getMajorStatuses(client, year),
-    statuses: () => getYearStatuses(client, year),
-    roundStatuses: () => getRoundStatuses(client, year),
-    businessQuestions: () => getBusinessQuestions(),
-    decisionInsights: () => getDecisionInsights(client),
+    return Promise.all(pageDataFields[page].map(async (field) => {
+      const query = queries[field];
+      if (!query) throw new Error(`No live Neon query is registered for ${field}`);
+      const value = await query();
+      if (value === undefined) throw new Error(`Live Neon returned no ${field}`);
+      return [field, value] as [string, unknown];
+    }));
   };
 
-  const liveEntries: [string, unknown][] = [];
-  for (const field of pageDataFields[page]) {
-    const query = queries[field];
-    if (!query) throw new Error(`No live Neon query is registered for ${field}`);
-    const value = await query();
-    if (value === undefined) throw new Error(`Live Neon returned no ${field}`);
-    liveEntries.push([field, value]);
+  const availableYearsPromise = getAvailableYears(client);
+  let availableYears: number[];
+  let selectedYear: number;
+  let liveEntries: [string, unknown][];
+
+  if (page === "overview") {
+    availableYears = await availableYearsPromise;
+    selectedYear = selectOverviewYear(availableYears, requestedYear);
+    liveEntries = await loadPageEntries(selectedYear);
+  } else {
+    [availableYears, liveEntries] = await Promise.all([
+      availableYearsPromise,
+      loadPageEntries(),
+    ]);
+    selectedYear = selectOverviewYear(availableYears, requestedYear);
   }
   return {
     availableYears,
@@ -60,9 +74,5 @@ export async function loadLiveNeonSnapshot(
   requestedYear?: number,
 ): Promise<LoadedPageSnapshot> {
   const client = await connectNeon(databaseUrl);
-  try {
-    return await queryPageSnapshot(client, page, requestedYear);
-  } finally {
-    await client.end();
-  }
+  return queryPageSnapshot(client, page, requestedYear);
 }
