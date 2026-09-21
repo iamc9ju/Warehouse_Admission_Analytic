@@ -111,7 +111,7 @@ export function DonutChartCard({
         <div>
           <span>{kicker}</span>
           <h2>{title}</h2>
-          <small style={{ fontSize: "12px", color: "#666", display: "block", marginTop: "3px" }}>{subtitle}</small>
+          <small style={{ fontSize: "var(--text-caption)", color: "#666", display: "block", marginTop: "3px" }}>{subtitle}</small>
         </div>
       </header>
 
@@ -161,13 +161,13 @@ export function DonutChartCard({
               padding: "10px",
             }}
           >
-            <small style={{ fontSize: "10.5px", fontWeight: 700, color: "#777", textTransform: "uppercase" }}>
+            <small style={{ fontSize: "var(--text-caption)", fontWeight: 700, color: "#777", textTransform: "uppercase" }}>
               {activeSlice ? activeSlice.label.split(" — ")[0] : centerLabel}
             </small>
-            <strong style={{ fontSize: "17px", fontWeight: 900, color: "#111", margin: "2px 0" }}>
+            <strong style={{ fontSize: "var(--text-subheading)", fontWeight: 900, color: "#111", margin: "2px 0" }}>
               {formatNumber(activeSlice ? activeSlice.value : total)}
             </strong>
-            <span style={{ fontSize: "11px", fontWeight: 800, color: activeSlice ? activeSlice.color : "#444" }}>
+            <span style={{ fontSize: "var(--text-caption)", fontWeight: 800, color: activeSlice ? activeSlice.color : "#444" }}>
               {activeSlice ? `${activeSlice.sharePct.toFixed(2)}%` : centerSubtext}
             </span>
           </div>
@@ -194,13 +194,13 @@ export function DonutChartCard({
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
                   <i style={{ width: "11px", height: "11px", borderRadius: "3px", background: d.color, flexShrink: 0 }} />
-                  <span style={{ fontSize: "12px", fontWeight: 700, color: "#333", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <span style={{ fontSize: "var(--text-caption)", fontWeight: 700, color: "#333", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {d.label}
                   </span>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "10px" }}>
-                  <strong style={{ fontSize: "11.5px", color: "#111", display: "block" }}>{formatNumber(d.value)}</strong>
-                  <small style={{ fontSize: "10px", color: "#666", fontWeight: 600 }}>{d.sharePct.toFixed(1)}%</small>
+                  <strong style={{ fontSize: "var(--text-caption)", color: "#111", display: "block" }}>{formatNumber(d.value)}</strong>
+                  <small style={{ fontSize: "var(--text-caption)", color: "#666", fontWeight: 600 }}>{d.sharePct.toFixed(1)}%</small>
                 </div>
               </div>
             );

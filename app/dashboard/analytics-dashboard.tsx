@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { RoundComparisonChart } from "./round-comparison-chart";
 import { PresentationChartLineIcon } from "@heroicons/react/24/outline";
 import type { MajorRow, Year, YearOverview } from "../data/dashboard-types";
 import type { PageData } from "../data/page-data-types";
@@ -78,7 +79,7 @@ function MajorTrendLineCharts({
           border: "1px solid #eae2d6",
         }}
       >
-        <span style={{ fontSize: "12px", fontWeight: 800, color: "#777", alignSelf: "center", marginRight: "4px" }}>
+        <span style={{ fontSize: "var(--text-caption)", fontWeight: 800, color: "#777", alignSelf: "center", marginRight: "4px" }}>
           สาขาวิชา:
         </span>
         {uniqueMajors.map((m, idx) => {
@@ -114,7 +115,7 @@ function MajorTrendLineCharts({
                   display: "inline-block",
                 }}
               />
-              <span style={{ fontSize: "12.5px", fontWeight: 750, color: isHovered ? color : "#333" }}>
+              <span style={{ fontSize: "var(--text-label)", fontWeight: 750, color: isHovered ? color : "#333" }}>
                 {m.name}
               </span>
             </button>
@@ -244,12 +245,12 @@ function SingleMajorLineChart({
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
         <div>
-          <h3 style={{ fontSize: "16px", fontWeight: 850, color: "#111313", margin: 0 }}>{title}</h3>
-          <span style={{ fontSize: "12px", color: "#6c6f70", marginTop: "3px", display: "block" }}>{subtitle}</span>
+          <h3 style={{ fontSize: "var(--text-body)", fontWeight: 850, color: "#111313", margin: 0 }}>{title}</h3>
+          <span style={{ fontSize: "var(--text-caption)", color: "#6c6f70", marginTop: "3px", display: "block" }}>{subtitle}</span>
         </div>
         <span
           style={{
-            fontSize: "11px",
+            fontSize: "var(--text-caption)",
             fontWeight: 800,
             padding: "5px 11px",
             borderRadius: "999px",
@@ -277,7 +278,7 @@ function SingleMajorLineChart({
                 strokeDasharray={tick.val === 0 ? "none" : "4 4"}
                 strokeWidth={tick.val === 0 ? "1.5" : "1"}
               />
-              <text x={padLeft - 10} y={tick.y + 4} textAnchor="end" fontSize="11" fill="#757575" fontWeight="600">
+              <text x={padLeft - 10} y={tick.y + 4} textAnchor="end" fontSize="var(--text-caption)" fill="#757575" fontWeight="600">
                 {formatNumber(tick.val)}
               </text>
             </g>
@@ -289,7 +290,7 @@ function SingleMajorLineChart({
             return (
               <g key={year}>
                 <line x1={x} y1={padTop + plotH} x2={x} y2={padTop + plotH + 6} stroke="#bbb" strokeWidth="1.5" />
-                <text x={x} y={padTop + plotH + 24} textAnchor="middle" fontSize="13" fontWeight="800" fill="#333">
+                <text x={x} y={padTop + plotH + 24} textAnchor="middle" fontSize="var(--text-label)" fontWeight="800" fill="#333">
                   ปี {year}
                 </text>
               </g>
@@ -363,7 +364,7 @@ function SingleMajorLineChart({
                         x={cx}
                         y={cy - 10}
                         textAnchor="middle"
-                        fontSize="10"
+                        fontSize="var(--text-caption)"
                         fontWeight="800"
                         fill={m.color}
                         stroke="#ffffff"
@@ -393,7 +394,7 @@ function SingleMajorLineChart({
               color: "#ffffff",
               padding: "8px 12px",
               borderRadius: "8px",
-              fontSize: "12px",
+              fontSize: "var(--text-caption)",
               fontWeight: 700,
               boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
               pointerEvents: "none",
@@ -403,9 +404,9 @@ function SingleMajorLineChart({
           >
             <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
               <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: activeTooltip.color }} />
-              <span style={{ color: "#dddddd", fontSize: "11px" }}>{activeTooltip.majorName} (ปี {activeTooltip.year})</span>
+              <span style={{ color: "#dddddd", fontSize: "var(--text-caption)" }}>{activeTooltip.majorName} (ปี {activeTooltip.year})</span>
             </div>
-            <div style={{ fontSize: "14px", fontWeight: 850 }}>
+            <div style={{ fontSize: "var(--text-label)", fontWeight: 850 }}>
               {metricKey === "applicants" ? "ผู้สมัคร: " : "ยืนยันสิทธิ์: "}
               <span style={{ color: "#ffd54f" }}>{formatNumber(activeTooltip.value)} คน</span>
             </div>
@@ -576,7 +577,7 @@ function Tcas3ScoreScatterPlot({
             onClick={selectAll}
             style={{
               padding: "5px 12px", borderRadius: "7px", border: "1.5px solid #c56100",
-              background: "#fff8f0", color: "#c56100", fontWeight: 800, fontSize: "12px",
+              background: "#fff8f0", color: "#c56100", fontWeight: 800, fontSize: "var(--text-caption)",
               cursor: "pointer", transition: "all 140ms ease",
             }}
           >
@@ -587,7 +588,7 @@ function Tcas3ScoreScatterPlot({
             onClick={clearAll}
             style={{
               padding: "5px 12px", borderRadius: "7px", border: "1.5px solid #ddd",
-              background: "#f5f5f5", color: "#888", fontWeight: 800, fontSize: "12px",
+              background: "#f5f5f5", color: "#888", fontWeight: 800, fontSize: "var(--text-caption)",
               cursor: "pointer", transition: "all 140ms ease",
             }}
           >
@@ -609,7 +610,7 @@ function Tcas3ScoreScatterPlot({
           border: "1px solid #eae2d6",
         }}
       >
-        <span style={{ fontSize: "11.5px", fontWeight: 800, color: "#777", alignSelf: "center", marginRight: "4px" }}>
+        <span style={{ fontSize: "var(--text-caption)", fontWeight: 800, color: "#777", alignSelf: "center", marginRight: "4px" }}>
           สาขาวิชา:
         </span>
         {uniqueMajors.map((m, idx) => {
@@ -630,7 +631,7 @@ function Tcas3ScoreScatterPlot({
                 background: active ? `${color}18` : "#ffffff",
                 color: active ? color : "#999",
                 fontWeight: 750,
-                fontSize: "12px",
+                fontSize: "var(--text-caption)",
                 cursor: "pointer",
                 transition: "all 150ms ease",
                 opacity: active ? 1 : 0.55,
@@ -656,19 +657,19 @@ function Tcas3ScoreScatterPlot({
           marginBottom: "16px", flexWrap: "wrap",
         }}
       >
-        <span style={{ fontSize: "12px", fontWeight: 700, color: "#555" }}>
+        <span style={{ fontSize: "var(--text-caption)", fontWeight: 700, color: "#555" }}>
           📅 X-axis: ปีการศึกษา
         </span>
-        <span style={{ fontSize: "12px", fontWeight: 700, color: "#555" }}>
+        <span style={{ fontSize: "var(--text-caption)", fontWeight: 700, color: "#555" }}>
           📊 Y-axis: คะแนนเฉลี่ย (Avg Score)
         </span>
-        <span style={{ fontSize: "12px", fontWeight: 700, color: "#555" }}>
+        <span style={{ fontSize: "var(--text-caption)", fontWeight: 700, color: "#555" }}>
           ⚪ ขนาดวงกลม: จำนวนผู้สมัคร
         </span>
-        <span style={{ fontSize: "12px", fontWeight: 700, color: "#555" }}>
+        <span style={{ fontSize: "var(--text-caption)", fontWeight: 700, color: "#555" }}>
           🎨 สี: แยกตามสาขาวิชา
         </span>
-        <span style={{ marginLeft: "auto", fontSize: "12px", fontWeight: 700, color: "#aaa" }}>
+        <span style={{ marginLeft: "auto", fontSize: "var(--text-caption)", fontWeight: 700, color: "#aaa" }}>
           {filteredRows.length} จุดข้อมูล · {selectedMajors.size} สาขา
         </span>
       </div>
@@ -687,7 +688,7 @@ function Tcas3ScoreScatterPlot({
                 strokeDasharray={tick.val === yMin ? "none" : "4 4"}
                 strokeWidth={tick.val === yMin ? "1.5" : "1"}
               />
-              <text x={padL - 8} y={tick.y + 4} textAnchor="end" fontSize="11" fill="#757575" fontWeight="600">
+              <text x={padL - 8} y={tick.y + 4} textAnchor="end" fontSize="var(--text-caption)" fill="#757575" fontWeight="600">
                 {tick.val.toFixed(1)}
               </text>
             </g>
@@ -699,7 +700,7 @@ function Tcas3ScoreScatterPlot({
             return (
               <g key={`xgrid-${year}`}>
                 <line x1={x} y1={padT} x2={x} y2={padT + plotH} stroke="#eee8e1" strokeDasharray="4 4" strokeWidth="1" />
-                <text x={x} y={padT + plotH + 22} textAnchor="middle" fontSize="13" fontWeight="800" fill="#333">
+                <text x={x} y={padT + plotH + 22} textAnchor="middle" fontSize="var(--text-label)" fontWeight="800" fill="#333">
                   ปี {year}
                 </text>
               </g>
@@ -711,11 +712,11 @@ function Tcas3ScoreScatterPlot({
           <line x1={padL} y1={padT + plotH} x2={svgW - padR} y2={padT + plotH} stroke="#bbb" strokeWidth="1.5" />
 
           {/* Axis labels */}
-          <text x={padL + plotW / 2} y={svgH - 6} textAnchor="middle" fontSize="13" fontWeight="800" fill="#333">
+          <text x={padL + plotW / 2} y={svgH - 6} textAnchor="middle" fontSize="var(--text-label)" fontWeight="800" fill="#333">
             ปีการศึกษา
           </text>
           <text
-            x={13} y={padT + plotH / 2} textAnchor="middle" fontSize="13" fontWeight="800" fill="#333"
+            x={13} y={padT + plotH / 2} textAnchor="middle" fontSize="var(--text-label)" fontWeight="800" fill="#333"
             transform={`rotate(-90, 13, ${padT + plotH / 2})`}
           >
             คะแนนเฉลี่ย (Avg Score)
@@ -796,7 +797,7 @@ function Tcas3ScoreScatterPlot({
               color: "#ffffff",
               padding: "10px 14px",
               borderRadius: "10px",
-              fontSize: "12px",
+              fontSize: "var(--text-caption)",
               fontWeight: 700,
               boxShadow: "0 6px 24px rgba(0,0,0,0.35)",
               pointerEvents: "none",
@@ -807,12 +808,12 @@ function Tcas3ScoreScatterPlot({
           >
             <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "6px" }}>
               <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: hoveredPoint.color, flexShrink: 0 }} />
-              <span style={{ fontSize: "12.5px", fontWeight: 800 }}>{hoveredPoint.major}</span>
+              <span style={{ fontSize: "var(--text-label)", fontWeight: 800 }}>{hoveredPoint.major}</span>
             </div>
-            <div style={{ color: "#aaa", fontSize: "11px", marginBottom: "7px" }}>
+            <div style={{ color: "#aaa", fontSize: "var(--text-caption)", marginBottom: "7px" }}>
               ปีการศึกษา {hoveredPoint.year} · TCAS รอบ 3
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "auto auto", gap: "4px 16px", fontSize: "12px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "auto auto", gap: "4px 16px", fontSize: "var(--text-caption)" }}>
               <span style={{ color: "#bbb" }}>คะแนนเฉลี่ย</span>
               <span style={{ color: "#ffd54f", fontWeight: 900 }}>{hoveredPoint.avgScore.toFixed(3)}</span>
               <span style={{ color: "#bbb" }}>ผู้สมัคร</span>
@@ -844,12 +845,6 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
     ),
   ];
   const roundCodes = Array.from(new Set(rounds.map((round) => round.code))).sort();
-  const [roundDisplayMode, setRoundDisplayMode] = useState<"value" | "percent">("value");
-
-  const maxOverallApplicants = useMemo(() => {
-    return Math.max(...rounds.map((r) => r.applicants), 1);
-  }, [rounds]);
-
   const defaultStatus = "ผู้สมัคร";
   const [selectedStatus, setSelectedStatus] = useState(() => defaultStatus);
   const [selectedRoundCode, setSelectedRoundCode] = useState(() => roundCodes[0]);
@@ -980,14 +975,6 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
     return last - first;
   };
 
-  const roundGroups = roundCodes.map((code) => {
-    const roundMeta = rounds.find((r) => r.code === code);
-    return {
-      code,
-      name: roundMeta?.name ?? "",
-      rows: rounds.filter((r) => r.code === code),
-    };
-  });
 
   return (
     <main className="app-frame analytics-app-frame">
@@ -1102,174 +1089,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
         </section>
 
         <section className={`analytics-chart-grid ${hasManyYears ? "many-years" : ""}`} data-year-count={availableYears.length}>
-          <article className="analytics-card year-comparison-card" style={{ gridColumn: "1 / -1" }}>
-            <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-              <div>
-                <span>Round YoY Comparison</span>
-                <h2 style={{ margin: "2px 0 0" }}>ภาพรวมผู้สมัคร ผู้มีสิทธิ์ และยืนยันสิทธิ์แต่ละรอบทุกปี</h2>
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
-                <div className="analytics-legend" style={{ gap: "12px 18px", margin: 0 }}>
-                  <span><i style={{ background: "#c56100", border: "1px solid #c56100" }} />ผู้สมัคร</span>
-                  <span><i style={{ background: "#477ca8" }} />ผู้มีสิทธิ์</span>
-                  <span><i style={{ background: "#2e7d32" }} />ยืนยันสิทธิ์</span>
-                </div>
-                {/* f5c38b */}
-
-                <div style={{ display: "flex", background: "#eae2d6", borderRadius: "8px", padding: "3px" }}>
-                  <button
-                    type="button"
-                    onClick={() => setRoundDisplayMode("value")}
-                    style={{
-                      padding: "4px 12px",
-                      borderRadius: "6px",
-                      border: "none",
-                      fontSize: "12px",
-                      fontWeight: 750,
-                      cursor: "pointer",
-                      background: roundDisplayMode === "value" ? "#ffffff" : "transparent",
-                      color: roundDisplayMode === "value" ? "#111111" : "#666666",
-                      boxShadow: roundDisplayMode === "value" ? "0 2px 6px rgba(0,0,0,0.1)" : "none",
-                      transition: "all 150ms ease",
-                    }}
-                  >
-                    จำนวนคน
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRoundDisplayMode("percent")}
-                    style={{
-                      padding: "4px 12px",
-                      borderRadius: "6px",
-                      border: "none",
-                      fontSize: "12px",
-                      fontWeight: 750,
-                      cursor: "pointer",
-                      background: roundDisplayMode === "percent" ? "#ffffff" : "transparent",
-                      color: roundDisplayMode === "percent" ? "#111111" : "#666666",
-                      boxShadow: roundDisplayMode === "percent" ? "0 2px 6px rgba(0,0,0,0.1)" : "none",
-                      transition: "all 150ms ease",
-                    }}
-                  >
-                    เปอร์เซ็นต์ (%)
-                  </button>
-                </div>
-              </div>
-            </header>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                gap: "18px",
-                marginTop: "16px",
-              }}
-            >
-              {roundGroups.map((group) => {
-                return (
-                  <div
-                    key={group.code}
-                    style={{
-                      border: "1px solid #e5ded6",
-                      borderRadius: "10px",
-                      background: "#fdfbf8",
-                      padding: "16px 20px",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                      <strong style={{ fontSize: "16px", color: "#242424" }}>{group.code}</strong>
-                      <small style={{ color: "#777", fontSize: "13px", fontWeight: 600 }}>{group.name}</small>
-                    </div>
-
-                    <div className="year-bars" style={{ height: "260px", justifyContent: "space-around", borderBottom: "1px solid #ddd7d0", paddingBottom: "4px" }}>
-                      {availableYears.map((year) => {
-                        const row = group.rows.find((r) => r.year === year);
-                        const appVal = row?.applicants ?? 0;
-                        const confVal = row?.confirmed ?? 0;
-
-                        const eligVal = row?.eligible ?? confVal;
-
-                        const containerH = 220;
-                        const appBarHeightPx = appVal > 0 ? Math.max(12, Math.round((appVal / maxOverallApplicants) * containerH)) : 0;
-                        const eligPctOfApp = appVal > 0 ? (eligVal / appVal) * 100 : 0;
-                        const confPctOfApp = appVal > 0 ? (confVal / appVal) * 100 : 0;
-                        const confPctOfElig = eligVal > 0 ? (confVal / eligVal) * 100 : 0;
-
-                        return (
-                          <div key={year} style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%", justifyContent: "flex-end" }}>
-                            <i
-                              title={`${year} ${group.code}: ผู้สมัคร ${formatNumber(appVal)} คน | ผู้มีสิทธิ์ ${formatNumber(eligVal)} คน (${eligPctOfApp.toFixed(1)}%) | ยืนยันสิทธิ์ ${formatNumber(confVal)} คน (${confPctOfElig.toFixed(1)}% ของผู้มีสิทธิ์)`}
-                              style={{
-                                height: `${appBarHeightPx}px`,
-                                background: "#c56100",
-                                border: "1px solid #c56100",
-                                position: "relative",
-                                overflow: "visible",
-                                borderRadius: "4px 4px 0 0",
-                                width: "44px",
-                                flex: "none",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  position: "absolute",
-                                  bottom: 0,
-                                  left: 0,
-                                  right: 0,
-                                  height: `${eligPctOfApp}%`,
-                                  background: "#477ca8",
-                                  borderRadius: eligPctOfApp >= 98 ? "3px 3px 0 0" : "0",
-                                  transition: "height 300ms ease",
-                                }}
-                              />
-                              <span
-                                style={{
-                                  position: "absolute",
-                                  bottom: 0,
-                                  left: 0,
-                                  right: 0,
-                                  height: `${confPctOfApp}%`,
-                                  background: "#2e7d32",
-                                  borderRadius: confPctOfApp >= 98 ? "3px 3px 0 0" : "0",
-                                  transition: "height 300ms ease",
-                                }}
-                              />
-                              <b style={{ position: "absolute", top: "-22px", left: "50%", transform: "translateX(-50%)", fontSize: "11px", whiteSpace: "nowrap", color: "#333" }}>
-                                {roundDisplayMode === "value" ? formatNumber(appVal) : (appVal > 0 ? "100%" : "0%")}
-                              </b>
-                              {confVal > 0 && (
-                                <small
-                                  style={{
-                                    position: "absolute",
-                                    bottom: "4px",
-                                    left: "50%",
-                                    transform: "translateX(-50%)",
-                                    fontSize: "10px",
-                                    color: "#ffffff",
-                                    fontWeight: 800,
-                                    whiteSpace: "nowrap",
-                                    zIndex: 2,
-                                    pointerEvents: "none",
-                                  }}
-                                >
-                                  {roundDisplayMode === "value" ? formatNumber(confVal) : `${confPctOfApp.toFixed(1)}%`}
-                                </small>
-                              )}
-                            </i>
-                            <span style={{ fontSize: "13px", fontWeight: 750, marginTop: "8px", color: "#555" }}>ปี {year}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </article>
+          <RoundComparisonChart rounds={rounds} years={availableYears} />
 
           <MajorTrendLineCharts
             availableYears={availableYears}

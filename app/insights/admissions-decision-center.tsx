@@ -360,19 +360,19 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
               </div> */}
             {runnerUps.length > 0 && (
               <section className="runner-ups-section" style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1.5px dashed #eae2d6" }}>
-                <h3 style={{ fontSize: "14px", fontWeight: 800, color: "#111", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                <h3 style={{ fontSize: "var(--text-label)", fontWeight: 800, color: "#111", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
                   <span>📊</span> อันดับรองลงมา (Runner-ups)
                 </h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {runnerUps.map((item, idx) => (
                     <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "#fcfaf7", border: "1px solid #eae2d6", borderRadius: "8px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "22px", height: "22px", borderRadius: "50%", background: "#e5ded6", color: "#6f6b64", fontSize: "11px", fontWeight: 800 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "22px", height: "22px", borderRadius: "50%", background: "#e5ded6", color: "#6f6b64", fontSize: "var(--text-caption)", fontWeight: 800 }}>
                           {idx + 2}
                         </span>
-                        <strong style={{ fontSize: "13px", color: "#333", fontWeight: 700 }}>{item.name}</strong>
+                        <strong style={{ fontSize: "var(--text-label)", color: "#333", fontWeight: 700 }}>{item.name}</strong>
                       </div>
-                      <span style={{ fontSize: "12px", fontWeight: 750, color: "#777" }}>{item.displayValue}</span>
+                      <span style={{ fontSize: "var(--text-caption)", fontWeight: 750, color: "#777" }}>{item.displayValue}</span>
                     </div>
                   ))}
                 </div>
