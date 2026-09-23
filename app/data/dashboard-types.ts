@@ -13,6 +13,7 @@ export type YearOverview = {
 };
 
 export type MajorRow = {
+  majorKey: string;
   year: Year;
   code: string;
   name: string;
@@ -36,6 +37,7 @@ export type StatusRow = {
 };
 
 export type MajorStatusRow = {
+  majorKey: string;
   year: Year;
   code: string;
   name: string;

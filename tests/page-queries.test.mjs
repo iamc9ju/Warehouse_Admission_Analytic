@@ -65,8 +65,8 @@ function fakeClient({ fail, empty } = {}) {
         availableYears: () => [...fixtureYears].reverse().map((row) => ({ academic_year: row.year })),
         years: () => filteredYears.map((row) => ({ academic_year: row.year, application_choices: row.choices, unique_applicants: row.applicants, confirmed_applicants: row.confirmed, resigned_applicants: row.resigned, eligible_applicants: row.eligible, confirmed_rate: row.rate, source_files: row.sourceFiles, avg_score: row.avgScore })),
         rounds: () => filteredYears.map((row) => ({ academic_year: row.year, tcas_round_code: "TCAS1", tcas_round_name: "Portfolio", choices: row.choices, unique_applicants: row.applicants, confirmed_applicants: row.confirmed, confirmed_rate: row.rate, source_files: row.sourceFiles, eligible_applicants: row.eligible })),
-        majorRows: () => filteredYears.map((row) => ({ academic_year: row.year, major_code: "CE", major_name: "Civil", program_type: "Regular", applicant_count: row.applicants, application_choices: row.choices, confirmed_count: row.confirmed, confirmed_rate: row.rate, avg_score: row.avgScore, applicant_change: 0, eligible_count: row.eligible })),
-        majorStatuses: () => filteredYears.map((row) => ({ academic_year: row.year, major_code: "CE", major_name: "Civil", tcas_status: "ยืนยันสิทธิ์", application_choices: row.confirmed, unique_applicants: row.confirmed })),
+        majorRows: () => filteredYears.map((row) => ({ academic_year: row.year, major_key: "3", major_code: "CE", major_name: "Civil", program_type: "Regular", applicant_count: row.applicants, application_choices: row.choices, confirmed_count: row.confirmed, confirmed_rate: row.rate, avg_score: row.avgScore, applicant_change: 0, eligible_count: row.eligible })),
+        majorStatuses: () => filteredYears.map((row) => ({ academic_year: row.year, major_key: "3", major_code: "CE", major_name: "Civil", tcas_status: "ยืนยันสิทธิ์", application_choices: row.confirmed, unique_applicants: row.confirmed })),
         statuses: () => filteredYears.map((row) => ({ academic_year: row.year, status_label: "ยืนยันสิทธิ์", choices: row.confirmed, unique_applicants: row.confirmed, share_pct: 10, tone: "green" })),
         roundStatuses: () => filteredYears.map((row) => ({ academic_year: row.year, tcas_round_code: "TCAS1", tcas_round_name: "Portfolio", tcas_status: "ยืนยันสิทธิ์", application_choices: row.confirmed, unique_applicants: row.confirmed })),
         decisionInsights: () => [
@@ -107,6 +107,20 @@ test("each page queries only live Neon dependencies", async (t) => {
     const result = await dataModule.queryPageSnapshot(client, "overview", 9999);
     assert.equal(result.selectedYear, 2569);
     assert.deepEqual(client.calls.find((call) => call.kind === "years").values, [2569]);
+  });
+
+  await t.test("same major code keeps separate regular and special identities", async () => {
+    const base = fakeClient();
+    const client = { async query(sql, values) {
+      const result = await base.query(sql, values);
+      if (!sql.includes("mart_major_conversion")) return result;
+      return { rows: result.rows.flatMap(row => [row, { ...row, major_key: "9", major_name: "Civil Special", program_type: "Special", applicant_count: 7 }]) };
+    } };
+    const { snapshot } = await dataModule.queryPageSnapshot(client, "dashboard");
+    const rows = snapshot.majorRows.filter(row => row.year === 2569);
+    assert.deepEqual(rows.map(row => row.majorKey), ["3", "9"]);
+    assert.deepEqual(rows.map(row => row.code), ["CE", "CE"]);
+    assert.deepEqual(rows.map(row => row.applicants), [3443, 7]);
   });
 
   await t.test("Dashboard keeps all-year people totals separate from annual sums", async () => {

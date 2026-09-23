@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { RoundRow } from "../data/dashboard-types";
 
 const metrics = [
@@ -24,7 +25,8 @@ export function RoundComparisonChart({ rounds, years }: { rounds: RoundRow[]; ye
   return <article className="analytics-card year-comparison-card" style={{ gridColumn: "1 / -1" }}>
     <header style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
       <div><span>Round YoY Comparison</span><h2>ภาพรวมผู้สมัคร ผู้มีสิทธิ์ และยืนยันสิทธิ์แต่ละรอบทุกปี</h2></div>
-      <div style={{ display: "flex", gap: 6 }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+        <Link href="/rounds" className="link-button" style={{ margin: 0, textDecoration: "none" }}>ดูรายละเอียดเจาะลึก →</Link>
         {[false, true].map((mode) => <button key={String(mode)} type="button" aria-pressed={percent === mode} onClick={() => setPercent(mode)} style={{ padding: "7px 12px", border: "1px solid #ded5c8", borderRadius: 8, background: percent === mode ? "#fff0dd" : "white", cursor: "pointer" }}>{mode ? "เปอร์เซ็นต์ (%)" : "จำนวนคน"}</button>)}
       </div>
     </header>

@@ -93,11 +93,6 @@ CREATE TABLE IF NOT EXISTS admissions_dw.dim_major (
     CONSTRAINT dim_major_unique UNIQUE (major_id, major_name, major_type)
 );
 
-CREATE TABLE IF NOT EXISTS admissions_dw.dim_program_type (
-    program_type_key BIGSERIAL PRIMARY KEY,
-    program_type TEXT NOT NULL UNIQUE
-);
-
 CREATE TABLE IF NOT EXISTS admissions_dw.dim_tcas_status (
     status_key BIGSERIAL PRIMARY KEY,
     tcas_status TEXT NOT NULL,
@@ -113,7 +108,6 @@ CREATE TABLE IF NOT EXISTS admissions_dw.fact_admission (
     round_key BIGINT NOT NULL REFERENCES admissions_dw.dim_tcas_round(round_key),
     faculty_key BIGINT NOT NULL REFERENCES admissions_dw.dim_faculty(faculty_key),
     major_key BIGINT NOT NULL REFERENCES admissions_dw.dim_major(major_key),
-    program_type_key BIGINT NOT NULL REFERENCES admissions_dw.dim_program_type(program_type_key),
     status_key BIGINT NOT NULL REFERENCES admissions_dw.dim_tcas_status(status_key),
     source_file TEXT NOT NULL,
     source_row_number INTEGER NOT NULL CHECK (source_row_number >= 2),
@@ -250,12 +244,13 @@ SELECT
     m.major_name,
     s.tcas_status,
     COUNT(*)::BIGINT AS application_choices,
-    COUNT(DISTINCT f.student_key)::BIGINT AS unique_applicants
+    COUNT(DISTINCT f.student_key)::BIGINT AS unique_applicants,
+    m.major_key
 FROM admissions_dw.fact_admission f
 JOIN admissions_dw.dim_year y ON y.year_key = f.year_key
 JOIN admissions_dw.dim_major m ON m.major_key = f.major_key
 JOIN admissions_dw.dim_tcas_status s ON s.status_key = f.status_key
-GROUP BY y.academic_year, m.major_id, m.major_name, s.tcas_status;
+GROUP BY m.major_key, y.academic_year, m.major_id, m.major_name, s.tcas_status;
 
 CREATE OR REPLACE VIEW admissions_dw.mart_tcas_year_summary AS
 SELECT
@@ -290,7 +285,7 @@ SELECT
     r.tcas_round_name,
     m.major_id,
     m.major_name,
-    p.program_type,
+    m.major_type AS program_type,
     COUNT(DISTINCT f.student_key)::BIGINT AS applicant_count,
     COUNT(DISTINCT f.student_key) FILTER (WHERE s.tcas_status = 'ยืนยันสิทธิ์')::BIGINT AS confirmed_count,
     ROUND(
@@ -303,6 +298,5 @@ FROM admissions_dw.fact_admission f
 JOIN admissions_dw.dim_year y ON y.year_key = f.year_key
 JOIN admissions_dw.dim_tcas_round r ON r.round_key = f.round_key
 JOIN admissions_dw.dim_major m ON m.major_key = f.major_key
-JOIN admissions_dw.dim_program_type p ON p.program_type_key = f.program_type_key
 JOIN admissions_dw.dim_tcas_status s ON s.status_key = f.status_key
-GROUP BY y.academic_year, r.tcas_round_code, r.tcas_round_name, m.major_id, m.major_name, p.program_type;
+GROUP BY y.academic_year, r.tcas_round_code, r.tcas_round_name, m.major_id, m.major_name, m.major_type;

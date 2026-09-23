@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Year } from "../data/dashboard-types";
 import type { PageData } from "../data/page-data-types";
 import { SidebarNavigation } from "../sidebar-navigation";
 
@@ -24,12 +23,6 @@ function deltaClass(value?: number) {
 export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
   const { majorRows, majorStatuses, years } = snapshot;
 
-  const selectableYears = useMemo(
-    () => [...years].sort((first, second) => second.year - first.year),
-    [years]
-  );
-  const [selectedYear, setSelectedYear] = useState<Year>(() => selectableYears[0]?.year ?? 0);
-
   const availableYears = useMemo(
     () => [...years].map((y) => y.year).sort((a, b) => a - b),
     [years]
@@ -38,7 +31,7 @@ export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
   const uniqueMajors = useMemo(() => {
     const map = new Map<string, { key: string; code: string; name: string }>();
     majorRows.forEach((m) => {
-      const key = `${m.code}::${m.name}`;
+      const key = m.majorKey;
       if (!map.has(key)) {
         map.set(key, { key, code: m.code, name: m.name });
       }
@@ -64,13 +57,13 @@ export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
   const selectedMajorMeta = uniqueMajors.find((m) => m.key === selectedMajorKey);
 
   const majorStatusValues = availableYears.map((year) => {
-    const row = majorRows.find((m) => m.year === year && `${m.code}::${m.name}` === selectedMajorKey);
+    const row = majorRows.find((m) => m.year === year && m.majorKey === selectedMajorKey);
     if (!row) return 0;
     if (selectedMajorStatus === "ผู้สมัคร") return row.applicants;
     if (selectedMajorStatus === "ยืนยันสิทธิ์") return row.confirmed;
     return majorStatuses.find((status) => (
       status.year === year
-      && status.code === selectedMajorMeta?.code
+      && status.majorKey === selectedMajorKey
       && status.name === selectedMajorMeta?.name
       && status.label === selectedMajorStatus
     ))?.applicants ?? 0;
@@ -89,18 +82,6 @@ export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
               <p className="eyebrow">Major Ranking</p>
               <h1>Major Demand and Conversion</h1>
               <p>ดู demand, confirmed applicants, conversion rate และ year-over-year movement ของแต่ละสาขา</p>
-            </div>
-            <div className="hero-controls">
-              <label className="year-select">
-                <span>ปีการศึกษา</span>
-                <select value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value) as Year)}>
-                  {selectableYears.map((year) => (
-                    <option value={year.year} key={year.year}>
-                      {year.year}
-                    </option>
-                  ))}
-                </select>
-              </label>
             </div>
           </section>
 

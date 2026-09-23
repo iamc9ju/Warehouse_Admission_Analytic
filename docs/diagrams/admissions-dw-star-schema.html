@@ -27,10 +27,10 @@
     <p class="lead">Single application-grain fact with every conformed dimension key and score.</p>
     <section class="schema" aria-label="Single fact dimensional schema">
       <article class="card"><h2>dim_student</h2><ul><li>student_key</li><li>student_token (HMAC-SHA256)</li></ul></article>
-      <article class="card fact"><span class="badge">Only physical fact</span><h2>fact_admission</h2><ul><li>application_token</li><li>student_key</li><li>year_key</li><li>round_key</li><li>faculty_key</li><li>major_key</li><li>program_type_key</li><li>status_key</li><li>source_file</li><li>priority</li><li><strong>score</strong></li><li>application_count = 1</li></ul></article>
+      <article class="card fact"><span class="badge">Only physical fact</span><h2>fact_admission</h2><ul><li>application_token</li><li>student_key</li><li>year_key</li><li>round_key</li><li>faculty_key</li><li>major_key</li><li>status_key</li><li>source_file</li><li>priority</li><li><strong>score</strong></li><li>application_count = 1</li></ul></article>
       <article class="card"><h2>dim_year</h2><ul><li>year_key</li><li>academic_year</li></ul></article>
       <article class="card"><h2>Admission cycle</h2><ul><li>dim_tcas_round</li><li>source_file on fact</li></ul></article>
-      <article class="card"><h2>Program structure</h2><ul><li>dim_faculty</li><li>dim_major</li><li>dim_program_type</li></ul></article>
+      <article class="card"><h2>Program structure</h2><ul><li>dim_faculty</li><li>dim_major</li><li>ประเภทภาค: dim_major.major_type</li></ul></article>
       <article class="card"><h2>Outcome</h2><ul><li>dim_tcas_status</li><li>tcas_status</li><li>applicant_status</li></ul></article>
     </section>
     <footer>Grain: one application choice per source workbook row. Coverage: TCAS1-4 in 2567-2569.</footer>

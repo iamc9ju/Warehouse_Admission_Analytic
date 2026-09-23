@@ -64,6 +64,9 @@ test("renders separate route pages instead of anchor-only sections", async () =>
   assert.match(dashboardHtml, /1,324/);
   assert.doesNotMatch(dashboardHtml, /Opportunity Matrix|Block Quadrant/);
   assert.match(dashboardHtml, /Major YoY Comparison/);
+  const majorCharts = dashboardHtml.slice(dashboardHtml.indexOf("Major YoY Comparison"), dashboardHtml.indexOf("TCAS3 Score Analysis"));
+  assert.match(majorCharts, /วิศวกรรมเครื่องกล \(ภาคพิเศษ\)/);
+  assert.match(majorCharts, /วิศวกรรมโยธา-โครงสร้างพื้นฐาน \(ภาคพิเศษ\)/);
   assert.match(dashboardHtml, /All-year comparison/);
   assert.match(dashboardHtml, /เปรียบเทียบทุกปี/);
 

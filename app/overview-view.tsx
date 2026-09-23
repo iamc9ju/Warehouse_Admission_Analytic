@@ -79,7 +79,7 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
     majorRows
       .filter((m) => m.year === selectedYear)
       .forEach((m) => {
-        const key = `${m.code}::${m.name}`;
+        const key = m.majorKey;
         const existing = map.get(key) || { code: m.code, name: m.name, choices: 0 };
         existing.choices += m.choices;
         map.set(key, existing);
@@ -216,7 +216,7 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
                   <span>ประเภท</span>
                 </div>
                 {filteredMajors.map((major, index) => (
-                  <div className="major-row" role="row" key={`${major.year}-${major.code}-${major.name}`}>
+                  <div className="major-row" role="row" key={`${major.year}-${major.majorKey}`}>
                     <span>{String(index + 1).padStart(2, "0")}</span>
                     <strong>{major.name}</strong>
                     <span className="value-with-bar">

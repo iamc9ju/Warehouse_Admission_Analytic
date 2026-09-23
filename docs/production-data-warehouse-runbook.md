@@ -31,3 +31,21 @@ npm test
 - TCAS1-4 ครบในปี 2567-2569
 
 ห้ามเผยแพร่เมื่อ gate ใดล้มเหลว และห้าม commit database URL, hash salt หรือ source PII
+
+## Major/program-type migration (2026-09-23)
+
+1. Run `node --env-file=.env scripts/audit-major-types.mjs` before migration.
+2. Run `node --env-file=.env scripts/migrate-major-types.mjs expand`.
+3. Build and test the updated app (major_key-based chart identity).
+4. Run `node --env-file=.env scripts/migrate-major-types.mjs finalize` last.
+
+Both migration stages run in a transaction, reject mismatched program types, compare
+all warehouse view metrics, and verify unchanged fact counts. Finalization uses
+RESTRICT, never CASCADE. Local schema/type backups are under outputs/migrations;
+they contain no student records. The migration expects the pre-migration column/table
+to exist and is not a recurring refresh command.
+
+After migration, loaders must write only major_key for the major/program variant.
+The historical loader referenced above is not present in this repository; external
+copies must be updated before the next ingestion. Current dashboard queries no longer
+use dim_program_type.

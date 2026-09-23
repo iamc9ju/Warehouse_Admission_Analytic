@@ -4,7 +4,7 @@ import { numberValue, optionalNumberValue, requiredRows } from "./query-helpers"
 
 export async function getMajorConversion(client: QueryClient, year?: number): Promise<MajorRow[]> {
   const rows = await requiredRows(client, `
-    select m.academic_year, m.major_code, m.major_name, m.program_type, m.applicant_count,
+    select m.major_key, m.academic_year, m.major_code, m.major_name, m.program_type, m.applicant_count,
       m.confirmed_count, m.confirmed_rate, m.avg_score, m.applicant_change,
       m.application_choices, m.eligible_count
     from admissions_dw.mart_major_conversion m
@@ -12,6 +12,7 @@ export async function getMajorConversion(client: QueryClient, year?: number): Pr
     order by m.academic_year, m.applicant_count desc
   `, year);
   return rows.map((row) => ({
+    majorKey: String(row.major_key),
     year: numberValue(row.academic_year, "academic_year"),
     code: String(row.major_code),
     name: String(row.major_name),
@@ -28,13 +29,14 @@ export async function getMajorConversion(client: QueryClient, year?: number): Pr
 
 export async function getMajorStatuses(client: QueryClient, year?: number): Promise<MajorStatusRow[]> {
   const rows = await requiredRows(client, `
-    select academic_year, major_code, major_name, tcas_status,
+    select major_key, academic_year, major_code, major_name, tcas_status,
       application_choices, unique_applicants
     from admissions_dw.vw_admission_major_status_distribution
     ${year === undefined ? "" : "where academic_year = $1"}
     order by academic_year, major_code, tcas_status
   `, year);
   return rows.map((row) => ({
+    majorKey: String(row.major_key),
     year: numberValue(row.academic_year, "academic_year"),
     code: String(row.major_code),
     name: String(row.major_name),

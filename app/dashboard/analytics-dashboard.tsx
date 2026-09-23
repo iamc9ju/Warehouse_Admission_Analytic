@@ -43,10 +43,10 @@ function MajorTrendLineCharts({
   const [hoveredMajor, setHoveredMajor] = useState<string | null>(null);
 
   const uniqueMajors = useMemo(() => {
-    const map = new Map<string, { code: string; name: string }>();
+    const map = new Map<string, { majorKey: string; name: string }>();
     majorRows.forEach((m) => {
-      if (!map.has(m.code)) {
-        map.set(m.code, { code: m.code, name: m.name });
+      if (!map.has(m.majorKey)) {
+        map.set(m.majorKey, { majorKey: m.majorKey, name: m.name });
       }
     });
     return Array.from(map.values());
@@ -57,7 +57,7 @@ function MajorTrendLineCharts({
       <header>
         <div>
           <span>Major YoY Comparison</span>
-          <h2>แนวโน้มผู้สมัครและผู้ยืนยันสิทธิ์แต่ละสาขาวิชา ทุกปี</h2>
+          <h2>แนวโน้มผู้สมัคร ผู้มีสิทธิ์ และผู้ยืนยันสิทธิ์แต่ละสาขาวิชา ทุกปี</h2>
         </div>
         <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
           <Link href="/majors" className="link-button" style={{ margin: 0, textDecoration: "none" }}>
@@ -84,13 +84,13 @@ function MajorTrendLineCharts({
         </span>
         {uniqueMajors.map((m, idx) => {
           const color = getMajorColor(idx);
-          const isHovered = hoveredMajor === m.code;
+          const isHovered = hoveredMajor === m.majorKey;
           const isDimmed = hoveredMajor !== null && !isHovered;
           return (
             <button
-              key={m.code}
+              key={m.majorKey}
               type="button"
-              onMouseEnter={() => setHoveredMajor(m.code)}
+              onMouseEnter={() => setHoveredMajor(m.majorKey)}
               onMouseLeave={() => setHoveredMajor(null)}
               style={{
                 display: "inline-flex",
@@ -123,7 +123,7 @@ function MajorTrendLineCharts({
         })}
       </div>
 
-      {/* 2 Line Charts in Grid */}
+      {/* Annual people counts by major/program variant */}
       <div
         style={{
           display: "grid",
@@ -135,6 +135,17 @@ function MajorTrendLineCharts({
           title="📈 กราฟจำนวนผู้สมัคร (Applicants)"
           subtitle="แนวโน้มจำนวนผู้สมัครของแต่ละสาขาวิชา แยกตามปีการศึกษา"
           metricKey="applicants"
+          availableYears={availableYears}
+          uniqueMajors={uniqueMajors}
+          majorRows={majorRows}
+          getColor={getMajorColor}
+          hoveredMajor={hoveredMajor}
+          setHoveredMajor={setHoveredMajor}
+        />
+        <SingleMajorLineChart
+          title="กราฟจำนวนผู้มีสิทธิ์ (Eligible)"
+          subtitle="คนไม่ซ้ำที่มีสถานะในกลุ่มผู้มีสิทธิ์ แยกปีและสาขา รวมทุกรอบ"
+          metricKey="eligible"
           availableYears={availableYears}
           uniqueMajors={uniqueMajors}
           majorRows={majorRows}
@@ -171,9 +182,9 @@ function SingleMajorLineChart({
 }: {
   title: string;
   subtitle: string;
-  metricKey: "applicants" | "confirmed";
+  metricKey: "applicants" | "eligible" | "confirmed";
   availableYears: Year[];
-  uniqueMajors: { code: string; name: string }[];
+  uniqueMajors: { majorKey: string; name: string }[];
   majorRows: MajorRow[];
   getColor: (idx: number) => string;
   hoveredMajor: string | null;
@@ -190,14 +201,14 @@ function SingleMajorLineChart({
 
   const dataByMajor = uniqueMajors.map((m, idx) => {
     const points = availableYears.map((year) => {
-      const row = majorRows.find((r) => r.code === m.code && r.year === year);
+      const row = majorRows.find((r) => r.majorKey === m.majorKey && r.year === year);
       return {
         year,
-        value: row ? row[metricKey] : 0,
+        value: row ? (row[metricKey] ?? 0) : 0,
       };
     });
     return {
-      code: m.code,
+      majorKey: m.majorKey,
       name: m.name,
       color: getColor(idx),
       points,
@@ -254,13 +265,13 @@ function SingleMajorLineChart({
             fontWeight: 800,
             padding: "5px 11px",
             borderRadius: "999px",
-            background: metricKey === "applicants" ? "#fff1df" : "#e8f5e8",
-            color: metricKey === "applicants" ? "#8d4c05" : "#2f7d32",
-            border: `1px solid ${metricKey === "applicants" ? "#f3d2a9" : "#c8e6c9"}`,
+            background: metricKey === "applicants" ? "#fff1df" : metricKey === "eligible" ? "#eaf2fa" : "#e8f5e8",
+            color: metricKey === "applicants" ? "#8d4c05" : metricKey === "eligible" ? "#477ca8" : "#2f7d32",
+            border: `1px solid ${metricKey === "applicants" ? "#f3d2a9" : metricKey === "eligible" ? "#cbdced" : "#c8e6c9"}`,
             whiteSpace: "nowrap",
           }}
         >
-          {metricKey === "applicants" ? "จำนวนคนสมัคร" : "จำนวนยืนยันสิทธิ์"}
+          {metricKey === "applicants" ? "จำนวนคนสมัคร" : metricKey === "eligible" ? "จำนวนผู้มีสิทธิ์" : "จำนวนยืนยันสิทธิ์"}
         </span>
       </div>
 
@@ -299,14 +310,14 @@ function SingleMajorLineChart({
 
           {/* Polylines for each major */}
           {dataByMajor.map((m) => {
-            const isHovered = hoveredMajor === m.code;
+            const isHovered = hoveredMajor === m.majorKey;
             const isDimmed = hoveredMajor !== null && !isHovered;
             const pathPoints = m.points.map((p, yearIdx) => `${getX(yearIdx)},${getY(p.value)}`).join(" ");
 
             return (
               <g
-                key={m.code}
-                onMouseEnter={() => setHoveredMajor(m.code)}
+                key={m.majorKey}
+                onMouseEnter={() => setHoveredMajor(m.majorKey)}
                 onMouseLeave={() => setHoveredMajor(null)}
                 style={{ cursor: "pointer" }}
               >
@@ -407,7 +418,7 @@ function SingleMajorLineChart({
               <span style={{ color: "#dddddd", fontSize: "var(--text-caption)" }}>{activeTooltip.majorName} (ปี {activeTooltip.year})</span>
             </div>
             <div style={{ fontSize: "var(--text-label)", fontWeight: 850 }}>
-              {metricKey === "applicants" ? "ผู้สมัคร: " : "ยืนยันสิทธิ์: "}
+              {metricKey === "applicants" ? "ผู้สมัคร: " : metricKey === "eligible" ? "ผู้มีสิทธิ์: " : "ยืนยันสิทธิ์: "}
               <span style={{ color: "#ffd54f" }}>{formatNumber(activeTooltip.value)} คน</span>
             </div>
           </div>
@@ -449,18 +460,18 @@ function Tcas3ScoreScatterPlot({
 }) {
   // Derive unique majors (code+name) sorted by total applicants desc
   const uniqueMajors = useMemo(() => {
-    const map = new Map<string, { code: string; name: string; totalApplicants: number }>();
+    const map = new Map<string, { majorKey: string; name: string; totalApplicants: number }>();
     majorRows.forEach((m) => {
-      const existing = map.get(m.code) ?? { code: m.code, name: m.name, totalApplicants: 0 };
+      const existing = map.get(m.majorKey) ?? { majorKey: m.majorKey, name: m.name, totalApplicants: 0 };
       existing.totalApplicants += m.applicants;
-      map.set(m.code, existing);
+      map.set(m.majorKey, existing);
     });
     return Array.from(map.values()).sort((a, b) => b.totalApplicants - a.totalApplicants);
   }, [majorRows]);
 
   // Selected majors state — all on by default
   const [selectedMajors, setSelectedMajors] = useState<Set<string>>(
-    () => new Set(uniqueMajors.map((m) => m.code)),
+    () => new Set(uniqueMajors.map((m) => m.majorKey)),
   );
 
   const toggleMajor = (code: string) => {
@@ -475,10 +486,10 @@ function Tcas3ScoreScatterPlot({
     });
   };
 
-  const selectAll = () => setSelectedMajors(new Set(uniqueMajors.map((m) => m.code)));
+  const selectAll = () => setSelectedMajors(new Set(uniqueMajors.map((m) => m.majorKey)));
   const clearAll = () => {
     // keep at least 1
-    setSelectedMajors(new Set([uniqueMajors[0]?.code ?? ""]));
+    setSelectedMajors(new Set([uniqueMajors[0]?.majorKey ?? ""]));
   };
 
   const [hoveredPoint, setHoveredPoint] = useState<{
@@ -521,7 +532,7 @@ function Tcas3ScoreScatterPlot({
 
   // Y: avgScore — derive range from filtered data
   const filteredRows = useMemo(
-    () => majorRows.filter((m) => selectedMajors.has(m.code) && m.avgScore > 0),
+    () => majorRows.filter((m) => selectedMajors.has(m.majorKey) && m.avgScore > 0),
     [majorRows, selectedMajors],
   );
 
@@ -549,12 +560,12 @@ function Tcas3ScoreScatterPlot({
   // Group filtered rows by major code for drawing lines
   const majorLineData = useMemo(() => {
     return uniqueMajors
-      .filter((m) => selectedMajors.has(m.code))
+      .filter((m) => selectedMajors.has(m.majorKey))
       .map((m, idx) => {
         const color = getMajorColor(idx);
         const points = activeYears
           .map((year) => {
-            const row = majorRows.find((r) => r.code === m.code && r.year === year);
+            const row = majorRows.find((r) => r.majorKey === m.majorKey && r.year === year);
             return row && row.avgScore > 0
               ? { year, avgScore: row.avgScore, applicants: row.applicants, confirmed: row.confirmed, rate: row.rate }
               : null;
@@ -615,12 +626,12 @@ function Tcas3ScoreScatterPlot({
         </span>
         {uniqueMajors.map((m, idx) => {
           const color = getMajorColor(idx);
-          const active = selectedMajors.has(m.code);
+          const active = selectedMajors.has(m.majorKey);
           return (
             <button
-              key={m.code}
+              key={m.majorKey}
               type="button"
-              onClick={() => toggleMajor(m.code)}
+              onClick={() => toggleMajor(m.majorKey)}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -730,7 +741,7 @@ function Tcas3ScoreScatterPlot({
             const dimmed = hoveredPoint !== null && !isHoveredMajor;
             return (
               <polyline
-                key={`line-${m.code}`}
+                key={`line-${m.majorKey}`}
                 points={pts}
                 fill="none"
                 stroke={m.color}
@@ -755,7 +766,7 @@ function Tcas3ScoreScatterPlot({
               const dimmed = hoveredPoint !== null && !isHoveredMajor;
               return (
                 <circle
-                  key={`dot-${m.code}-${p.year}`}
+                  key={`dot-${m.majorKey}-${p.year}`}
                   cx={cx}
                   cy={cy}
                   r={isHovered ? r + 3 : r}
@@ -914,7 +925,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
   const majorSlices = useMemo(() => {
     const map = new Map<string, { code: string; name: string; choices: number }>();
     majorRows.forEach((m) => {
-      const key = `${m.code}::${m.name}`;
+      const key = m.majorKey;
       const existing = map.get(key) || { code: m.code, name: m.name, choices: 0 };
       existing.choices += m.choices;
       map.set(key, existing);
