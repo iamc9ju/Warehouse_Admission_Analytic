@@ -4376,3 +4376,23 @@ svg text {
 .workspace h1 { font-size: var(--text-display); line-height: 1.25; font-weight: 800; }
 .workspace h2 { font-size: var(--text-heading); line-height: 1.4; font-weight: 700; }
 .workspace h3 { font-size: var(--text-subheading); line-height: 1.45; font-weight: 700; }
+
+/* Independent expandable runner-up answers. */
+.runner-ups-section { display: grid; gap: 14px; margin-top: 24px; }
+.runner-ups-section > h3 { margin: 0; font-size: var(--text-subheading); }
+.runner-up-card { border: 1px solid var(--line-strong); border-radius: 14px; background: var(--surface); overflow: hidden; }
+.runner-up-card > summary { display: flex; align-items: center; gap: 14px; padding: 20px 24px; cursor: pointer; list-style: none; }
+.runner-up-card > summary::-webkit-details-marker { display: none; }
+.runner-up-card > summary:hover { background: var(--surface-soft); }
+.runner-up-card > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+.runner-up-rank { display: grid; place-items: center; width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; background: var(--surface-warm); color: var(--accent-dark); font-weight: 700; }
+.runner-up-heading { display: grid; gap: 4px; flex: 1; min-width: 0; }
+.runner-up-heading strong { font-size: var(--text-body); }
+.runner-up-heading small { font-size: var(--text-label); color: var(--muted); }
+.runner-up-chevron { width: 20px; height: 20px; flex-shrink: 0; color: var(--accent); transition: transform 180ms ease; }
+.runner-up-card[open] .runner-up-chevron { transform: rotate(90deg); }
+.runner-up-content { padding: 0 24px 24px; border-top: 1px solid var(--line); }
+@media (max-width: 640px) {
+  .runner-up-card > summary { padding: 16px; gap: 10px; }
+  .runner-up-content { padding: 0 16px 16px; }
+}

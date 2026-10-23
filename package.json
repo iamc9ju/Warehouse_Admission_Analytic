@@ -6,6 +6,9 @@
     "node": ">=22.13.0"
   },
   "scripts": {
+    "etl:validate": "node etl/cli.mjs validate",
+    "etl:load-local": "node etl/cli.mjs load-local",
+    "etl:test": "node --test tests/etl.test.mjs",
     "dev": "vinext dev",
     "build": "vinext build",
     "start": "vinext start",

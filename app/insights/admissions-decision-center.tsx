@@ -51,6 +51,28 @@ function confidenceLabel(confidence: Insight["confidence"]) {
   return "ความเชื่อมั่นต่ำ";
 }
 
+
+function EligibilityComparison({ eligibleCount, confirmedCount }: { eligibleCount: number; confirmedCount: number }) {
+  return (
+              <section className="rate-comparison" aria-label="เปรียบเทียบผู้มีสิทธิ์กับยืนยันสิทธิ์">
+                <h3>เปรียบเทียบผู้มีสิทธิ์กับยืนยันสิทธิ์จริง</h3>
+                <div className="rate-row">
+                  <span>จำนวนคนมีสิทธิ์</span>
+                  <div className="rate-track"><i style={{ width: "100%", background: "#477ca8" }} /></div>
+                  <b>{formatNumber(eligibleCount)} คน (100%)</b>
+                </div>
+                <div className="rate-row average">
+                  <span>คนที่ยืนยันจริง</span>
+                  <div className="rate-track"><i style={{ width: `${Math.min((confirmedCount / (eligibleCount || 1)) * 100, 100)}%`, background: "#2e7d32" }} /></div>
+                  <b>{formatNumber(confirmedCount)} คน ({((confirmedCount / (eligibleCount || 1)) * 100).toFixed(1)}%)</b>
+                </div>
+                <div className="rate-axis" aria-hidden="true">
+                  {["0%", "20%", "40%", "60%", "80%", "100%"].map((tick) => <span key={tick}>{tick}</span>)}
+                </div>
+              </section>
+  );
+}
+
 export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"insights"> }) {
   const { businessQuestions, decisionInsights, majorRows, rounds, years } = snapshot;
   const latestYear = Math.max(...years.map((year) => year.year));
@@ -133,6 +155,10 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
         .sort((a, b) => b.applicants - a.applicants)
         .slice(0, 4)
         .map((m) => ({
+          key: m.majorKey,
+          applicants: m.applicants,
+          eligible: m.eligible ?? m.confirmed,
+          confirmed: m.confirmed,
           name: m.name,
           displayValue: `ผู้สมัคร ${formatNumber(m.applicants)} คน (ยืนยันสิทธิ์ ${m.rate.toFixed(2)}%)`,
         }));
@@ -142,6 +168,10 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
       return [...tcasRounds]
         .sort((a, b) => b.rate - a.rate)
         .map((r) => ({
+          key: r.code,
+          applicants: r.applicants,
+          eligible: r.eligible ?? r.confirmed,
+          confirmed: r.confirmed,
           name: `${r.code} — ${r.name}`,
           displayValue: `ยืนยันสิทธิ์ ${r.rate.toFixed(2)}%`,
         }));
@@ -152,6 +182,10 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
         .sort((a, b) => a.rate - b.rate)
         .slice(0, 4)
         .map((m) => ({
+          key: m.majorKey,
+          applicants: m.applicants,
+          eligible: m.eligible ?? m.confirmed,
+          confirmed: m.confirmed,
           name: m.name,
           displayValue: `ยืนยันสิทธิ์ ${m.rate.toFixed(2)}% (ผู้สมัคร ${formatNumber(m.applicants)} คน)`,
         }));
@@ -162,6 +196,10 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
         .sort((a, b) => (a.applicantChange ?? 0) - (b.applicantChange ?? 0))
         .slice(0, 4)
         .map((m) => ({
+          key: m.majorKey,
+          applicants: m.applicants,
+          eligible: m.eligible ?? m.confirmed,
+          confirmed: m.confirmed,
           name: m.name,
           displayValue: `ลดลง ${Math.abs(m.applicantChange ?? 0)} คน`,
         }));
@@ -172,6 +210,10 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
         .sort((a, b) => (b.applicantChange ?? 0) - (a.applicantChange ?? 0))
         .slice(0, 4)
         .map((m) => ({
+          key: m.majorKey,
+          applicants: m.applicants,
+          eligible: m.eligible ?? m.confirmed,
+          confirmed: m.confirmed,
           name: m.name,
           displayValue: `เพิ่มขึ้น +${m.applicantChange} คน`,
         }));
@@ -182,6 +224,10 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
         .sort((a, b) => a.applicants - b.applicants)
         .slice(0, 4)
         .map((m) => ({
+          key: m.majorKey,
+          applicants: m.applicants,
+          eligible: m.eligible ?? m.confirmed,
+          confirmed: m.confirmed,
           name: m.name,
           displayValue: `ผู้สมัคร ${formatNumber(m.applicants)} คน`,
         }));
@@ -322,22 +368,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
             </dl>
 
             {showsRateComparison ? (
-              <section className="rate-comparison" aria-label="เปรียบเทียบผู้มีสิทธิ์กับยืนยันสิทธิ์">
-                <h3>เปรียบเทียบผู้มีสิทธิ์กับยืนยันสิทธิ์จริง</h3>
-                <div className="rate-row">
-                  <span>จำนวนคนมีสิทธิ์</span>
-                  <div className="rate-track"><i style={{ width: "100%", background: "#477ca8" }} /></div>
-                  <b>{formatNumber(eligibleCount)} คน (100%)</b>
-                </div>
-                <div className="rate-row average">
-                  <span>คนที่ยืนยันจริง</span>
-                  <div className="rate-track"><i style={{ width: `${Math.min((confirmedCount / (eligibleCount || 1)) * 100, 100)}%`, background: "#2e7d32" }} /></div>
-                  <b>{formatNumber(confirmedCount)} คน ({((confirmedCount / (eligibleCount || 1)) * 100).toFixed(1)}%)</b>
-                </div>
-                <div className="rate-axis" aria-hidden="true">
-                  {["0%", "20%", "40%", "60%", "80%", "100%"].map((tick) => <span key={tick}>{tick}</span>)}
-                </div>
-              </section>
+              <EligibilityComparison eligibleCount={eligibleCount} confirmedCount={confirmedCount} />
             ) : (
               <section className="answer-evidence" aria-label="หลักฐานสนับสนุนคำตอบ">
                 <div>
@@ -358,27 +389,31 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
                   </p>
                 ))}
               </div> */}
-            {runnerUps.length > 0 && (
-              <section className="runner-ups-section" style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1.5px dashed #eae2d6" }}>
-                <h3 style={{ fontSize: "var(--text-label)", fontWeight: 800, color: "#111", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <span>📊</span> อันดับรองลงมา (Runner-ups)
-                </h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  {runnerUps.map((item, idx) => (
-                    <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "#fcfaf7", border: "1px solid #eae2d6", borderRadius: "8px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "22px", height: "22px", borderRadius: "50%", background: "#e5ded6", color: "#6f6b64", fontSize: "var(--text-caption)", fontWeight: 800 }}>
-                          {idx + 2}
-                        </span>
-                        <strong style={{ fontSize: "var(--text-label)", color: "#333", fontWeight: 700 }}>{item.name}</strong>
-                      </div>
-                      <span style={{ fontSize: "var(--text-caption)", fontWeight: 750, color: "#777" }}>{item.displayValue}</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
           </article>
+
+          {runnerUps.length > 0 && (
+            <section className="runner-ups-section" aria-label="อันดับรองลงมา" key={selectedQuestion.id}>
+              <h3>อันดับรองลงมา</h3>
+              {runnerUps.map((item, idx) => (
+                <details className="runner-up-card" key={item.key}>
+                  <summary>
+                    <span className="runner-up-rank">{idx + 2}</span>
+                    <span className="runner-up-heading"><strong>{item.name}</strong><small>{item.displayValue}</small></span>
+                    <ChevronRightIcon className="runner-up-chevron" aria-hidden="true" />
+                  </summary>
+                  <div className="runner-up-content">
+                    <dl className="answer-metrics">
+                      <div><dt>ผู้สมัคร</dt><dd>{formatNumber(item.applicants)} <small>คน</small></dd></div>
+                      <div><dt>ผู้มีสิทธิ์</dt><dd>{formatNumber(item.eligible)} <small>คน</small></dd></div>
+                      <div><dt>ยืนยันสิทธิ์</dt><dd>{formatNumber(item.confirmed)} <small>คน</small></dd></div>
+                    </dl>
+                    <EligibilityComparison eligibleCount={item.eligible} confirmedCount={item.confirmed} />
+                  </div>
+                </details>
+              ))}
+            </section>
+          )}
+
 
           {/* <footer className="answer-footer">
             <div>
