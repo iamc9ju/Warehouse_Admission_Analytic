@@ -30,5 +30,5 @@ export async function optionalRows(client: QueryClient, sql: string, year?: numb
 export const eligibleStudentCount = `count(distinct case when s.tcas_status in (
   'ยืนยันสิทธิ์', 'สละสิทธิ์', 'สละสิทธิ์ในรอบ 2',
   'ยืนยันที่อื่นแล้ว', 'ไม่ใช้สิทธิ์', 'ผ่านการคัดเลือก',
-  'ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2'
+  'ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2', 'ไม่เข้าระบบมาดำเนินการใดๆ'
 ) then f.student_key end)`;
