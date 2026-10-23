@@ -98,7 +98,7 @@ function MajorTrendLineCharts({
           สาขาวิชา:
         </span>
         {uniqueMajors.map((m, idx) => {
-          const color = getMajorColor(idx);
+          const color = getMajorColor(m.name, majorRows.find(row => row.majorKey === m.majorKey)?.type);
           const isHovered = activeMajor === m.majorKey;
           const isPinned = pinnedMajor === m.majorKey;
           const isDimmed = activeMajor !== null && !isHovered;
@@ -161,7 +161,7 @@ function MajorTrendLineCharts({
           availableYears={availableYears}
           uniqueMajors={uniqueMajors}
           majorRows={majorRows}
-          getColor={getMajorColor}
+          getColor={(idx) => getMajorColor(uniqueMajors[idx].name, majorRows.find(row => row.majorKey === uniqueMajors[idx].majorKey)?.type)}
           hoveredMajor={activeMajor}
           setHoveredMajor={setHoveredMajor}
         />
@@ -172,7 +172,7 @@ function MajorTrendLineCharts({
           availableYears={availableYears}
           uniqueMajors={uniqueMajors}
           majorRows={majorRows}
-          getColor={getMajorColor}
+          getColor={(idx) => getMajorColor(uniqueMajors[idx].name, majorRows.find(row => row.majorKey === uniqueMajors[idx].majorKey)?.type)}
           hoveredMajor={activeMajor}
           setHoveredMajor={setHoveredMajor}
         />
@@ -183,7 +183,7 @@ function MajorTrendLineCharts({
           availableYears={availableYears}
           uniqueMajors={uniqueMajors}
           majorRows={majorRows}
-          getColor={getMajorColor}
+          getColor={(idx) => getMajorColor(uniqueMajors[idx].name, majorRows.find(row => row.majorKey === uniqueMajors[idx].majorKey)?.type)}
           hoveredMajor={activeMajor}
           setHoveredMajor={setHoveredMajor}
         />
@@ -586,7 +586,7 @@ function Tcas3ScoreScatterPlot({
     return uniqueMajors
       .filter((m) => selectedMajors.has(m.majorKey))
       .map((m, idx) => {
-        const color = getMajorColor(idx);
+        const color = getMajorColor(m.name, majorRows.find(row => row.majorKey === m.majorKey)?.type);
         const points = activeYears
           .map((year) => {
             const row = majorRows.find((r) => r.majorKey === m.majorKey && r.year === year);
@@ -649,7 +649,7 @@ function Tcas3ScoreScatterPlot({
           สาขาวิชา:
         </span>
         {uniqueMajors.map((m, idx) => {
-          const color = getMajorColor(idx);
+          const color = getMajorColor(m.name, majorRows.find(row => row.majorKey === m.majorKey)?.type);
           const active = selectedMajors.has(m.majorKey);
           return (
             <button
@@ -931,7 +931,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
       TCAS3: "#2e7d32",
       TCAS4: "#8c67a8",
     };
-    const map = new Map<string, { code: string; name: string; choices: number }>();
+    const map = new Map<string, { code: string; name: string; type?: string; choices: number }>();
     rounds.forEach((r) => {
       const existing = map.get(r.code) || { code: r.code, name: r.name, choices: 0 };
       existing.choices += r.choices;
@@ -947,10 +947,10 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
   }, [rounds]);
 
   const majorSlices = useMemo(() => {
-    const map = new Map<string, { code: string; name: string; choices: number }>();
+    const map = new Map<string, { code: string; name: string; type?: string; choices: number }>();
     majorRows.forEach((m) => {
       const key = m.majorKey;
-      const existing = map.get(key) || { code: m.code, name: m.name, choices: 0 };
+      const existing = map.get(key) || { code: m.code, name: m.name, type: m.type, choices: 0 };
       existing.choices += m.choices;
       map.set(key, existing);
     });
@@ -959,7 +959,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
       .map((item, idx) => ({
         label: item.name,
         value: item.choices,
-        color: getMajorColor(idx),
+        color: getMajorColor(item.name, item.type),
       }));
   }, [majorRows]);
 

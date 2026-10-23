@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { PageData } from "../data/page-data-types";
+import { getMajorColor } from "../donut-chart-card";
 import { SidebarNavigation } from "../sidebar-navigation";
 import { isVisibleStatus } from "../data/status-visibility";
 
@@ -123,7 +124,7 @@ export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
                 </div>
                 <div className="vertical-series-legend" aria-label="คำอธิบายชุดข้อมูล">
                   <span>
-                    <i className="status-series" style={{ background: "#c56100" }} />
+                    <i className="status-series" style={{ background: getMajorColor(selectedMajorMeta?.name ?? "", majorRows.find(row => row.majorKey === selectedMajorKey)?.type) }} />
                     {selectedMajorMeta?.name}: {selectedMajorStatus}
                   </span>
                 </div>
@@ -141,7 +142,7 @@ export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
                       <div className="vertical-bar-column" key={year}>
                         <div className="vertical-bar-track single-series">
                           <strong style={{ bottom: `calc(${barHeight}% + 7px)` }}>{formatNumber(value)}</strong>
-                          <i style={{ height: `${barHeight}%`, background: "#c56100" }} />
+                          <i style={{ height: `${barHeight}%`, background: getMajorColor(selectedMajorMeta?.name ?? "", majorRows.find(row => row.majorKey === selectedMajorKey)?.type) }} />
                         </div>
                         <span>{year}</span>
                       </div>

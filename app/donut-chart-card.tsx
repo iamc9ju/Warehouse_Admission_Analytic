@@ -42,21 +42,26 @@ export type PieSlice = {
   color: string;
 };
 
+// User palette darkened by 18%; program tracks have separate, stable colors.
 export const majorColors = [
-  "#c56100", // Amber / Orange
-  "#1976d2", // Blue
-  "#2e7d32", // Green
-  "#7b1fa2", // Purple
-  "#c2185b", // Crimson
-  "#0097a7", // Teal
-  "#e65100", // Deep Orange
-  "#5d4037", // Brown
-  "#303f9f", // Indigo
-  "#00796b", // Dark Teal
+  "#D10000", "#009DD1", "#29A829", "#7123B9", "#D17300",
+  "#D15694", "#D1B000", "#723910", "#34B8AB", "#15155C",
 ];
 
-export function getMajorColor(index: number) {
-  return majorColors[index % majorColors.length];
+export function getMajorColor(index: number | string, programType = "") {
+  if (typeof index === "number") return majorColors[index % majorColors.length];
+  const name = index.normalize("NFKC").trim();
+  const special = `${name} ${programType}`.includes("พิเศษ");
+  if (name.includes("นวัตกรรมเพื่อการเกษตรและอุตสาหกรรม")) return majorColors[5];
+  if (name.includes("เครื่องกล") && name.includes("เกษตร")) return majorColors[6];
+  if (name.includes("เครื่องกล")) return special ? majorColors[7] : majorColors[4];
+  if (name.includes("คอมพิวเตอร์")) return majorColors[9];
+  if (name.includes("โยธา") && name.includes("ชลประทาน")) return majorColors[0];
+  if (name.includes("โยธา")) return special ? majorColors[3] : majorColors[2];
+  if (name.includes("ไฟฟ้า")) return special ? "#A34C94" : majorColors[3];
+  if (name.includes("อุตสาหการ")) return special ? "#267C86" : majorColors[8];
+  if (name.includes("อาหาร")) return majorColors[1];
+  return majorColors[0];
 }
 
 export const tcasColors: Record<string, string> = {

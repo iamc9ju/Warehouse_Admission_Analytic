@@ -5,14 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { OverviewPageData } from "./data/page-data-types";
 import { SidebarNavigation } from "./sidebar-navigation";
 import { DonutChartCard, getMajorColor, tcasColors } from "./donut-chart-card";
-import { isVisibleStatus } from "./data/status-visibility";
+
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
 export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
-  const { majorRows, rounds, statuses, years } = snapshot;
+  const { majorRows, rounds, years } = snapshot;
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -58,7 +58,7 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
   ];
 
   const tcasRoundSlices = useMemo(() => {
-    const map = new Map<string, { code: string; name: string; choices: number }>();
+    const map = new Map<string, { code: string; name: string; type?: string; choices: number }>();
     rounds
       .filter((r) => r.year === selectedYear)
       .forEach((r) => {
@@ -76,25 +76,23 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
   }, [rounds, selectedYear]);
 
   const majorSlices = useMemo(() => {
-    const map = new Map<string, { code: string; name: string; choices: number }>();
+    const map = new Map<string, { code: string; name: string; type?: string; choices: number }>();
     majorRows
       .filter((m) => m.year === selectedYear)
       .forEach((m) => {
         const key = m.majorKey;
-        const existing = map.get(key) || { code: m.code, name: m.name, choices: 0 };
+        const existing = map.get(key) || { code: m.code, name: m.name, type: m.type, choices: 0 };
         existing.choices += m.choices;
         map.set(key, existing);
       });
     return Array.from(map.values())
       .sort((a, b) => b.choices - a.choices)
-      .map((item, idx) => ({
+      .map((item) => ({
         label: item.name,
         value: item.choices,
-        color: getMajorColor(idx),
+        color: getMajorColor(item.name, item.type),
       }));
   }, [majorRows, selectedYear]);
-
-  const visibleStatuses = statuses.filter((status) => status.year === selectedYear && isVisibleStatus(status.label));
 
   const filteredMajors = useMemo(() => {
     const normalizedQuery = majorQuery.trim().toLowerCase();
@@ -176,99 +174,19 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
               />
             </section>
 
-            <article id="quality" className="panel status-panel">
-              <div className="panel-title">
-                <h2>การกระจายสถานะ TCAS ปี {selectedYear} ทุก round</h2>
-              </div>
-              <div className="status-list">
-                {visibleStatuses.map((status) => (
-                  <div className="status-item" key={`${selectedYear}-${status.label}`}>
-                    <span className={`status-badge ${status.tone}`}>{status.label.slice(0, 1)}</span>
-                    <div>
-                      <strong>{status.label}</strong>
-                      <small>{formatNumber(status.choices)} choices</small>
-                    </div>
-                    <div className="bar-track">
-                      <span style={{ width: `${status.share}%` }} />
-                    </div>
-                    <b>{status.share.toFixed(2)}%</b>
-                  </div>
-                ))}
-              </div>
+            <article className="panel" style={{gridColumn:"1 / -1"}}>
+              <h2>TCAS {selectedYear}: ผู้สมัคร → ผู้มีสิทธิ์ → ยืนยันสิทธิ์</h2>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:24}}>
+              {visibleRounds.map(r => <section key={r.code}><h3 style={{color:tcasColors[r.code]}}>{r.code} · {r.name}</h3>
+                <svg viewBox="0 0 300 330" role="img" aria-label={`${r.code} ผู้สมัคร ${r.applicants} ผู้มีสิทธิ์ ${r.eligible ?? '—'} ยืนยันสิทธิ์ ${r.confirmed}`} style={{width:"100%"}}>
+                {[{label:"ผู้สมัคร",value:r.applicants,points:"5,5 295,5 248,105 52,105"},{label:"ผู้มีสิทธิ์",value:r.eligible,points:"54,110 246,110 199,210 101,210"},{label:"ยืนยันสิทธิ์",value:r.confirmed,points:"103,215 197,215 150,325"}].map((v,i)=><g key={v.label}><polygon points={v.points} fill={tcasColors[r.code]} opacity={1-i*.12}/><text x="150" y={40+i*104} textAnchor="middle" fill="white" fontSize="16">{v.label}</text><text x="150" y={68+i*104} textAnchor="middle" fill="white" fontSize="20" fontWeight="bold">{v.value === undefined ? '—' : formatNumber(v.value)}</text></g>)}
+                </svg><p>อัตรายืนยันจากผู้มีสิทธิ์: {r.eligible ? `${(r.confirmed/r.eligible*100).toFixed(1)}%` : '—'}</p>
+              </section>)}
+              </div><small>รูปกรวยแสดงลำดับขั้น พื้นที่ไม่ได้แทนสัดส่วนจำนวนคน</small>
             </article>
-
-            <article id="majors" className="panel majors-panel">
-              <div className="panel-title">
-                <h2>ทุกสาขาวิชา ปี {selectedYear}</h2>
-                <input
-                  aria-label="ค้นหาสาขา"
-                  placeholder="ค้นหาสาขา"
-                  value={majorQuery}
-                  onChange={(event) => setMajorQuery(event.target.value)}
-                />
-              </div>
-              <div className="major-table" role="table" aria-label="Major ranking">
-                <div className="major-head" role="row">
-                  <span>ลำดับ</span>
-                  <span>สาขา</span>
-                  <span>ผู้สมัคร</span>
-                  <span>ยืนยันสิทธิ์</span>
-                  <span>อัตรา</span>
-                  <span>ประเภท</span>
-                </div>
-                {filteredMajors.map((major, index) => (
-                  <div className="major-row" role="row" key={`${major.year}-${major.majorKey}`}>
-                    <span>{String(index + 1).padStart(2, "0")}</span>
-                    <strong>{major.name}</strong>
-                    <span className="value-with-bar">
-                      {formatNumber(major.applicants)}
-                      <i style={{ width: `${(major.applicants / maxApplicants) * 100}%` }} />
-                    </span>
-                    <span>{formatNumber(major.confirmed)}</span>
-                    <span>{major.rate.toFixed(2)}%</span>
-                    <span>{major.type}</span>
-                  </div>
-                ))}
-              </div>
-            </article>
-
-            <article id="rounds" className="panel rounds-panel">
-              <div className="panel-title">
-                <h2>ภาพรวม TCAS รอบ 1-4 ปี {selectedYear}</h2>
-                <span className="mini-pill">{visibleRounds.length} round rows</span>
-              </div>
-              <div className="round-table-wrap">
-                <table className="round-table">
-                  <thead>
-                    <tr>
-                      <th>TCAS</th>
-                      <th>Choices</th>
-                      <th>Unique Applicants</th>
-                      <th>Confirmed</th>
-                      <th>Rate</th>
-                      <th>Files</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visibleRounds.map((round) => (
-                      <tr key={`${round.year}-${round.code}`}>
-                        <td>
-                          <span className={`round-year y${round.year}`}>{round.year}</span>
-                          <strong>{round.code}</strong>
-                          <small>{round.name}</small>
-                        </td>
-                        <td>{formatNumber(round.choices)}</td>
-                        <td>{formatNumber(round.applicants)}</td>
-                        <td>{formatNumber(round.confirmed)}</td>
-                        <td>
-                          <span className="rate-chip">{round.rate.toFixed(2)}%</span>
-                        </td>
-                        <td>{round.files}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <article className="panel" style={{gridColumn:"1 / -1"}}><h2>สถิติรายสาขา ปี {selectedYear}</h2>
+              <input aria-label="ค้นหาสาขา" placeholder="ค้นหาสาขา" value={majorQuery} onChange={e=>setMajorQuery(e.target.value)}/>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:24}}>{filteredMajors.map(m=><section key={m.majorKey} style={{padding:16,borderLeft:`4px solid ${getMajorColor(m.name, m.type)}`}}><h3 style={{color:getMajorColor(m.name, m.type)}}>{m.name}</h3>{[{label:"ผู้สมัคร",value:m.applicants},{label:"ผู้มีสิทธิ์",value:m.eligible},{label:"ยืนยันสิทธิ์",value:m.confirmed}].map(v=><div key={v.label} style={{marginTop:12}}><div style={{display:"flex",justifyContent:"space-between"}}><span>{v.label}</span><strong>{v.value === undefined ? '—' : formatNumber(v.value)}</strong></div><div style={{background:"#eee",height:12,marginTop:6}}><div style={{background:getMajorColor(m.name, m.type),height:"100%",width:`${(v.value ?? 0)/maxApplicants*100}%`}}/></div></div>)}</section>)}</div><small>ใช้มาตราส่วนจำนวนคนเดียวกันทุกสาขา</small>
             </article>
           </section>
         </div>
