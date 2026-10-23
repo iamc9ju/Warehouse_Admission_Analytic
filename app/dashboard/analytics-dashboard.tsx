@@ -1,4 +1,5 @@
 "use client";
+import { isVisibleStatus } from "../data/status-visibility";
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
@@ -852,7 +853,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
     "ผู้สมัคร",
     "ผู้มีสิทธิ์",
     ...Array.from(new Set(roundStatuses.map((status) => status.label))).filter(
-      (label) => label !== "ผู้สมัคร" && label !== "ผู้มีสิทธิ์"
+      (label) => label !== "ผู้สมัคร" && label !== "ผู้มีสิทธิ์" && isVisibleStatus(label)
     ),
   ];
   const roundCodes = Array.from(new Set(rounds.map((round) => round.code))).sort();

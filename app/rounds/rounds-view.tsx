@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { PageData } from "../data/page-data-types";
 import { SidebarNavigation } from "../sidebar-navigation";
+import { isVisibleStatus } from "../data/status-visibility";
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
@@ -21,7 +22,7 @@ export function RoundsView({ snapshot }: { snapshot: PageData<"rounds"> }) {
       "ผู้สมัคร",
       "ผู้มีสิทธิ์",
       ...Array.from(new Set(roundStatuses.map((status) => status.label))).filter(
-        (label) => label !== "ผู้สมัคร" && label !== "ผู้มีสิทธิ์"
+        (label) => label !== "ผู้สมัคร" && label !== "ผู้มีสิทธิ์" && isVisibleStatus(label)
       ),
     ],
     [roundStatuses]

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { PageData } from "../data/page-data-types";
 import { SidebarNavigation } from "../sidebar-navigation";
+import { isVisibleStatus } from "../data/status-visibility";
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
@@ -46,7 +47,7 @@ export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
         new Set([
           ...majorStatuses.map((s) => s.label),
         ])
-      ).filter((label) => label !== "ผู้สมัคร"),
+      ).filter((label) => label !== "ผู้สมัคร" && isVisibleStatus(label)),
     ],
     [majorStatuses]
   );

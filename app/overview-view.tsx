@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { OverviewPageData } from "./data/page-data-types";
 import { SidebarNavigation } from "./sidebar-navigation";
 import { DonutChartCard, getMajorColor, tcasColors } from "./donut-chart-card";
+import { isVisibleStatus } from "./data/status-visibility";
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
@@ -93,7 +94,7 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
       }));
   }, [majorRows, selectedYear]);
 
-  const visibleStatuses = statuses.filter((status) => status.year === selectedYear);
+  const visibleStatuses = statuses.filter((status) => status.year === selectedYear && isVisibleStatus(status.label));
 
   const filteredMajors = useMemo(() => {
     const normalizedQuery = majorQuery.trim().toLowerCase();
