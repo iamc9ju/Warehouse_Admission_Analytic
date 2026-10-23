@@ -45,7 +45,8 @@ function fakeClient({ fail, empty } = {}) {
   return {
     calls,
     async query(sql, values = []) {
-      const kind = sql.includes("rights-outcomes-distinct-people") ? "rightsOutcomes"
+      const kind = sql.includes("major-rights-outcomes") ? "majorRightsOutcomes"
+        : sql.includes("rights-outcomes-distinct-people") ? "rightsOutcomes"
         : sql.includes("decision-insights-from-marts") ? "decisionInsights"
         : sql.includes("all-year-distinct-people") ? "allYearPeople"
         : sql.includes("select distinct academic_year") ? "availableYears"
@@ -62,6 +63,7 @@ function fakeClient({ fail, empty } = {}) {
       if (empty === kind) return { rows: [] };
       const filteredYears = fixtureYears.filter((row) => values.length === 0 || row.year === values[0]);
       const rows = {
+        majorRightsOutcomes: () => filteredYears.map(row => ({ academic_year: row.year, tcas_round_code: "3", eligible: row.eligible, confirmed: row.confirmed, resigned: row.resigned, unused: 0, inactive: 0, elsewhere: row.eligible - row.confirmed - row.resigned, other: 0, multiple: 0 })),
         rightsOutcomes: () => filteredYears.map(row => ({ academic_year: row.year, tcas_round_code: "TCAS1", eligible: row.eligible, confirmed: row.confirmed, resigned: row.resigned, unused: 0, inactive: 0, elsewhere: row.eligible - row.confirmed - row.resigned, other: 0, multiple: 0 })),
         allYearPeople: () => [{ applicants: 9000, confirmed: 1400, resigned: 60 }],
         availableYears: () => [...fixtureYears].reverse().map((row) => ({ academic_year: row.year })),
@@ -89,7 +91,7 @@ test("each page queries only live Neon dependencies", async (t) => {
   const dataModule = await loadModule();
   const expected = {
     overview: ["availableYears", "years", "rounds", "majorRows", "statuses"],
-    dashboard: ["availableYears", "years", "rounds", "majorRows", "roundStatuses", "allYearPeople", "rightsOutcomes"],
+    dashboard: ["availableYears", "years", "rounds", "majorRows", "roundStatuses", "allYearPeople", "rightsOutcomes", "majorRightsOutcomes"],
     insights: ["availableYears", "years", "rounds", "majorRows", "decisionInsights"],
     majors: ["availableYears", "years", "majorRows", "majorStatuses"],
     rounds: ["availableYears", "years", "rounds", "roundStatuses"],

@@ -14,25 +14,26 @@ const segments = [
 ] as const;
 const number = (value: number) => value.toLocaleString("en-US");
 
-export function RightsOutcomesChart({ rows, rounds, years }: {
+export function RightsOutcomesChart({ rows, rounds, years, majorName }: {
   rows: DashboardSnapshot["rightsOutcomes"]; rounds: RoundRow[]; years: number[];
+  majorName?: string;
 }) {
   const [percent, setPercent] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
   const visible = segments.filter(segment => rows.some(row => row[segment.key] > 0));
   const codes = Array.from(new Set(rounds.map(row => row.code))).sort();
-  return <article className="analytics-card year-comparison-card" style={{ gridColumn: "1 / -1" }}>
+  return <article className={majorName ? undefined : "analytics-card year-comparison-card"} style={majorName ? { border: "1px solid #eae2d6", borderRadius: 14, background: "#fff", padding: "20px 22px", boxShadow: "0 8px 24px rgba(42, 31, 19, 0.04)", minWidth: 0 } : { gridColumn: "1 / -1" }}>
     <header style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-      <div><span>Eligible Applicants · Rights Outcomes</span><h2>ผลการใช้สิทธิ์ของผู้มีสิทธิ์ แต่ละรอบทุกปี</h2></div>
+      <div>{!majorName && <span>Eligible Applicants · Rights Outcomes</span>}{majorName ? <h3 style={{ fontSize: "var(--text-body)", fontWeight: 850, margin: 0 }}>ผลการใช้สิทธิ์ของผู้มีสิทธิ์</h3> : <h2>ผลการใช้สิทธิ์ของผู้มีสิทธิ์ แต่ละรอบทุกปี</h2>}</div>
       <div style={{ display: "flex", gap: 12 }}>
         {[false, true].map(mode => <button key={String(mode)} type="button" aria-pressed={percent === mode} onClick={() => setPercent(mode)} style={{ padding: "7px 12px", border: "1px solid #ded5c8", borderRadius: 8, background: percent === mode ? "#fff0dd" : "white", cursor: "pointer" }}>{mode ? "เปอร์เซ็นต์ (%)" : "จำนวนคน"}</button>)}
       </div>
     </header>
-    <p style={{ color: "#74695d", fontSize: "var(--text-caption)" }}>ขยายยอดผู้มีสิทธิ์จากกราฟด้านบน: แต่ละสีเป็นส่วนประกอบที่บวกกันได้เท่ากับผู้มีสิทธิ์ ความยาวรวมของแท่งคือยอดผู้มีสิทธิ์ในปีและรอบนั้น</p>
+    {majorName ? <><p style={{ color: "#477ca8", fontWeight: 750, fontSize: "var(--text-label)" }}>{majorName}</p><p style={{ color: "#74695d", fontSize: "var(--text-caption)" }}>ชี้เพื่อดูชั่วคราว หรือคลิกชื่อสาขาด้านบนเพื่อเลือกค้างไว้ · ความยาวแท่งรวมเท่ากับผู้มีสิทธิ์ของสาขาในปีนั้น รวมทุกรอบ</p></> : <p style={{ color: "#74695d", fontSize: "var(--text-caption)" }}>ขยายยอดผู้มีสิทธิ์จากกราฟด้านบน: แต่ละสีเป็นส่วนประกอบที่บวกกันได้เท่ากับผู้มีสิทธิ์ ความยาวรวมของแท่งคือยอดผู้มีสิทธิ์ในปีและรอบนั้น</p>}
     <div style={{ display: "flex", flexWrap: "wrap", gap: "10px 18px", margin: "18px 0", padding: 14, background: "#faf7f2", borderRadius: 12 }}>
       {visible.map(segment => <span key={segment.key} tabIndex={0} onMouseEnter={() => setHovered(segment.key)} onMouseLeave={() => setHovered(null)} onFocus={() => setHovered(segment.key)} onBlur={() => setHovered(null)} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: "var(--text-label)", opacity: hovered && hovered !== segment.key ? 0.4 : 1 }}><i style={{ width: 12, height: 12, borderRadius: 3, background: segment.color }} />{segment.label}</span>)}
     </div>
-    <div className="round-comparison-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 18 }}>
+    <div className={majorName ? undefined : "round-comparison-grid"} style={{ display: "grid", gridTemplateColumns: majorName ? "minmax(0, 1fr)" : "repeat(2, minmax(0, 1fr))", gap: 18 }}>
       {codes.map(code => {
         const peak = Math.max(1, ...rows.filter(row => row.code === code).map(row => row.eligible));
         const maximum = percent ? 100 : Math.ceil(peak / 100) * 100;
@@ -42,7 +43,7 @@ export function RightsOutcomesChart({ rows, rounds, years }: {
         const plotWidth = 450;
         const baseline = years.length * 90 + 35;
         return <div key={code} style={{ padding: 18, border: "1px solid #e5ded6", borderRadius: 10, background: "#fdfbf8", minWidth: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><strong>{code}</strong><span style={{ color: "#777" }}>{rounds.find(row => row.code === code)?.name}</span></div>
+          {!majorName && <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><strong>{code}</strong><span style={{ color: "#777" }}>{rounds.find(row => row.code === code)?.name}</span></div>}
           <div style={{ overflowX: "auto" }}><svg viewBox={`0 0 ${width} ${chartHeight}`} style={{ width: "100%", minWidth: 480, display: "block" }} role="img" aria-label={`${code} กราฟแท่งแนวนอนแบ่งส่วน ผลการใช้สิทธิ์ของผู้มีสิทธิ์ แยกปี`}>
             <text x={plotLeft} y="25" fill="#74695d" fontSize="13">{percent ? "ร้อยละของผู้มีสิทธิ์" : "จำนวนคน"}</text>
             {[0, 1, 2, 3, 4].map(tick => {
@@ -72,7 +73,7 @@ export function RightsOutcomesChart({ rows, rounds, years }: {
         </div>;
       })}
     </div>
-    <p style={{ color: "#74695d", fontSize: "var(--text-caption)", marginTop: 16 }}>นับคนไม่ซ้ำภายในปีและรอบ · ตัวเลขปลายแท่งคือผู้มีสิทธิ์ทั้งหมด · สละสิทธิ์รวมสละสิทธิ์ในรอบ 2 · สถานะอื่นรวมเฉพาะสถานะผ่านการคัดเลือกที่ซ่อนไว้ · ชี้แต่ละส่วนเพื่อดูจำนวนและเปอร์เซ็นต์</p>
+    <p style={{ color: "#74695d", fontSize: "var(--text-caption)", marginTop: 16 }}>นับคนไม่ซ้ำภายใน{majorName ? "ปีและสาขา รวมทุกรอบ" : "ปีและรอบ"} · ตัวเลขปลายแท่งคือผู้มีสิทธิ์ทั้งหมด · สละสิทธิ์รวมสละสิทธิ์ในรอบ 2 · สถานะอื่นรวมเฉพาะสถานะผ่านการคัดเลือกที่ซ่อนไว้ · ชี้แต่ละส่วนเพื่อดูจำนวนและเปอร์เซ็นต์</p>
     {rows.some(row => row.multiple > 0) && <p style={{ color: "#74695d", fontSize: "var(--text-caption)" }}>คนที่มีหลายกลุ่มสถานะจากหลายรายการสมัคร แสดงในส่วน “มีหลายกลุ่มสถานะ” เพียงครั้งเดียว เพื่อให้ผลรวมตรงกับผู้มีสิทธิ์</p>}
   </article>;
 }

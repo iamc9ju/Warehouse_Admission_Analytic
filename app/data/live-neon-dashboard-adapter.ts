@@ -22,6 +22,7 @@ export async function queryPageSnapshot(
     const queries: Partial<{ [K in keyof DashboardSnapshot]: () => Promise<DashboardSnapshot[K]> }> = {
       allYearPeople: () => getAllYearPeople(client),
       rightsOutcomes: () => getRightsOutcomes(client),
+      majorRightsOutcomes: () => getRightsOutcomes(client, "major"),
       years: () => getYearOverview(client, year),
       rounds: () => getRoundOverview(client, year),
       majorRows: () => getMajorConversion(client, year),

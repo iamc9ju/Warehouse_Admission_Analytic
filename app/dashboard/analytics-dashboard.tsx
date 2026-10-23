@@ -6,7 +6,7 @@ import Link from "next/link";
 import { RoundComparisonChart } from "./round-comparison-chart";
 import { RightsOutcomesChart } from "./rights-outcomes-chart";
 import { PresentationChartLineIcon } from "@heroicons/react/24/outline";
-import type { MajorRow, Year, YearOverview } from "../data/dashboard-types";
+import type { DashboardSnapshot, MajorRow, Year, YearOverview } from "../data/dashboard-types";
 import type { PageData } from "../data/page-data-types";
 import { SidebarNavigation } from "../sidebar-navigation";
 import { DonutChartCard, getMajorColor, tcasColors } from "../donut-chart-card";
@@ -38,11 +38,19 @@ function formatNumber(value: number) {
 function MajorTrendLineCharts({
   availableYears,
   majorRows,
+  outcomes,
 }: {
   availableYears: Year[];
   majorRows: MajorRow[];
+  outcomes: DashboardSnapshot["majorRightsOutcomes"];
 }) {
-  const [hoveredMajor, setHoveredMajor] = useState<string | null>(null);
+  const [hoveredMajor, updateHoveredMajor] = useState<string | null>(null);
+  const [lastMajor, setLastMajor] = useState<string | null>(null);
+  const [pinnedMajor, setPinnedMajor] = useState<string | null>(null);
+  const setHoveredMajor = (key: string | null) => {
+    updateHoveredMajor(key);
+    if (key !== null) setLastMajor(key);
+  };
 
   const uniqueMajors = useMemo(() => {
     const map = new Map<string, { majorKey: string; name: string }>();
@@ -53,6 +61,11 @@ function MajorTrendLineCharts({
     });
     return Array.from(map.values());
   }, [majorRows]);
+
+  const activeMajor = hoveredMajor ?? pinnedMajor;
+  const selectedMajor = uniqueMajors.find(major => major.majorKey === (activeMajor ?? lastMajor)) ?? uniqueMajors[0];
+  const selectedOutcomes = outcomes.filter(row => row.code === selectedMajor?.majorKey);
+  const outcomeRounds = selectedOutcomes.map(row => ({ ...row, name: selectedMajor?.name ?? "", choices: 0, applicants: row.eligible, rate: 0, files: 0 }));
 
   return (
     <article className="analytics-card major-ranking-card" style={{ gridColumn: "1 / -1" }}>
@@ -86,14 +99,19 @@ function MajorTrendLineCharts({
         </span>
         {uniqueMajors.map((m, idx) => {
           const color = getMajorColor(idx);
-          const isHovered = hoveredMajor === m.majorKey;
-          const isDimmed = hoveredMajor !== null && !isHovered;
+          const isHovered = activeMajor === m.majorKey;
+          const isPinned = pinnedMajor === m.majorKey;
+          const isDimmed = activeMajor !== null && !isHovered;
           return (
             <button
               key={m.majorKey}
               type="button"
               onMouseEnter={() => setHoveredMajor(m.majorKey)}
               onMouseLeave={() => setHoveredMajor(null)}
+              onFocus={() => setHoveredMajor(m.majorKey)}
+              onBlur={() => setHoveredMajor(null)}
+              aria-pressed={isPinned}
+              onClick={() => setPinnedMajor(current => current === m.majorKey ? null : m.majorKey)}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -119,11 +137,14 @@ function MajorTrendLineCharts({
               />
               <span style={{ fontSize: "var(--text-label)", fontWeight: 750, color: isHovered ? color : "#333" }}>
                 {m.name}
+                {isPinned ? " ✓" : ""}
               </span>
             </button>
           );
         })}
       </div>
+
+      <p style={{ fontSize: "var(--text-caption)", color: "#74695d", margin: "-12px 0 18px" }}>ชี้เพื่อดูชั่วคราว · คลิกเพื่อเลือกสาขาค้างไว้ · คลิกสาขาเดิมอีกครั้งเพื่อยกเลิก</p>
 
       {/* Annual people counts by major/program variant */}
       <div
@@ -141,7 +162,7 @@ function MajorTrendLineCharts({
           uniqueMajors={uniqueMajors}
           majorRows={majorRows}
           getColor={getMajorColor}
-          hoveredMajor={hoveredMajor}
+          hoveredMajor={activeMajor}
           setHoveredMajor={setHoveredMajor}
         />
         <SingleMajorLineChart
@@ -152,7 +173,7 @@ function MajorTrendLineCharts({
           uniqueMajors={uniqueMajors}
           majorRows={majorRows}
           getColor={getMajorColor}
-          hoveredMajor={hoveredMajor}
+          hoveredMajor={activeMajor}
           setHoveredMajor={setHoveredMajor}
         />
         <SingleMajorLineChart
@@ -163,9 +184,10 @@ function MajorTrendLineCharts({
           uniqueMajors={uniqueMajors}
           majorRows={majorRows}
           getColor={getMajorColor}
-          hoveredMajor={hoveredMajor}
+          hoveredMajor={activeMajor}
           setHoveredMajor={setHoveredMajor}
         />
+        {selectedMajor && <RightsOutcomesChart rows={selectedOutcomes} rounds={outcomeRounds} years={availableYears} majorName={selectedMajor.name} />}
       </div>
     </article>
   );
@@ -1108,6 +1130,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
           <MajorTrendLineCharts
             availableYears={availableYears}
             majorRows={majorRows}
+            outcomes={snapshot.majorRightsOutcomes}
           />
 
           <Tcas3ScoreScatterPlot

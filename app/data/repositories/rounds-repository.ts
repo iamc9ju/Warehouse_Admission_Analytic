@@ -2,11 +2,13 @@ import type { QueryClient } from "../db/neon-client";
 import type { DashboardSnapshot, RoundRow, RoundStatusRow } from "../dashboard-types";
 import { numberValue, requiredRows } from "./query-helpers";
 
-export async function getRightsOutcomes(client: QueryClient): Promise<DashboardSnapshot["rightsOutcomes"]> {
+export async function getRightsOutcomes(client: QueryClient, grain: "round" | "major" = "round"): Promise<DashboardSnapshot["rightsOutcomes"]> {
+  const group = grain === "major" ? "f.major_key::text" : "r.tcas_round_code";
   const rows = await requiredRows(client, `
+    /* ${grain === "major" ? "major-rights-outcomes" : "round-rights-outcomes"} */
     /* rights-outcomes-distinct-people */
     with categories as (
-      select y.academic_year, r.tcas_round_code, f.student_key,
+      select y.academic_year, ${group} as tcas_round_code, f.student_key,
         case when s.tcas_status = 'ยืนยันสิทธิ์' then 'confirmed'
           when s.tcas_status in ('สละสิทธิ์', 'สละสิทธิ์ในรอบ 2') then 'resigned'
           when s.tcas_status = 'ไม่ใช้สิทธิ์' then 'unused'
