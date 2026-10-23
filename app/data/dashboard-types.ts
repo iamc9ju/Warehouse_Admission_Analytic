@@ -68,6 +68,7 @@ export type RoundStatusRow = {
 };
 
 export type DashboardSnapshot = {
+  rightsOutcomes: { year: number; code: string; confirmed: number; resigned: number; unused: number; inactive: number; elsewhere: number; other: number; multiple: number; eligible: number }[];
   allYearPeople: { applicants: number; confirmed: number; resigned: number };
   runtime: {
     source: "live-neon";

@@ -1,6 +1,49 @@
 import type { QueryClient } from "../db/neon-client";
-import type { RoundRow, RoundStatusRow } from "../dashboard-types";
+import type { DashboardSnapshot, RoundRow, RoundStatusRow } from "../dashboard-types";
 import { numberValue, requiredRows } from "./query-helpers";
+
+export async function getRightsOutcomes(client: QueryClient): Promise<DashboardSnapshot["rightsOutcomes"]> {
+  const rows = await requiredRows(client, `
+    /* rights-outcomes-distinct-people */
+    with categories as (
+      select y.academic_year, r.tcas_round_code, f.student_key,
+        case when s.tcas_status = 'ยืนยันสิทธิ์' then 'confirmed'
+          when s.tcas_status in ('สละสิทธิ์', 'สละสิทธิ์ในรอบ 2') then 'resigned'
+          when s.tcas_status = 'ไม่ใช้สิทธิ์' then 'unused'
+          when s.tcas_status = 'ไม่เข้าระบบมาดำเนินการใดๆ' then 'inactive'
+          when s.tcas_status = 'ยืนยันที่อื่นแล้ว' then 'elsewhere'
+          else 'other' end as category
+      from admissions_dw.fact_admission f
+      join admissions_dw.dim_year y using(year_key)
+      join admissions_dw.dim_tcas_round r using(round_key)
+      join admissions_dw.dim_tcas_status s using(status_key)
+      where s.tcas_status in ('ยืนยันสิทธิ์', 'สละสิทธิ์', 'สละสิทธิ์ในรอบ 2',
+        'ไม่ใช้สิทธิ์', 'ไม่เข้าระบบมาดำเนินการใดๆ', 'ยืนยันที่อื่นแล้ว',
+        'ผ่านการคัดเลือก', 'ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2')
+    ), people as (
+      select academic_year, tcas_round_code, student_key,
+        case when count(distinct category) > 1 then 'multiple' else min(category) end as category
+      from categories group by academic_year, tcas_round_code, student_key
+    )
+    select academic_year, tcas_round_code, count(*) as eligible,
+      count(*) filter(where category = 'confirmed') as confirmed,
+      count(*) filter(where category = 'resigned') as resigned,
+      count(*) filter(where category = 'unused') as unused,
+      count(*) filter(where category = 'inactive') as inactive,
+      count(*) filter(where category = 'elsewhere') as elsewhere,
+      count(*) filter(where category = 'other') as other,
+      count(*) filter(where category = 'multiple') as multiple
+    from people group by academic_year, tcas_round_code order by academic_year, tcas_round_code
+  `);
+  return rows.map(row => ({
+    year: numberValue(row.academic_year, 'academic_year'), code: String(row.tcas_round_code),
+    confirmed: numberValue(row.confirmed, 'confirmed'), resigned: numberValue(row.resigned, 'resigned'),
+    unused: numberValue(row.unused, 'unused'), inactive: numberValue(row.inactive, 'inactive'),
+    elsewhere: numberValue(row.elsewhere, 'elsewhere'),
+    other: numberValue(row.other, 'other'), multiple: numberValue(row.multiple, 'multiple'),
+    eligible: numberValue(row.eligible, 'eligible'),
+  }));
+}
 
 export async function getRoundOverview(client: QueryClient, year?: number): Promise<RoundRow[]> {
   const rows = await requiredRows(client, `

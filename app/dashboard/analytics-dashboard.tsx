@@ -4,6 +4,7 @@ import { isVisibleStatus } from "../data/status-visibility";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { RoundComparisonChart } from "./round-comparison-chart";
+import { RightsOutcomesChart } from "./rights-outcomes-chart";
 import { PresentationChartLineIcon } from "@heroicons/react/24/outline";
 import type { MajorRow, Year, YearOverview } from "../data/dashboard-types";
 import type { PageData } from "../data/page-data-types";
@@ -1102,6 +1103,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
 
         <section className={`analytics-chart-grid ${hasManyYears ? "many-years" : ""}`} data-year-count={availableYears.length}>
           <RoundComparisonChart rounds={rounds} years={availableYears} />
+          <RightsOutcomesChart rows={snapshot.rightsOutcomes} rounds={rounds} years={availableYears} />
 
           <MajorTrendLineCharts
             availableYears={availableYears}

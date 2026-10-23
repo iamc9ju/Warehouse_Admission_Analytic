@@ -2,7 +2,7 @@ import { connectNeon, type QueryClient } from "./db/neon-client";
 import type { DashboardSnapshot } from "./dashboard-types";
 import { pageDataFields, type DashboardPage, type LoadedPageSnapshot } from "./page-data-types";
 import { getAllYearPeople, getAvailableYears, getYearOverview, getYearStatuses } from "./repositories/overview-repository";
-import { getRoundOverview, getRoundStatuses } from "./repositories/rounds-repository";
+import { getRoundOverview, getRoundStatuses, getRightsOutcomes } from "./repositories/rounds-repository";
 import { getMajorConversion, getMajorStatuses } from "./repositories/majors-repository";
 import { getBusinessQuestions, getDecisionInsights } from "./repositories/insights-repository";
 
@@ -21,6 +21,7 @@ export async function queryPageSnapshot(
   const loadPageEntries = async (year?: number): Promise<[string, unknown][]> => {
     const queries: Partial<{ [K in keyof DashboardSnapshot]: () => Promise<DashboardSnapshot[K]> }> = {
       allYearPeople: () => getAllYearPeople(client),
+      rightsOutcomes: () => getRightsOutcomes(client),
       years: () => getYearOverview(client, year),
       rounds: () => getRoundOverview(client, year),
       majorRows: () => getMajorConversion(client, year),
