@@ -76,7 +76,6 @@ function fakeClient({ fail, empty } = {}) {
         decisionInsights: () => [
           { business_question_id: "BQ-001", payload: { academic_year: 2569, major_name: "Civil", applicant_count: 825, confirmed_count: 63, confirmed_rate: 7.64, applicant_change: 10 } },
           { business_question_id: "BQ-002", payload: { academic_year: 2569, tcas_round_code: "TCAS3", confirmed_applicants: 283, confirmed_rate: 17.47 } },
-          { business_question_id: "BQ-006", payload: { academic_year: 2569, major_name: "Civil", applicant_count: 825, confirmed_count: 63, confirmed_rate: 7.64, applicant_change: 10 } },
           { business_question_id: "BQ-007", payload: { academic_year: 2569, major_name: "Mechanical", applicant_count: 200, confirmed_count: 20, confirmed_rate: 10, applicant_change: -197 } },
           { business_question_id: "BQ-008", payload: { academic_year: 2569, major_name: "Logistics", applicant_count: 300, confirmed_count: 40, confirmed_rate: 13.33, applicant_change: 157 } },
           { business_question_id: "BQ-009", payload: { academic_year: 2569, major_name: "Innovation", applicant_count: 108, confirmed_count: 36, confirmed_rate: 33.33, applicant_change: 5 } },
