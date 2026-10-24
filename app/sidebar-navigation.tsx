@@ -9,12 +9,14 @@ import {
   HomeIcon,
   LightBulbIcon,
   PresentationChartLineIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 
 const navigationLinks = [
   { href: "/", label: "Overview", icon: HomeIcon },
   { href: "/dashboard", label: "Dashboard", icon: PresentationChartLineIcon },
   { href: "/insights", label: "Insights", icon: LightBulbIcon },
+  { href: "/ai-analysis", label: "AI Analysis", icon: SparklesIcon },
   { href: "/rounds", label: "Rounds", icon: CheckCircleIcon },
   { href: "/majors", label: "Majors", icon: AcademicCapIcon },
 ];

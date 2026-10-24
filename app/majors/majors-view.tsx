@@ -44,11 +44,12 @@ export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
   const allStatusLabels = useMemo(
     () => [
       "ผู้สมัคร",
+      "ผู้มีสิทธิ์",
       ...Array.from(
         new Set([
           ...majorStatuses.map((s) => s.label),
         ])
-      ).filter((label) => label !== "ผู้สมัคร" && isVisibleStatus(label)),
+      ).filter((label) => label !== "ผู้สมัคร" && label !== "ผู้มีสิทธิ์" && isVisibleStatus(label)),
     ],
     [majorStatuses]
   );
@@ -62,6 +63,7 @@ export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
     const row = majorRows.find((m) => m.year === year && m.majorKey === selectedMajorKey);
     if (!row) return 0;
     if (selectedMajorStatus === "ผู้สมัคร") return row.applicants;
+    if (selectedMajorStatus === "ผู้มีสิทธิ์") return row.eligible ?? 0;
     if (selectedMajorStatus === "ยืนยันสิทธิ์") return row.confirmed;
     return majorStatuses.find((status) => (
       status.year === year

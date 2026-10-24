@@ -1,5 +1,8 @@
 # Admissions Data Warehouse for Engineering Admissions
 
+AI Analysis: หน้า `/ai-analysis` สร้างรายงาน 7 หัวข้อด้วย Gemini และเก็บฉบับย้อนหลังใน Neon ฐานเดิม
+ตั้ง `GEMINI_API_KEY` ฝั่งเซิร์ฟเวอร์และรัน `npm run ai:migrate` ก่อนใช้งาน ดู [การตั้งค่าและวิธีนับ](docs/ai-analysis.md)
+
 Data Warehouse และ Web Dashboard สำหรับวิเคราะห์ข้อมูลรับสมัครคณะวิศวกรรมศาสตร์
 กำแพงแสน ครอบคลุม TCAS รอบ 1-4 ปี 2567-2569
 
