@@ -11,14 +11,14 @@ export const segments = [
   { key: "inactive", label: "ไม่เข้าระบบมาดำเนินการใดๆ", color: "#8c67a8" },
   { key: "elsewhere", label: "ยืนยันที่อื่นแล้ว", color: "#477ca8" },
   { key: "other", label: "สถานะอื่นในกลุ่มผู้มีสิทธิ์", color: "#8795a2" },
-  { key: "multiple", label: "มีหลายกลุ่มสถานะ", color: "#3f8f8b" },
 ] as const;
 const number = (value: number) => value.toLocaleString("en-US");
 
-export function RightsOutcomesChart({ rows, rounds, years, majorName }: {
+export function RightsOutcomesChart({ rows: sourceRows, rounds, years, majorName }: {
   rows: DashboardSnapshot["rightsOutcomes"]; rounds: RoundRow[]; years: number[];
   majorName?: string;
 }) {
+  const rows = sourceRows.map(row => ({ ...row, eligible: row.eligible - row.multiple }));
   const [percent, setPercent] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
   const visible = segments.filter(segment => rows.some(row => row[segment.key] > 0));
@@ -74,7 +74,7 @@ export function RightsOutcomesChart({ rows, rounds, years, majorName }: {
         </div>;
       })}
     </div>
-    <p style={{ color: "#74695d", fontSize: "var(--text-caption)", marginTop: 16 }}>นับคนไม่ซ้ำภายใน{majorName ? "ปีและสาขา รวมทุกรอบ" : "ปีและรอบ"} · ตัวเลขปลายแท่งคือผู้มีสิทธิ์ทั้งหมด · สละสิทธิ์รวมสละสิทธิ์ในรอบ 2 · สถานะอื่นรวมเฉพาะสถานะผ่านการคัดเลือกที่ซ่อนไว้ · ชี้แต่ละส่วนเพื่อดูจำนวนและเปอร์เซ็นต์</p>
-    {rows.some(row => row.multiple > 0) && <p style={{ color: "#74695d", fontSize: "var(--text-caption)" }}>คนที่มีหลายกลุ่มสถานะจากหลายรายการสมัคร แสดงในส่วน “มีหลายกลุ่มสถานะ” เพียงครั้งเดียว เพื่อให้ผลรวมตรงกับผู้มีสิทธิ์</p>}
+    <p style={{ color: "#74695d", fontSize: "var(--text-caption)", marginTop: 16 }}>นับคนไม่ซ้ำภายใน{majorName ? "ปีและสาขา รวมทุกรอบ" : "ปีและรอบ"} · ยอดรวมและเปอร์เซ็นต์คิดเฉพาะสถานะที่แสดง · สละสิทธิ์รวมสละสิทธิ์ในรอบ 2 · สถานะอื่นรวมเฉพาะสถานะผ่านการคัดเลือกที่ซ่อนไว้ · ชี้แต่ละส่วนเพื่อดูจำนวนและเปอร์เซ็นต์</p>
+
   </article>;
 }

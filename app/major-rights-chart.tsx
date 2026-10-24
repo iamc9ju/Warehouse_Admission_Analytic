@@ -21,7 +21,8 @@ export function MajorRightsChart({ rows, majors, year }: {
     const right = Math.min(window.innerWidth - 8, chart?.right ?? window.innerWidth - 8);
     setTooltip({ label, x: Math.max(left, Math.min(box.left + box.width / 2 - width / 2, right - width)), y: Math.max(8, box.top - 8) });
   }
-  const data = majors.filter(m => m.year === year).map(major => ({ major, row: rows.find(r => r.year === year && r.code === major.majorKey) }));
+  const displayRows = rows.map(row => ({ ...row, eligible: row.eligible - row.multiple }));
+  const data = majors.filter(m => m.year === year).map(major => ({ major, row: displayRows.find(r => r.year === year && r.code === major.majorKey) }));
   const maximum = Math.max(1, ...data.map(d => d.row?.eligible ?? 0));
   const visible = segments.filter(s => data.some(d => (d.row?.[s.key] ?? 0) > 0));
   return <article ref={chartRef} className="panel" style={{ gridColumn: "1 / -1" }}>
@@ -44,6 +45,6 @@ export function MajorRightsChart({ rows, majors, year }: {
     </div>)}
     {tooltip && createPortal(<div role="tooltip" style={{ position: "fixed", left: tooltip.x, top: tooltip.y, transform: "translateY(-100%)", width: 300, maxWidth: "calc(100vw - 16px)", boxSizing: "border-box", overflowWrap: "anywhere", whiteSpace: "normal", padding: "10px 14px", background: "#202938", color: "white", borderRadius: 8, boxShadow: "0 4px 16px #0003", zIndex: 1000, pointerEvents: "none", fontSize: 14 }}>{tooltip.label}</div>, document.body)}
     <p>นับคนไม่ซ้ำภายในปีและสาขา รวมทุกรอบ · ชี้แต่ละส่วนเพื่อดูจำนวนและเปอร์เซ็นต์ · สีในแท่งแสดงสถานะ ส่วนสีชื่อแสดงสาขาวิชา</p>
-    <small>ผู้มีหลายกลุ่มสถานะจะแสดงแยกเพียงครั้งเดียว เพื่อให้ผลรวมตรงกับจำนวนผู้มีสิทธิ์</small>
+    <small>ยอดรวมและเปอร์เซ็นต์คิดเฉพาะสถานะที่แสดง</small>
   </article>;
 }
