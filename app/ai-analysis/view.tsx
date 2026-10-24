@@ -29,7 +29,7 @@ function StatusTables({ facts }: { facts: Fact[] }) {
 }
 
 function YearSummaries({ section, facts }: {section: NonNullable<AnalysisState["report"]>["content"]["sections"][number]; facts: Fact[]}) {
-  if (!section.yearSummaries) return null;
+  if (section.title === SECTION_TITLES[0] || !section.yearSummaries) return null;
   return <div className={styles.yearSummaries}>{[...section.yearSummaries].sort((a,b) => a.year-b.year).map(summary => <section key={summary.year}>
     <h3>ปี {summary.year}</h3><p>{summary.observation}</p>
     <details className={styles.evidence}><summary>ดูหลักฐานปี {summary.year}</summary><FactTable facts={facts.filter(f => summary.evidenceIds.includes(f.id))} /></details>

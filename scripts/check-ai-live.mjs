@@ -22,8 +22,10 @@ if(process.argv.includes("--generate")){
   id=generated.report.id;
   assert.equal(generated.report.content.sections.length,7);
   const expectedYears=generated.report.input.facts.filter(f=>f.grain==="year").map(f=>f.year).sort();
-  for(const section of generated.report.content.sections){assert.deepEqual(section.yearSummaries.map(s=>s.year).sort(),expectedYears);}
-  console.log(JSON.stringify({phase:"coverage",sections:generated.report.content.sections.map(s=>({title:s.title,years:s.yearSummaries.map(y=>y.year)}))}));
+  assert.equal(generated.report.content.sections[0].yearSummaries?.length ?? 0,0);
+  assert.deepEqual([...new Set(generated.report.content.sections[0].items.flatMap(i=>i.dimensions))].sort(),["major","overview","rights","round"]);
+  for(const section of generated.report.content.sections.slice(1)){assert.deepEqual(section.yearSummaries.map(s=>s.year).sort(),expectedYears);}
+  console.log(JSON.stringify({phase:"coverage",overview:{items:generated.report.content.sections[0].items.length,dimensions:[...new Set(generated.report.content.sections[0].items.flatMap(i=>i.dimensions))]},detailSections:generated.report.content.sections.slice(1).map(s=>({title:s.title,years:s.yearSummaries.map(y=>y.year)}))}));
   const pool=new pg.Pool({connectionString:process.env.DATABASE_URL,connectionTimeoutMillis:15000});
   try{
     const {rows}=await pool.query("select academic_year,unique_applicants,eligible_applicants,confirmed_applicants from admissions_dw.mart_admissions_executive_summary order by academic_year");

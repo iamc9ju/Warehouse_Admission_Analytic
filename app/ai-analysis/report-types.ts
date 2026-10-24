@@ -4,7 +4,7 @@ export const SECTION_TITLES = [
   "แนวทางดำเนินการเบื้องต้น",
 ] as const;
 
-export const PROMPT_VERSION = "admissions-report-v8-eligible-conversion";
+export const PROMPT_VERSION = "admissions-report-v9-executive-overview";
 export const RULES_VERSION = "signals-v2-eligible-conversion";
 export const ELIGIBLE_STATUSES = [
   "ยืนยันสิทธิ์", "สละสิทธิ์", "สละสิทธิ์ในรอบ 2", "ยืนยันที่อื่นแล้ว", "ไม่ใช้สิทธิ์",
@@ -50,7 +50,8 @@ export type ReportInput = {
   scope: Scope; baselineYear: number | null; dataLoadedAt: string; fingerprint: string;
   facts: Fact[]; signals: Signal[]; definitions: typeof DEFINITIONS; rules: typeof RULES;
 };
-export type ReportItem = { observation: string; interpretation: string; recommendation: string; evidenceIds: string[] };
+export type OverviewDimension = "overview" | "rights" | "major" | "round";
+export type ReportItem = { observation: string; interpretation: string; recommendation: string; evidenceIds: string[]; dimensions?: OverviewDimension[] };
 export type YearSummary = { year: number; observation: string; evidenceIds: string[] };
 export type ReportContent = { sections: { title: string; items: ReportItem[]; yearSummaries?: YearSummary[] }[] };
 export type SavedReport = {

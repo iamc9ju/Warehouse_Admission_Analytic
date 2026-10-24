@@ -97,3 +97,7 @@ node --env-file-if-exists=.env scripts/check-ai-live.mjs --generate
 - Typecheck, lint เฉพาะไฟล์ที่เปลี่ยน, AI tests และ page-query tests ผ่าน
 - rendered-html suite เดิมยังมีสองข้อไม่ผ่าน: คาดข้อความ `round rows` และ class `round-table-wrap` ใน Overview ที่ถูกเปลี่ยนไปก่อนงานนี้ (ไม่ได้แก้ Overview ในงานนี้)
 - พบ vinext 0.0.50 production static-file cache บน Windows ใช้ backslash ใน lookup แล้วคืน 404 ให้ assets; ตรวจ UI ผ่าน `npm run dev` ซึ่งแสดงผลได้ ปัญหาเดิมนี้ไม่ได้แก้ในงานรายงาน AI
+
+## Executive overview (prompt v9)
+
+หัวข้อแรกสังเคราะห์ภาพรวม 3–5 ประเด็นจากแนวโน้มการสมัคร การใช้สิทธิ์ สาขา และรอบ TCAS โดยไม่แสดงกล่องรายปี แต่หลักฐานแต่ละมิติต้องครอบคลุมทุกปีที่เลือก หัวข้อ 2–7 ยังคงสรุปแยกรายปีครบตามช่วงที่เลือก ใช้นิยามการนับเดิมและอัตรายืนยันต่อผู้มีสิทธิ์ รายงานเดิมยังอ่านได้ แต่ต้องสร้างฉบับใหม่เพื่อรับเนื้อหาตาม prompt นี้

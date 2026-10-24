@@ -24,9 +24,13 @@ function fact(year, grain = "year", key = "all", applicants = 100, confirmed = 2
 const facts = [fact(2567), fact(2568), fact(2569), fact(2568,"major","A",100,20), fact(2569,"major","A",80,8), fact(2568,"major","B",10,2), fact(2569,"major","B",20,4), fact(2569,"round","TCAS1")];
 const scope = { startYear: 2569, endYear: 2569 };
 const input = api.prepareInput(facts, "2026-10-24T00:00:00.000Z", scope);
-const content = (source=input) => ({ sections: api.SECTION_TITLES.map(title => ({ title,
-  yearSummaries: source.facts.filter(f=>f.grain==="year").map(f=>({year:f.year,observation:`ปี ${f.year} ไม่พบข้อสรุปนอกเหนือจากข้อมูลตามเกณฑ์`,evidenceIds:source.facts.filter(row=>row.year===f.year).map(row=>row.id)})),
-  items: [{ observation: `ภาพรวมช่วง ${source.scope.startYear}–${source.scope.endYear}`, interpretation: "ต้องตรวจข้อมูลเพิ่มก่อนสรุปสาเหตุ", recommendation: "ตรวจนิยามข้อมูล", evidenceIds: source.facts.filter(f=>f.grain==="year").map(f=>f.id) }] })) });
+const content = (source=input) => ({ sections: api.SECTION_TITLES.map((title,index) => ({ title,
+  yearSummaries: index === 0 ? [] : source.facts.filter(f=>f.grain==="year").map(f=>({year:f.year,observation:`ปี ${f.year} ไม่พบข้อสรุปนอกเหนือจากข้อมูลตามเกณฑ์`,evidenceIds:source.facts.filter(row=>row.year===f.year).map(row=>row.id)})),
+  items: index === 0 ? [
+    {observation:`ช่วง ${source.scope.startYear}–${source.scope.endYear} การสมัครสัมพันธ์กับการสละสิทธิ์ที่ต้องตรวจต่อ`,interpretation:"ยังสรุปสาเหตุไม่ได้",recommendation:"ตรวจการใช้สิทธิ์",dimensions:["overview","rights"],evidenceIds:source.facts.filter(f=>f.grain==="year").map(f=>f.id)},
+    {observation:`ช่วง ${source.scope.startYear}–${source.scope.endYear} สาขามีสถานการณ์ต่างกัน`,interpretation:"ตรวจแยกสาขา",recommendation:"ติดตามสาขาที่มีสัญญาณ",dimensions:["major"],evidenceIds:source.facts.filter(f=>f.grain==="major").map(f=>f.id)},
+    {observation:`ช่วง ${source.scope.startYear}–${source.scope.endYear} แต่ละรอบมีบทบาท`,interpretation:"ตรวจแยกรอบ",recommendation:"ติดตามรอบรับสมัคร",dimensions:["round"],evidenceIds:source.facts.filter(f=>f.grain==="round").map(f=>f.id)},
+  ] : [{ observation: `ภาพรวมช่วง ${source.scope.startYear}–${source.scope.endYear}`, interpretation: "ต้องตรวจข้อมูลเพิ่มก่อนสรุปสาเหตุ", recommendation: "ตรวจนิยามข้อมูล", evidenceIds: source.facts.filter(f=>f.grain==="year").map(f=>f.id) }] })) });
 
 test("single-year input excludes prior years and cross-year signals; fingerprint detects selected data changes", () => {
   assert.equal(input.baselineYear,null);
@@ -92,7 +96,7 @@ test("status data reaches Gemini unchanged, changes invalidate reports, removed 
   const changed=facts.map(f=>({...f,statuses:f.statuses.map(s=>({...s,applicants:s.applicants+1}))}));
   assert.notEqual(api.prepareInput(changed,input.dataLoadedAt,scope).fingerprint,input.fingerprint);
   const multi=api.prepareInput(facts,input.dataLoadedAt,{startYear:2568,endYear:2569});
-  assert.throws(()=>api.validateContent(content(),multi),/ไม่ครบทุกปี/);
+  assert.throws(()=>api.validateContent(content(),multi),/ไม่ครบทุกปี|ขาดหลักฐานปี/);
 });
 
 test("API rejects invalid requests and cross-origin generation before contacting providers", async () => {
@@ -106,21 +110,25 @@ test("API rejects invalid requests and cross-origin generation before contacting
   assert.equal(response.headers.get("cache-control"),"no-store");
 });
 
-test("every section must summarize each selected year with matching evidence, not just cite earlier years",()=>{
+test("detail sections cover every year; executive overview synthesizes all dimensions without annual boxes",()=>{
   const multi=api.prepareInput(facts,input.dataLoadedAt,{startYear:2567,endYear:2569});
   assert.equal(api.validateContent(content(multi),multi).sections.length,7);
-  for(let section=0;section<7;section++){
+  for(let section=1;section<7;section++){
     const latestOnly=content(multi);latestOnly.sections[section].yearSummaries=latestOnly.sections[section].yearSummaries.filter(s=>s.year===2569);
     assert.throws(()=>api.validateContent(latestOnly,multi),/ไม่ครบทุกปี/);
   }
-  const mislabeled=content(multi);mislabeled.sections[0].yearSummaries[0].observation="ปี 2569 มีผู้สมัคร";
+  const mislabeled=content(multi);mislabeled.sections[1].yearSummaries[0].observation="ปี 2569 มีผู้สมัคร";
   assert.throws(()=>api.validateContent(mislabeled,multi),/ต้องอธิบายปี/);
-  const wrongEvidence=content(multi);wrongEvidence.sections[0].yearSummaries[0].evidenceIds=["year:2569:all"];
+  const wrongEvidence=content(multi);wrongEvidence.sections[1].yearSummaries[0].evidenceIds=["year:2569:all"];
   assert.throws(()=>api.validateContent(wrongEvidence,multi),/หลักฐานรายปี/);
-  const duplicate=content(multi);duplicate.sections[0].yearSummaries[0]=duplicate.sections[0].yearSummaries[1];
+  const duplicate=content(multi);duplicate.sections[1].yearSummaries[0]=duplicate.sections[1].yearSummaries[1];
   assert.throws(()=>api.validateContent(duplicate,multi),/ไม่ครบทุกปี/);
-  const latestNarrative=content(multi);latestNarrative.sections[0].items[0].observation="ปี 2569 มีผู้สมัคร";
+  const latestNarrative=content(multi);latestNarrative.sections[0].items.forEach(item=>{item.observation="ปี 2569 มีการสละสิทธิ์";});
   assert.throws(()=>api.validateContent(latestNarrative,multi),/ภาพรวมทั้งช่วงปี/);
+  const noMajor=content(multi);noMajor.sections[0].items[1].dimensions=[];
+  assert.throws(()=>api.validateContent(noMajor,multi),/ขาดมิติ major/);
+  const annual=content(multi);annual.sections[0].yearSummaries=annual.sections[1].yearSummaries;
+  assert.throws(()=>api.validateContent(annual,multi),/ไม่แยกกล่องรายปี/);
 });
 
 test("rejects incomplete reports and unknown evidence instead of saving fake sources", () => {
@@ -155,13 +163,16 @@ test("Gemini uses server key in header, includes definitions, rejects truncation
       assert.equal(sent.definitions.rate,undefined);
       assert.ok(sent.facts.every(f=>f.rate===undefined && f.eligibleRate!==undefined));
       assert.equal(sent.coveragePlan.length,7);
-      assert.ok(sent.coveragePlan.every(s=>s.yearSummaries.length===1 && s.yearSummaries[0].year===2569));
+      assert.equal(sent.coveragePlan[0].yearSummaries.length,0);
+      assert.ok(sent.coveragePlan[0].synthesisSources.major.length>0);
+      assert.ok(sent.coveragePlan[0].synthesisSources.round.length>0);
+      assert.ok(sent.coveragePlan.slice(1).every(s=>s.yearSummaries.length===1 && s.yearSummaries[0].year===2569));
       assert.match(body.contents[0].parts[0].text,/ไม่เข้าระบบมาดำเนินการใดๆ/);
       assert.equal(body.generationConfig.responseMimeType,"application/json");
       return Response.json({candidates:[{finishReason:"STOP",content:{parts:[{text:JSON.stringify(content())}]}}]});
     };
     assert.equal((await api.generateWithGemini(input)).content.sections.length,7);
-    const missingYear=content();missingYear.sections[0].yearSummaries=[];
+    const missingYear=content();missingYear.sections[1].yearSummaries=[];
     let failedAttempts=0;
     globalThis.fetch=async()=>{failedAttempts++;return Response.json({candidates:[{finishReason:"STOP",content:{parts:[{text:JSON.stringify(missingYear)}]}}]});};
     await assert.rejects(api.generateWithGemini(input),/ไม่ครบทุกปี/);
