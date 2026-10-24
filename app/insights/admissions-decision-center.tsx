@@ -12,6 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import type { DashboardSnapshot } from "../data/dashboard-types";
 import type { PageData } from "../data/page-data-types";
+import { groupInsightRows } from "./insight-period";
 import { SidebarNavigation } from "../sidebar-navigation";
 
 type Question = DashboardSnapshot["businessQuestions"][number];
@@ -83,7 +84,15 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
   const { businessQuestions, decisionInsights, majorRows, rounds, years } = snapshot;
   const latestYear = Math.max(...years.map((year) => year.year));
   const latestYearOverview = years.find((year) => year.year === latestYear);
-  const activeBusinessQuestions = businessQuestions;
+  const [period, setPeriod] = useState<"all" | "latest">("latest");
+  const periodLabel = period === "all"
+    ? `รวมทุกปี ${Math.min(...years.map(year => year.year))}–${latestYear}`
+    : `ปี ${latestYear}`;
+  const activeBusinessQuestions = businessQuestions.filter(question =>
+    period === "latest" || rateQuestionIds.has(question.id));
+  const periodMajors = useMemo(() => groupInsightRows(majorRows, period, latestYear), [majorRows, period, latestYear]);
+  const periodRounds = useMemo(() => groupInsightRows(rounds, period, latestYear)
+    .sort((a, b) => b.confirmed - a.confirmed || a.code.localeCompare(b.code)), [rounds, period, latestYear]);
   const [selectedQuestionId, setSelectedQuestionId] = useState("BQ-001");
   const [activeCategory, setActiveCategory] = useState("ทั้งหมด");
   const [query, setQuery] = useState("");
@@ -110,23 +119,22 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
 
   const selectedQuestion = activeBusinessQuestions.find((question) => question.id === selectedQuestionId)
     ?? activeBusinessQuestions[0];
-  const selectedInsight = decisionInsights.find(
+  const sourceInsight = decisionInsights.find(
     (insight) => insight.businessQuestionId === selectedQuestion.id,
   ) ?? decisionInsights[0];
 
-  const majorsByApplicants = useMemo(() => majorRows
-    .filter((major) => major.year === latestYear)
+  const majorsByApplicants = useMemo(() => [...periodMajors]
     .sort((a, b) => b.applicants - a.applicants
       || (a.code < b.code ? -1 : a.code > b.code ? 1 : 0)
       || (a.type < b.type ? -1 : a.type > b.type ? 1 : 0)),
-  [majorRows, latestYear]);
+  [periodMajors]);
   const majorsByFewestApplicants = useMemo(() => [...majorsByApplicants]
     .sort((a, b) => a.applicants - b.applicants
       || (a.code < b.code ? -1 : a.code > b.code ? 1 : 0)
       || (a.type < b.type ? -1 : a.type > b.type ? 1 : 0)),
   [majorsByApplicants]);
   const selectedMajor = majorRows.find(
-    (major) => major.year === latestYear && selectedInsight.title.includes(major.name),
+    (major) => major.year === latestYear && sourceInsight.title.includes(major.name),
   );
   const defaultMajor = majorRows.find(
     (major) => major.year === latestYear && major.name === "วิศวกรรมโยธา-โครงสร้างพื้นฐาน",
@@ -138,8 +146,19 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
       : selectedMajor ?? defaultMajor;
   const isPrimaryAnswer = selectedQuestion.id === "BQ-001";
   const selectedRound = selectedQuestion.id === "BQ-002"
-    ? [...rounds.filter((round) => round.year === latestYear)].sort((a, b) => b.confirmed - a.confirmed)[0]
+    ? periodRounds[0]
     : undefined;
+  const rankingRow = selectedRound ?? answerMajor;
+  const selectedInsight = rateQuestionIds.has(selectedQuestion.id) && rankingRow
+    ? { ...sourceInsight,
+        title: selectedRound ? `${selectedRound.code} เป็นรอบที่สร้างผู้ยืนยันสิทธิ์มากที่สุด`
+          : `${answerMajor?.name}มีผู้สมัคร${selectedQuestion.id === "BQ-009" ? "น้อย" : "มาก"}ที่สุด`,
+        summary: `${periodLabel} มีผู้สมัคร ${formatNumber(rankingRow.applicants)} คน ผู้ยืนยันสิทธิ์ ${formatNumber(rankingRow.confirmed)} คน และอัตรายืนยันต่อผู้มีสิทธิ์ ${formatRate(eligibleRate(rankingRow))}`,
+        metricValue: selectedRound
+          ? `${formatNumber(rankingRow.confirmed)} คน / ${formatRate(eligibleRate(rankingRow))}`
+          : `${formatNumber(rankingRow.applicants)} คน / ${formatRate(eligibleRate(rankingRow))}`,
+      }
+    : sourceInsight;
   const confirmedCount = selectedRound ? selectedRound.confirmed : (answerMajor?.confirmed ?? 0);
   const applicantsCount = selectedRound ? selectedRound.applicants : (answerMajor?.applicants ?? 0);
   const eligibleCount = selectedRound
@@ -154,7 +173,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
     ? (answerMajor?.name ?? "ไม่มีข้อมูลสาขา")
     : selectedInsight.title;
   const answerSummary = isPrimaryAnswer
-    ? `ปี ${latestYear} มีผู้สมัครมากที่สุด ${formatNumber(answerMajor?.applicants ?? 0)} คน และอัตรายืนยันต่อผู้มีสิทธิ์ ${formatRate(selectedRate)}`
+    ? `${periodLabel} มีผู้สมัครมากที่สุด ${formatNumber(answerMajor?.applicants ?? 0)} คน และอัตรายืนยันต่อผู้มีสิทธิ์ ${formatRate(selectedRate)}`
     : selectedInsight.summary;
 
   const actionItems = isPrimaryAnswer
@@ -183,16 +202,14 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
         }));
     }
     if (selectedQuestion.id === "BQ-002") {
-      const tcasRounds = rounds.filter((r) => r.year === latestYear && r.code !== "TCAS3");
-      return [...tcasRounds]
-        .sort((a, b) => (eligibleRate(b) ?? -Infinity) - (eligibleRate(a) ?? -Infinity))
+      return periodRounds.slice(1)
         .map((r) => ({
           key: r.code,
           applicants: r.applicants,
           eligible: r.eligible ?? 0,
           confirmed: r.confirmed,
           name: `${r.code} — ${r.name}`,
-          displayValue: `ยืนยันสิทธิ์ ${formatRate(eligibleRate(r))}`,
+          displayValue: `ผู้ยืนยันสิทธิ์ ${formatNumber(r.confirmed)} คน (${formatRate(eligibleRate(r))})`,
         }));
     }
     if (selectedQuestion.id === "BQ-007") {
@@ -236,7 +253,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
         }));
     }
     return [];
-  }, [selectedQuestion.id, majorRows, rounds, latestYear, majorsByApplicants, majorsByFewestApplicants]);
+  }, [selectedQuestion.id, majorRows, rounds, latestYear, majorsByApplicants, majorsByFewestApplicants, periodRounds]);
 
   const chooseQuestion = (id: string) => {
     setSelectedQuestionId(id);
@@ -255,6 +272,22 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
         </div>
       </div>
 
+      <div className="question-tabs" aria-label="ช่วงปีข้อมูล">
+        {(["all", "latest"] as const).map(value => (
+          <button key={value} type="button" className={period === value ? "active" : ""}
+            aria-pressed={period === value}
+            onClick={() => {
+              setPeriod(value);
+              if (value === "all" && !rateQuestionIds.has(selectedQuestionId)) setSelectedQuestionId("BQ-001");
+              setActiveCategory("ทั้งหมด");
+              setQuery("");
+              setShowDeepDive(false);
+            }}>
+            {value === "all" ? "ทุกปี" : `ปีล่าสุด (${latestYear})`}
+          </button>
+        ))}
+      </div>
+      <p>{periodLabel}{period === "all" ? " · รวมยอดรายปี ผู้ที่ปรากฏหลายปีจะนับในแต่ละปี" : " · คำถามเพิ่มขึ้น/ลดลงเทียบกับปีก่อนหน้า"}</p>
       <div className="decision-toolbar">
         <label className="decision-search">
           <MagnifyingGlassIcon aria-hidden="true" />
@@ -307,7 +340,12 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
                   <span className="question-id">{question.id}</span>
                   <span className="question-text-block">
                     <span className="question-copy">{withQuestionMark(question.question)}</span>
-                    {questionInsight && <small>คำตอบ: {questionInsight.title}</small>}
+                    {questionInsight && <small>คำตอบ: {
+                      question.id === "BQ-001" ? `${majorsByApplicants[0]?.name ?? "ไม่มีข้อมูล"}มีผู้สมัครมากที่สุด`
+                        : question.id === "BQ-009" ? `${majorsByFewestApplicants[0]?.name ?? "ไม่มีข้อมูล"}มีผู้สมัครน้อยที่สุด`
+                        : question.id === "BQ-002" ? `${periodRounds[0]?.code ?? "ไม่มีข้อมูล"} เป็นรอบที่สร้างผู้ยืนยันสิทธิ์มากที่สุด`
+                        : questionInsight.title
+                    }</small>}
                   </span>
                   <ChevronRightIcon aria-hidden="true" />
                 </button>
