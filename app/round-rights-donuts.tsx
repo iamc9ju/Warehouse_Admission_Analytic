@@ -1,0 +1,22 @@
+"use client";
+import { DonutChartCard } from "./donut-chart-card";
+import { segments } from "./dashboard/rights-outcomes-chart";
+import type { DashboardSnapshot, RoundRow } from "./data/dashboard-types";
+
+export function RoundRightsDonuts({ rows, rounds, year }: {
+  rows: DashboardSnapshot["rightsOutcomes"]; rounds: RoundRow[]; year: number;
+}) {
+  return <section style={{ gridColumn: "1 / -1", minWidth: 0 }}>
+    <h2>ผลการใช้สิทธิ์ของผู้มีสิทธิ์ แยกรอบ TCAS ปี {year}</h2>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 480px), 1fr))", gap: 24, marginTop: 20 }}>
+      {rounds.filter(round => round.year === year).map(round => {
+        const row = rows.find(item => item.year === year && item.code === round.code);
+        return <DonutChartCard key={`${year}-${round.code}`} title={`${round.code} · ${round.name}`}
+          subtitle={row ? `สถานะการใช้สิทธิ์ของผู้มีสิทธิ์ ทั้งหมด ${row.eligible.toLocaleString("en-US")} คน` : "ไม่มีข้อมูลผลการใช้สิทธิ์"}
+          kicker={`ปีการศึกษา ${year}`} centerLabel="ผู้มีสิทธิ์" centerSubtext="คน"
+          slices={segments.map(segment => ({ label: segment.label, value: row?.[segment.key] ?? 0, color: segment.color }))} />;
+      })}
+    </div>
+    <p>นับคนไม่ซ้ำภายในปีและรอบ · ผู้มีหลายกลุ่มสถานะนับแยกเพียงครั้งเดียว · ชี้ส่วนสีเพื่อดูจำนวนและเปอร์เซ็นต์</p>
+  </section>;
+}

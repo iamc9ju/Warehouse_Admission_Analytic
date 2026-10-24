@@ -4,7 +4,7 @@ import { getMajorColor } from "../donut-chart-card";
 import { useState } from "react";
 import type { DashboardSnapshot, RoundRow } from "../data/dashboard-types";
 
-const segments = [
+export const segments = [
   { key: "confirmed", label: "ยืนยันสิทธิ์", color: "#2e7d32" },
   { key: "resigned", label: "สละสิทธิ์", color: "#b4514b" },
   { key: "unused", label: "ไม่ใช้สิทธิ์", color: "#c49027" },
