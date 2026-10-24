@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Anuphan, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { AiChatWidget } from "./components/ai-chat-widget";
 
 const gaMeasurementId = "G-TGXFBGM0EW";
 
@@ -48,6 +49,7 @@ export default function RootLayout({
           `}
         </Script>
         {children}
+        <AiChatWidget />
       </body>
     </html>
   );
