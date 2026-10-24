@@ -1086,9 +1086,11 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
                     ))}
                   </svg>
                   <div className="kpi-trend-years" aria-hidden="true">
-                    <span>{firstYear}<strong>{kpi.format(firstValue)}</strong></span>
-                    <span style={{ textAlign: "center" }}>2568<strong>{kpi.format(values[1] ?? 0)}</strong></span>
-                    <span>{lastYear}<strong>{kpi.format(latestValue)}</strong></span>
+                    {sortedOverviews.map((overview, index) => (
+                      <span key={overview.year} style={{ textAlign: index === 0 ? "left" : index === sortedOverviews.length - 1 ? "right" : "center" }}>
+                        {overview.year}<strong>{kpi.format(values[index] ?? 0)}</strong>
+                      </span>
+                    ))}
                   </div>
                 </div>
                 <footer className={directionClass}>

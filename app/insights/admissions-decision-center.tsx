@@ -214,7 +214,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
     }
     if (selectedQuestion.id === "BQ-007") {
       return majorRows
-        .filter((m) => m.year === latestYear && m.name !== "วิศวกรรมเครื่องกล-เกษตร" && (m.applicantChange ?? 0) < 0)
+        .filter((m) => m.year === latestYear && m.majorKey !== selectedMajor?.majorKey && (m.applicantChange ?? 0) < 0)
         .sort((a, b) => (a.applicantChange ?? 0) - (b.applicantChange ?? 0))
         .slice(0, 4)
         .map((m) => ({
@@ -228,7 +228,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
     }
     if (selectedQuestion.id === "BQ-008") {
       return majorRows
-        .filter((m) => m.year === latestYear && m.name !== "วิศวกรรมอุตสาหการ-โลจิสติกส์" && (m.applicantChange ?? 0) > 0)
+        .filter((m) => m.year === latestYear && m.majorKey !== selectedMajor?.majorKey && (m.applicantChange ?? 0) > 0)
         .sort((a, b) => (b.applicantChange ?? 0) - (a.applicantChange ?? 0))
         .slice(0, 4)
         .map((m) => ({
@@ -253,7 +253,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
         }));
     }
     return [];
-  }, [selectedQuestion.id, majorRows, rounds, latestYear, majorsByApplicants, majorsByFewestApplicants, periodRounds]);
+  }, [selectedQuestion.id, majorRows, rounds, latestYear, majorsByApplicants, majorsByFewestApplicants, periodRounds, selectedMajor?.majorKey]);
 
   const chooseQuestion = (id: string) => {
     setSelectedQuestionId(id);
