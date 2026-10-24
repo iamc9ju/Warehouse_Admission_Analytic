@@ -41,6 +41,14 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
+function eligibleRate(row: { confirmed: number; eligible?: number }) {
+  return row.eligible && row.eligible > 0 ? row.confirmed / row.eligible * 100 : null;
+}
+
+function formatRate(rate: number | null) {
+  return rate === null ? "ไม่มีฐานคำนวณ" : `${rate.toFixed(1)}%`;
+}
+
 function withQuestionMark(question: string) {
   return /[?？]$/.test(question.trim()) ? question : `${question}?`;
 }
@@ -53,18 +61,19 @@ function confidenceLabel(confidence: Insight["confidence"]) {
 
 
 function EligibilityComparison({ eligibleCount, confirmedCount }: { eligibleCount: number; confirmedCount: number }) {
+  const rate = eligibleRate({ confirmed: confirmedCount, eligible: eligibleCount });
   return (
               <section className="rate-comparison" aria-label="เปรียบเทียบผู้มีสิทธิ์กับยืนยันสิทธิ์">
                 <h3>เปรียบเทียบผู้มีสิทธิ์กับยืนยันสิทธิ์จริง</h3>
                 <div className="rate-row">
                   <span>จำนวนคนมีสิทธิ์</span>
                   <div className="rate-track"><i style={{ width: "100%", background: "#477ca8" }} /></div>
-                  <b>{formatNumber(eligibleCount)} คน (100%)</b>
+                  <b>{formatNumber(eligibleCount)} คน ({eligibleCount > 0 ? "100%" : "ไม่มีฐานคำนวณ"})</b>
                 </div>
                 <div className="rate-row average">
                   <span>คนที่ยืนยันจริง</span>
-                  <div className="rate-track"><i style={{ width: `${Math.min((confirmedCount / (eligibleCount || 1)) * 100, 100)}%`, background: "#2e7d32" }} /></div>
-                  <b>{formatNumber(confirmedCount)} คน ({((confirmedCount / (eligibleCount || 1)) * 100).toFixed(1)}%)</b>
+                  <div className="rate-track"><i style={{ width: `${Math.min(rate ?? 0, 100)}%`, background: "#2e7d32" }} /></div>
+                  <b>{formatNumber(confirmedCount)} คน ({formatRate(rate)})</b>
                 </div>
                 <div className="rate-axis" aria-hidden="true">
                   {["0%", "20%", "40%", "60%", "80%", "100%"].map((tick) => <span key={tick}>{tick}</span>)}
@@ -122,18 +131,18 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
   const confirmedCount = selectedRound ? selectedRound.confirmed : (answerMajor?.confirmed ?? 0);
   const applicantsCount = selectedRound ? selectedRound.applicants : (answerMajor?.applicants ?? 0);
   const eligibleCount = selectedRound
-    ? (selectedRound.eligible ?? selectedRound.confirmed)
-    : (answerMajor?.eligible ?? answerMajor?.confirmed ?? 0);
+    ? (selectedRound.eligible ?? 0)
+    : (answerMajor?.eligible ?? 0);
 
-  const selectedRate = selectedRound?.rate ?? selectedMajor?.rate ?? answerMajor?.rate ?? 0;
-  const comparisonRate = latestYearOverview?.rate ?? 0;
-  const rateGap = Math.max(0, comparisonRate - selectedRate);
+  const selectedRate = eligibleRate({ confirmed: confirmedCount, eligible: eligibleCount });
+  const comparisonRate = latestYearOverview ? eligibleRate(latestYearOverview) : null;
+  const rateGap = Math.max(0, (comparisonRate ?? 0) - (selectedRate ?? 0));
   const showsRateComparison = rateQuestionIds.has(selectedQuestion.id);
   const answerTitle = isPrimaryAnswer
     ? (answerMajor?.name ?? "วิศวกรรมโยธา-โครงสร้างพื้นฐาน")
     : selectedInsight.title;
   const answerSummary = isPrimaryAnswer
-    ? `Demand สูง แต่มีอัตรายืนยันสิทธิ์เพียง ${selectedRate.toFixed(2)}%`
+    ? `Demand สูง แต่มีอัตรายืนยันสิทธิ์เพียง ${formatRate(selectedRate)}`
     : selectedInsight.summary;
 
   const actionItems = isPrimaryAnswer
@@ -157,37 +166,37 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
         .map((m) => ({
           key: m.majorKey,
           applicants: m.applicants,
-          eligible: m.eligible ?? m.confirmed,
+          eligible: m.eligible ?? 0,
           confirmed: m.confirmed,
           name: m.name,
-          displayValue: `ผู้สมัคร ${formatNumber(m.applicants)} คน (ยืนยันสิทธิ์ ${m.rate.toFixed(2)}%)`,
+          displayValue: `ผู้สมัคร ${formatNumber(m.applicants)} คน (ยืนยันสิทธิ์ ${formatRate(eligibleRate(m))})`,
         }));
     }
     if (selectedQuestion.id === "BQ-002") {
       const tcasRounds = rounds.filter((r) => r.year === latestYear && r.code !== "TCAS3");
       return [...tcasRounds]
-        .sort((a, b) => b.rate - a.rate)
+        .sort((a, b) => (eligibleRate(b) ?? -Infinity) - (eligibleRate(a) ?? -Infinity))
         .map((r) => ({
           key: r.code,
           applicants: r.applicants,
-          eligible: r.eligible ?? r.confirmed,
+          eligible: r.eligible ?? 0,
           confirmed: r.confirmed,
           name: `${r.code} — ${r.name}`,
-          displayValue: `ยืนยันสิทธิ์ ${r.rate.toFixed(2)}%`,
+          displayValue: `ยืนยันสิทธิ์ ${formatRate(eligibleRate(r))}`,
         }));
     }
     if (selectedQuestion.id === "BQ-006") {
       return majorRows
         .filter((m) => m.year === latestYear && m.name !== "วิศวกรรมโยธา-โครงสร้างพื้นฐาน")
-        .sort((a, b) => a.rate - b.rate)
+        .sort((a, b) => (eligibleRate(a) ?? Infinity) - (eligibleRate(b) ?? Infinity))
         .slice(0, 4)
         .map((m) => ({
           key: m.majorKey,
           applicants: m.applicants,
-          eligible: m.eligible ?? m.confirmed,
+          eligible: m.eligible ?? 0,
           confirmed: m.confirmed,
           name: m.name,
-          displayValue: `ยืนยันสิทธิ์ ${m.rate.toFixed(2)}% (ผู้สมัคร ${formatNumber(m.applicants)} คน)`,
+          displayValue: `ยืนยันสิทธิ์ ${formatRate(eligibleRate(m))} (ผู้สมัคร ${formatNumber(m.applicants)} คน)`,
         }));
     }
     if (selectedQuestion.id === "BQ-007") {
@@ -198,7 +207,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
         .map((m) => ({
           key: m.majorKey,
           applicants: m.applicants,
-          eligible: m.eligible ?? m.confirmed,
+          eligible: m.eligible ?? 0,
           confirmed: m.confirmed,
           name: m.name,
           displayValue: `ลดลง ${Math.abs(m.applicantChange ?? 0)} คน`,
@@ -212,7 +221,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
         .map((m) => ({
           key: m.majorKey,
           applicants: m.applicants,
-          eligible: m.eligible ?? m.confirmed,
+          eligible: m.eligible ?? 0,
           confirmed: m.confirmed,
           name: m.name,
           displayValue: `เพิ่มขึ้น +${m.applicantChange} คน`,
@@ -226,7 +235,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
         .map((m) => ({
           key: m.majorKey,
           applicants: m.applicants,
-          eligible: m.eligible ?? m.confirmed,
+          eligible: m.eligible ?? 0,
           confirmed: m.confirmed,
           name: m.name,
           displayValue: `ผู้สมัคร ${formatNumber(m.applicants)} คน`,
@@ -341,8 +350,8 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
                     <dd>{formatNumber(answerMajor?.applicants ?? 825)} <small>คน</small></dd>
                   </div>
                   <div>
-                    <dt>ยืนยันสิทธิ์</dt>
-                    <dd>{selectedRate.toFixed(2)}%</dd>
+                    <dt>อัตรายืนยันต่อผู้มีสิทธิ์</dt>
+                    <dd>{formatRate(selectedRate)}</dd>
                   </div>
                   <div>
                     <dt>ผู้มีสิทธิ์</dt>
