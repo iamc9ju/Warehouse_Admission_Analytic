@@ -1,7 +1,7 @@
 export type QueryRow = Record<string, unknown>;
 
 export type QueryClient = {
-  query<T extends QueryRow = QueryRow>(sql: string, values?: number[]): Promise<{ rows: T[] }>;
+  query<T extends QueryRow = QueryRow>(sql: string, values?: unknown[]): Promise<{ rows: T[] }>;
 };
 
 type PgModule = {

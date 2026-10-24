@@ -120,7 +120,7 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
             <div>
               <p className="eyebrow">Engineering Admissions Analytics</p>
               <h1>TCAS Admissions Data Warehouse</h1>
-              <p>ดูภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน: TCAS รอบ 1-4 ปี 2567-2569 โดย trace กลับไปยัง single fact และ governed lineage ได้</p>
+              <p>ดูภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน: TCAS รอบ 1-4 ปี {Math.min(...snapshot.availableYears)}–{Math.max(...snapshot.availableYears)} โดย trace กลับไปยัง single fact และ governed lineage ได้</p>
             </div>
             <div className="hero-controls">
               <label className="year-select">
