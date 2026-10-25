@@ -4,7 +4,7 @@ import { build } from "esbuild";
 import { fileURLToPath } from "node:url";
 
 const result = await build({
-  stdin: { contents: `export * from './app/ai-analysis/analysis'; export * from './app/ai-analysis/gemini'; export * from './app/ai-analysis/report-types'; export * from './app/ai-analysis/report-service'; export * from './app/ai-analysis/status-metrics'; export {GET,POST} from './app/api/ai-analysis/route';`, resolveDir: fileURLToPath(new URL("..", import.meta.url)) },
+  stdin: { contents: `export * from './app/ai-analysis/analysis'; export * from './app/ai-analysis/gemini'; export * from './app/ai-analysis/report-types'; export * from './app/ai-analysis/report-service'; export * from './app/ai-analysis/status-metrics'; export {readWarehouse,validateRightsCounts} from './app/ai-analysis/data'; export {GET,POST} from './app/api/ai-analysis/route';`, resolveDir: fileURLToPath(new URL("..", import.meta.url)) },
   bundle: true, platform: "node", format: "esm", write: false,
   plugins: [{ name: "fake-database", setup(p) {
     p.onResolve({ filter: /^next\/server$/ }, () => ({ path: "next", namespace: "next-mock" }));
@@ -18,7 +18,7 @@ const api = await import(`data:text/javascript;base64,${Buffer.from(result.outpu
 function fact(year, grain = "year", key = "all", applicants = 100, confirmed = 20) {
   return { id: `${grain}:${year}:${key}`, grain, year, key, name: key, programType: "ปกติ", applicants, choices: applicants + 10, eligible: 50, confirmed, rate: confirmed / applicants * 100, eligibleRate: confirmed * 2, avgScore: 60,
     resigned: 5, statuses: [{label:"สละสิทธิ์",applicants:5,choices:6},{label:"ไม่เข้าระบบมาดำเนินการใดๆ",applicants:3,choices:3}],
-    rightsOutcomes: {eligible:50,confirmed:20,resigned:5,unused:4,inactive:3,elsewhere:6,other:7,multiple:5},
+    rightsOutcomes: {eligible:50,confirmed,resigned:5,unused:4,inactive:3,elsewhere:6,other:37-confirmed,multiple:5},
   };
 }
 const facts = [fact(2567), fact(2568), fact(2569), fact(2568,"major","A",100,20), fact(2569,"major","A",80,8), fact(2568,"major","B",10,2), fact(2569,"major","B",20,4), fact(2569,"round","TCAS1")];
@@ -149,6 +149,8 @@ test("rejects incomplete reports and unknown evidence instead of saving fake sou
 test("Gemini uses server key in header, includes definitions, rejects truncation and provider errors", async () => {
   const original = globalThis.fetch;
   const originalKey=process.env.GEMINI_API_KEY;
+  const originalModel=process.env.GEMINI_MODEL;
+  process.env.GEMINI_MODEL="gemini-test";
   process.env.GEMINI_API_KEY="test-only-never-real";
   try {
     globalThis.fetch = async (url, options) => {
@@ -190,13 +192,15 @@ test("Gemini uses server key in header, includes definitions, rejects truncation
     await assert.rejects(api.generateWithGemini(input),/ไม่ครบ/);
     globalThis.fetch=async()=>Response.json({error:{message:"secret-provider-detail"}},{status:429});
     await assert.rejects(api.generateWithGemini(input),e=>e.status===502 && !e.message.includes("secret-provider-detail") && /โควตา/.test(e.message));
-  } finally { globalThis.fetch=original; if(originalKey===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=originalKey; }
+  } finally { if(originalModel===undefined)delete process.env.GEMINI_MODEL;else process.env.GEMINI_MODEL=originalModel; globalThis.fetch=original; if(originalKey===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=originalKey; }
 });
 
 test("generation lease prevents duplicate calls, failure retains old report, GET never calls AI", async () => {
   const oldFetch=globalThis.fetch;
   const oldDb=process.env.DATABASE_URL;
   const oldKey=process.env.GEMINI_API_KEY;
+  const oldModel=process.env.GEMINI_MODEL;
+  process.env.GEMINI_MODEL="gemini-test";
   process.env.DATABASE_URL="test-db";process.env.GEMINI_API_KEY="test-key";
   let lease=false;let saved=null;let calls=0;
   globalThis.__aiTestDb={query:async(sql,values=[])=>{
@@ -224,7 +228,24 @@ test("generation lease prevents duplicate calls, failure retains old report, GET
     assert.equal((await api.getAnalysisState(scope)).report.id,report.id,"failed generation preserves prior report");
   } finally {
     globalThis.fetch=oldFetch;delete globalThis.__aiTestDb;
+    if(oldModel===undefined)delete process.env.GEMINI_MODEL;else process.env.GEMINI_MODEL=oldModel;
     if(oldDb===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=oldDb;
     if(oldKey===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=oldKey;
   }
+});
+
+
+test("rights outcomes retain overlapping people and keep distinct totals separate", () => {
+  const f={...fact(2569,"major","ME"),eligible:79,confirmed:51,resigned:1,
+    rightsOutcomes:{eligible:79,confirmed:51,resigned:1,unused:3,inactive:2,elsewhere:23,other:0,multiple:1}};
+  assert.doesNotThrow(()=>api.validateRightsCounts(f));
+  assert.equal(Object.entries(f.rightsOutcomes).filter(([key])=>!['eligible','multiple'].includes(key)).reduce((sum,[,value])=>sum+value,0),80);
+  assert.throws(()=>api.validateRightsCounts({...f,rightsOutcomes:{...f.rightsOutcomes,confirmed:50}}),/ไม่สอดคล้อง/);
+  assert.throws(()=>api.validateRightsCounts({...f,rightsOutcomes:{...f.rightsOutcomes,eligible:78}}),/ไม่สอดคล้อง/);
+  assert.throws(()=>api.validateRightsCounts({...f,rightsOutcomes:{...f.rightsOutcomes,multiple:0}}),/ไม่สอดคล้อง/);
+  assert.throws(()=>api.validateRightsCounts({...f,rightsOutcomes:{...f.rightsOutcomes,other:80}}),/ไม่สอดคล้อง/);
+  assert.throws(()=>api.validateRightsCounts({...f,rightsOutcomes:{...f.rightsOutcomes,unused:NaN}}),/ไม่สอดคล้อง/);
+  const three={...f,eligible:1,confirmed:1,resigned:1,rightsOutcomes:{eligible:1,confirmed:1,resigned:1,unused:1,inactive:0,elsewhere:0,other:0,multiple:1}};
+  assert.doesNotThrow(()=>api.validateRightsCounts(three));
+  assert.match(api.DEFINITIONS.rightsOutcomes,/ห้ามหักออก/);
 });

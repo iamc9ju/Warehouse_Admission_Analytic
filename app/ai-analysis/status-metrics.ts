@@ -6,7 +6,8 @@ export const STATUS_COLUMNS = [
 ] as const;
 
 // Use the same "at least one matching status" distinct-person counts as the dashboard.
-// Never substitute the exclusive rightsOutcomes buckets or sum the two resignation statuses.
+// Use the original per-status counts; historical rightsOutcomes may use exclusive buckets.
+// Never sum the two resignation statuses because their people may overlap.
 export function statusMetrics(fact: Fact) {
   const count = (label: string) => fact.statuses ? fact.statuses.find(s => s.label === label)?.applicants ?? 0 : undefined;
   return {

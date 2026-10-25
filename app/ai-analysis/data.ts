@@ -54,14 +54,20 @@ export async function readWarehouse() {
       from expanded where tcas_status = any($1::text[])
     ), people as (
       select academic_year, grain, entity_key, student_key,
-        case when count(distinct category) > 1 then 'multiple' else min(category) end as category
+        count(distinct category) > 1 as multiple,
+        bool_or(category = 'confirmed') as confirmed,
+        bool_or(category = 'resigned') as resigned,
+        bool_or(category = 'unused') as unused,
+        bool_or(category = 'inactive') as inactive,
+        bool_or(category = 'elsewhere') as elsewhere,
+        bool_or(category = 'other') as other
       from categories group by academic_year, grain, entity_key, student_key
     ), rights as (
       select academic_year, grain, entity_key, jsonb_build_object(
-        'eligible', count(*), 'confirmed', count(*) filter(where category = 'confirmed'),
-        'resigned', count(*) filter(where category = 'resigned'), 'unused', count(*) filter(where category = 'unused'),
-        'inactive', count(*) filter(where category = 'inactive'), 'elsewhere', count(*) filter(where category = 'elsewhere'),
-        'other', count(*) filter(where category = 'other'), 'multiple', count(*) filter(where category = 'multiple')
+        'eligible', count(*), 'confirmed', count(*) filter(where confirmed),
+        'resigned', count(*) filter(where resigned), 'unused', count(*) filter(where unused),
+        'inactive', count(*) filter(where inactive), 'elsewhere', count(*) filter(where elsewhere),
+        'other', count(*) filter(where other), 'multiple', count(*) filter(where multiple)
       ) as rights_outcomes
       from people group by academic_year, grain, entity_key
     )
@@ -81,13 +87,28 @@ export async function readWarehouse() {
     resigned: Number(r.resigned), statuses: r.statuses as StatusCount[],
     rightsOutcomes: (r.rights_outcomes ?? { eligible: 0, confirmed: 0, resigned: 0, unused: 0, inactive: 0, elsewhere: 0, other: 0, multiple: 0 }) as RightsOutcomes,
   }));
-  for (const fact of facts) {
-    const rights = fact.rightsOutcomes!;
-    const total = Object.entries(rights).filter(([key]) => key !== "eligible").reduce((sum,[,value]) => sum + value, 0);
-    if (!Array.isArray(fact.statuses) || !fact.statuses.length || rights.eligible !== fact.eligible || total !== fact.eligible) {
-      throw new Error("ข้อมูลสถานะหรือผลรวมผู้มีสิทธิ์ไม่ครบ จึงยังไม่สร้างรายงาน");
-    }
-  }
+  for (const fact of facts) validateRightsCounts(fact);
   const dataLoadedAt = new Date(Math.max(...rows.map(r => new Date(String(r.loaded_at)).getTime()))).toISOString();
   return { facts, dataLoadedAt, availableYears: facts.filter(f => f.grain === "year").map(f => f.year).sort((a,b) => a-b) };
+}
+
+
+export function validateRightsCounts(fact: Fact) {
+  const rights = fact.rightsOutcomes;
+  const keys = ["confirmed", "resigned", "unused", "inactive", "elsewhere", "other"] as const;
+  if (!rights || !Array.isArray(fact.statuses) || !fact.statuses.length) {
+    throw new Error("ข้อมูลสถานะหรือผลรวมผู้มีสิทธิ์ไม่ครบ จึงยังไม่สร้างรายงาน");
+  }
+  const total = keys.reduce((sum, key) => sum + rights[key], 0);
+  // multiple is a diagnostic count, already included in each matching status.
+  // Someone in 2–6 groups contributes 1–5 extra memberships to the sum.
+  const extra = total - rights.eligible;
+  if (Object.values(rights).some(value => !Number.isInteger(value) || value < 0)
+    || rights.eligible !== fact.eligible || rights.confirmed !== fact.confirmed
+    || (fact.resigned !== undefined && rights.resigned !== fact.resigned)
+    || keys.some(key => rights[key] > rights.eligible)
+    || rights.multiple > rights.eligible
+    || extra < rights.multiple || extra > rights.multiple * (keys.length - 1)) {
+    throw new Error("จำนวนคนแยกสถานะไม่สอดคล้องกับผู้มีสิทธิ์หรือกลุ่มหลายสถานะ จึงยังไม่สร้างรายงาน");
+  }
 }
