@@ -1,6 +1,6 @@
 "use client";
 import { DonutChartCard } from "./donut-chart-card";
-import { segments } from "./dashboard/rights-outcomes-chart";
+import { segments, rightsStatusTotal } from "./dashboard/rights-outcomes-chart";
 import type { DashboardSnapshot, RoundRow } from "./data/dashboard-types";
 
 export function RoundRightsDonuts({ rows, rounds, year }: {
@@ -12,11 +12,11 @@ export function RoundRightsDonuts({ rows, rounds, year }: {
       {rounds.filter(round => round.year === year).map(round => {
         const row = rows.find(item => item.year === year && item.code === round.code);
         return <DonutChartCard legendPosition="right" key={`${year}-${round.code}`} title={`${round.code} · ${round.name}`}
-          subtitle={row ? `ผู้มีสิทธิ์เฉพาะสถานะที่แสดง ${(row.eligible - row.multiple).toLocaleString("en-US")} คน` : "ไม่มีข้อมูลผลการใช้สิทธิ์"}
-          kicker={`ปีการศึกษา ${year}`} centerLabel="ผู้มีสิทธิ์" centerSubtext="คน"
+          subtitle={row ? `ผู้มีสิทธิ์ไม่ซ้ำ ${row.eligible.toLocaleString("en-US")} คน · ผลรวมแยกสถานะ ${rightsStatusTotal(row).toLocaleString("en-US")}` : "ไม่มีข้อมูลผลการใช้สิทธิ์"}
+          kicker={`ปีการศึกษา ${year}`} centerLabel="ผลรวมแยกสถานะ" centerSubtext="นับซ้ำข้ามสถานะ"
           slices={segments.map(segment => ({ label: segment.label, value: row?.[segment.key] ?? 0, color: segment.color }))} />;
       })}
     </div>
-    {/*<p>นับคนไม่ซ้ำภายในปีและรอบ · ยอดรวมและเปอร์เซ็นต์คิดเฉพาะสถานะที่แสดง · ชี้ส่วนสีเพื่อดูจำนวนและเปอร์เซ็นต์</p>*/}
+    <p>ผลรวมผู้มีสิทธิ์แยกตามสถานะ (นับซ้ำข้ามสถานะ) คนเดียวอาจอยู่หลายสถานะ เปอร์เซ็นต์คิดจากผลรวมสถานะ</p>
   </section>;
 }

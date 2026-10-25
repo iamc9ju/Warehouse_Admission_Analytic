@@ -24,17 +24,23 @@ export async function getRightsOutcomes(client: QueryClient, grain: "round" | "m
         'ผ่านการคัดเลือก', 'ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2')
     ), people as (
       select academic_year, tcas_round_code, student_key,
-        case when count(distinct category) > 1 then 'multiple' else min(category) end as category
+        count(distinct category) > 1 as multiple,
+        bool_or(category = 'confirmed') as confirmed,
+        bool_or(category = 'resigned') as resigned,
+        bool_or(category = 'unused') as unused,
+        bool_or(category = 'inactive') as inactive,
+        bool_or(category = 'elsewhere') as elsewhere,
+        bool_or(category = 'other') as other
       from categories group by academic_year, tcas_round_code, student_key
     )
     select academic_year, tcas_round_code, count(*) as eligible,
-      count(*) filter(where category = 'confirmed') as confirmed,
-      count(*) filter(where category = 'resigned') as resigned,
-      count(*) filter(where category = 'unused') as unused,
-      count(*) filter(where category = 'inactive') as inactive,
-      count(*) filter(where category = 'elsewhere') as elsewhere,
-      count(*) filter(where category = 'other') as other,
-      count(*) filter(where category = 'multiple') as multiple
+      count(*) filter(where confirmed) as confirmed,
+      count(*) filter(where resigned) as resigned,
+      count(*) filter(where unused) as unused,
+      count(*) filter(where inactive) as inactive,
+      count(*) filter(where elsewhere) as elsewhere,
+      count(*) filter(where other) as other,
+      count(*) filter(where multiple) as multiple
     from people group by academic_year, tcas_round_code order by academic_year, tcas_round_code
   `);
   return rows.map(row => ({
