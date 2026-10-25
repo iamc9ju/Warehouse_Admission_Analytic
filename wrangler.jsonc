@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "ku-kps-emg-admission",
+  "name": "admission-eng",
   "compatibility_date": "2026-10-25",
   "compatibility_flags": [
     "nodejs_compat"
