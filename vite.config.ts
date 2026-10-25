@@ -9,9 +9,6 @@ export default defineConfig({
   server: isCodexSeatbeltSandbox
     ? { watch: { useFsEvents: false, usePolling: true } }
     : undefined,
-  ssr: {
-    external: ["pg"],
-  },
   plugins: [
     vinext(),
     cloudflare({
