@@ -96,10 +96,21 @@ export function validateContent(value: unknown, input: ReportInput): ReportConte
   return report;
 }
 
+async function retryTemporaryGeminiError(request: () => Promise<Response>, deadline: number) {
+  for (let attempt = 0; ; attempt++) {
+    const response = await request();
+    const delayMs = 1000 * 2 ** attempt;
+    if (![500, 502, 503, 504].includes(response.status) || attempt >= 2
+      || deadline - Date.now() <= delayMs + 1000) return response;
+    await response.body?.cancel();
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+  }
+}
+
 export async function generateWithGemini(input: ReportInput) {
   const key = process.env.GEMINI_API_KEY?.trim();
   if (!key) throw new AnalysisError("ยังไม่ได้ตั้งค่า GEMINI_API_KEY ฝั่งเซิร์ฟเวอร์", 503);
-  const model = process.env.GEMINI_MODEL?.trim() || "";
+  const model = process.env.GEMINI_MODEL?.trim() || "gemini-3.1-flash-lite";
   if (!/^[a-zA-Z0-9._-]+$/.test(model)) throw new AnalysisError("GEMINI_MODEL ไม่ถูกต้อง", 503);
   const years = input.facts.filter(f => f.grain === "year").map(f => f.year).sort((a,b) => a-b);
   const coveragePlan = SECTION_TITLES.map((title,index) => ({title,
@@ -123,6 +134,7 @@ export async function generateWithGemini(input: ReportInput) {
 สร้าง 7 หัวข้อตามลำดับนี้: ${SECTION_TITLES.join(" | ")}
 แต่ละหัวข้อ 1-3 ประเด็น กระชับ แต่ละประเด็นแยก observation=ข้อเท็จจริง, interpretation=ความหมาย/สมมติฐาน, recommendation=สิ่งที่ควรตรวจหรือทำต่อ
 หัวข้อแรก สรุปสถานการณ์สำคัญ เป็น executive synthesis จริง: yearSummaries ต้องเป็น [] ไม่แยกกล่องรายปี และ items มี 3-5 ประเด็น เชื่อมโยงข้อมูลทุกมิติตลอดช่วงที่เลือก ไม่ทวน KPI ทีละปี
+ประเด็นหัวข้อแรกที่ dimensions มี rights: ช่อง observation ต้องกล่าวถึงสถานะจริงอย่างน้อยหนึ่งชื่อให้ชัด เช่น สละสิทธิ์ ไม่ใช้สิทธิ์ ยืนยันที่อื่น หรือไม่เข้าระบบ พร้อมสังเคราะห์ข้อมูลสถานะจาก facts ระดับ year ของทุกปีในช่วง ห้ามกล่าวเพียงจำนวนยืนยันหรืออัตรายืนยันแล้วติดป้าย rights
 items ของหัวข้อแรกต้องมี dimensions เป็น array ของ overview, rights, major, round โดยรวมกันครบทั้ง 4 มิติ: overview=ทิศทางการสมัครและยืนยัน, rights=การสละสิทธิ์/ไม่ใช้สิทธิ์/ยืนยันที่อื่น/ไม่เข้าระบบ, major=สาขาและประเภทหลักสูตรที่มีบทบาทหรือควรติดตาม, round=บทบาทของรอบ TCAS; ประเด็นหนึ่งรวมหลายมิติได้
 หัวข้อแรกใช้ coveragePlan[0].synthesisSources ร่วมกับ facts ทั้งหมดและ signals ไม่จำกัดเฉพาะภาพรวมรายปี; evidenceIds ของ items ที่ระบุมิติใดต้องรวมแหล่งข้อมูลของมิตินั้นครบทุกปีที่มีข้อมูล (year สำหรับ overview/rights, major สำหรับ major, round สำหรับ round) ให้สรุปจุดเปลี่ยน จุดแข็ง ความเสี่ยง และลำดับสิ่งที่ควรตรวจต่อ โดยไม่อนุมานสาเหตุเกินหลักฐาน
 หัวข้อ 2-7 ต้องมี yearSummaries แยกครบทุกปีที่เลือก แต่ละปีมี {year, observation, evidenceIds} และ observation ต้องขึ้นต้น ปี ตามด้วยปีนั้น ห้ามกล่าวถึงปีอื่นในข้อความรายปี ใช้ items สำหรับสังเคราะห์ข้ามปี
@@ -162,7 +174,7 @@ yearSummaries ของหัวข้อ 2-7 หนึ่งข้อควา�
   for (let attempt = 0; attempt < 2; attempt++) {
   let response: Response;
   try {
-    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    response = await retryTemporaryGeminiError(() => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key },
       signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())),
       body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] },
@@ -171,7 +183,7 @@ yearSummaries ของหัวข้อ 2-7 หนึ่งข้อควา�
           ...(model === "gemini-2.5-flash" ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
         },
       }),
-    });
+    }), deadline);
   } catch (error) {
     throw new AnalysisError(error instanceof Error && ["TimeoutError", "AbortError"].includes(error.name)
       ? "Gemini ใช้เวลานานเกินกำหนด รายงานเดิมยังอยู่ กรุณาลองใหม่" : "เชื่อมต่อ Gemini ไม่สำเร็จ กรุณาลองใหม่", 502);
@@ -182,6 +194,7 @@ yearSummaries ของหัวข้อ 2-7 หนึ่งข้อควา�
       401: "Gemini API key ไม่ถูกต้อง", 403: "Gemini ปฏิเสธ API key หรือสิทธิ์ใช้งาน",
       404: `ไม่พบโมเดล ${model} กรุณาตรวจ GEMINI_MODEL`,
       429: "Gemini เกินโควตาหรือจำกัดคำขอ กรุณารอแล้วลองใหม่",
+      503: "Gemini ไม่พร้อมชั่วคราว (HTTP 503) ระบบลองใหม่แล้วแต่ยังไม่สำเร็จ กรุณารอสักครู่แล้วลองใหม่ รายงานเดิมยังอยู่",
     };
     // Never log provider response bodies or keys.
     throw new AnalysisError(messages[response.status] || `Gemini ไม่พร้อมใช้งาน (HTTP ${response.status})`, 502);

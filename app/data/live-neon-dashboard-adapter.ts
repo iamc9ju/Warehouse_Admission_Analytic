@@ -3,7 +3,7 @@ import type { DashboardSnapshot } from "./dashboard-types";
 import { pageDataFields, type DashboardPage, type LoadedPageSnapshot } from "./page-data-types";
 import { getAllYearPeople, getAvailableYears, getYearOverview, getYearStatuses } from "./repositories/overview-repository";
 import { getRoundOverview, getRoundStatuses, getRightsOutcomes } from "./repositories/rounds-repository";
-import { getMajorConversion, getMajorStatuses } from "./repositories/majors-repository";
+import { getTcas3Scores, getMajorConversion, getMajorStatuses } from "./repositories/majors-repository";
 import { getAllYearInsights, getBusinessQuestions, getDecisionInsights } from "./repositories/insights-repository";
 
 function selectOverviewYear(availableYears: number[], requestedYear?: number) {
@@ -20,6 +20,7 @@ export async function queryPageSnapshot(
 ): Promise<LoadedPageSnapshot> {
   const loadPageEntries = async (year?: number): Promise<[string, unknown][]> => {
     const queries: Partial<{ [K in keyof DashboardSnapshot]: () => Promise<DashboardSnapshot[K]> }> = {
+      tcas3Scores: () => getTcas3Scores(client),
       insightAllYears: () => getAllYearInsights(client),
       allYearPeople: () => getAllYearPeople(client),
       rightsOutcomes: () => getRightsOutcomes(client),

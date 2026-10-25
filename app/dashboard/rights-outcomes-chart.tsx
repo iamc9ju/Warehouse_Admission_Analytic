@@ -29,8 +29,8 @@ export function RightsOutcomesChart({ rows: sourceRows, rounds, years, majorName
   return <article className={majorName ? undefined : "analytics-card year-comparison-card"} style={majorName ? { border: "1px solid #eae2d6", borderRadius: 14, background: "#fff", padding: "20px 22px", boxShadow: "0 8px 24px rgba(42, 31, 19, 0.04)", minWidth: 0 } : { gridColumn: "1 / -1" }}>
     <header style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
       <div>{!majorName && <span>Eligible Applicants · Rights Outcomes</span>}{majorName ? <h3 style={{ fontSize: "var(--text-body)", fontWeight: 850, margin: 0 }}>ผลการใช้สิทธิ์ของผู้มีสิทธิ์</h3> : <h2>ผลการใช้สิทธิ์ของผู้มีสิทธิ์ แต่ละรอบทุกปี</h2>}</div>
-      <div style={{ display: "flex", gap: 12 }}>
-        {[false, true].map(mode => <button key={String(mode)} type="button" aria-pressed={percent === mode} onClick={() => setPercent(mode)} style={{ padding: "7px 12px", border: "1px solid #ded5c8", borderRadius: 8, background: percent === mode ? "#fff0dd" : "white", cursor: "pointer" }}>{mode ? "เปอร์เซ็นต์ (%)" : "ผลรวมตามสถานะ"}</button>)}
+      <div className="chart-control-group">
+        {[false, true].map(mode => <button key={String(mode)} type="button" aria-pressed={percent === mode} onClick={() => setPercent(mode)} className="chart-control-button">{mode ? "เปอร์เซ็นต์ (%)" : "ผลรวมตามสถานะ"}</button>)}
       </div>
     </header>
     <p style={{ color: "#74695d", fontSize: "var(--text-caption)" }}>ผลรวมผู้มีสิทธิ์แยกตามสถานะ (นับซ้ำข้ามสถานะ) คนเดียวอาจอยู่หลายสี ยอดรวมแยกสถานะจึงอาจมากกว่าผู้มีสิทธิ์ไม่ซ้ำ เปอร์เซ็นต์คิดจากผลรวมสถานะ ไม่ใช่อัตรายืนยันต่อผู้มีสิทธิ์</p>

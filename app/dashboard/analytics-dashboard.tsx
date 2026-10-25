@@ -1,12 +1,13 @@
 "use client";
 import { isVisibleStatus } from "../data/status-visibility";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { RoundComparisonChart } from "./round-comparison-chart";
 import { RightsOutcomesChart } from "./rights-outcomes-chart";
 import { PresentationChartLineIcon } from "@heroicons/react/24/outline";
-import type { DashboardSnapshot, MajorRow, Year, YearOverview } from "../data/dashboard-types";
+import type { DashboardSnapshot, MajorRow, Tcas3ScoreRow, Year, YearOverview } from "../data/dashboard-types";
 import type { PageData } from "../data/page-data-types";
 import { SidebarNavigation } from "../sidebar-navigation";
 import { DonutChartCard, getMajorColor, tcasColors } from "../donut-chart-card";
@@ -477,11 +478,18 @@ function polarPoint(index: number, total: number, radius: number, center = 180) 
 
 function Tcas3ScoreScatterPlot({
   availableYears,
-  majorRows,
+  scoreRows,
 }: {
   availableYears: Year[];
-  majorRows: MajorRow[];
+  scoreRows: Tcas3ScoreRow[];
 }) {
+  const [scoreGroup, setScoreGroup] = useState<"applicants" | "confirmed">("applicants");
+  const groupLabel = scoreGroup === "applicants" ? "ผู้สมัครทั้งหมด" : "ผู้ยืนยันสิทธิ์";
+  const majorRows = useMemo(() => scoreRows.map(row => ({
+    ...row,
+    applicants: scoreGroup === "applicants" ? row.applicants : row.confirmed,
+    avgScore: scoreGroup === "applicants" ? row.applicantAvgScore : row.confirmedAvgScore,
+  })), [scoreRows, scoreGroup]);
   // Derive unique majors (code+name) sorted by total applicants desc
   const uniqueMajors = useMemo(() => {
     const map = new Map<string, { majorKey: string; name: string; totalApplicants: number }>();
@@ -512,21 +520,30 @@ function Tcas3ScoreScatterPlot({
 
   const selectAll = () => setSelectedMajors(new Set(uniqueMajors.map((m) => m.majorKey)));
   const clearAll = () => {
-    // keep at least 1
-    setSelectedMajors(new Set([uniqueMajors[0]?.majorKey ?? ""]));
+    setSelectedMajors(new Set());
+    setHoveredPoint(null);
   };
 
   const [hoveredPoint, setHoveredPoint] = useState<{
-    svgX: number;
-    svgY: number;
+    anchorX: number;
+    anchorTop: number;
+    anchorBottom: number;
     major: string;
     year: Year;
     avgScore: number;
     applicants: number;
-    confirmed: number;
-    rate: number;
     color: string;
   } | null>(null);
+
+  useEffect(() => {
+    const hideTooltip = () => setHoveredPoint(null);
+    window.addEventListener("scroll", hideTooltip, true);
+    window.addEventListener("resize", hideTooltip);
+    return () => {
+      window.removeEventListener("scroll", hideTooltip, true);
+      window.removeEventListener("resize", hideTooltip);
+    };
+  }, []);
 
   // SVG dimensions
   const svgW = 820;
@@ -556,11 +573,11 @@ function Tcas3ScoreScatterPlot({
 
   // Y: avgScore — derive range from filtered data
   const filteredRows = useMemo(
-    () => majorRows.filter((m) => selectedMajors.has(m.majorKey) && m.avgScore > 0),
+    () => majorRows.filter((m) => selectedMajors.has(m.majorKey) && m.avgScore !== null),
     [majorRows, selectedMajors],
   );
 
-  const allScores = filteredRows.map((m) => m.avgScore);
+  const allScores = filteredRows.flatMap(m => m.avgScore === null ? [] : [m.avgScore]);
   const rawMin = allScores.length ? Math.min(...allScores) : 0;
   const rawMax = allScores.length ? Math.max(...allScores) : 50;
   const scorePad = (rawMax - rawMin || 10) * 0.12;
@@ -590,8 +607,8 @@ function Tcas3ScoreScatterPlot({
         const points = activeYears
           .map((year) => {
             const row = majorRows.find((r) => r.majorKey === m.majorKey && r.year === year);
-            return row && row.avgScore > 0
-              ? { year, avgScore: row.avgScore, applicants: row.applicants, confirmed: row.confirmed, rate: row.rate }
+            return row && row.avgScore !== null
+              ? { year, avgScore: row.avgScore, applicants: row.applicants }
               : null;
           })
           .filter((p): p is NonNullable<typeof p> => p !== null);
@@ -604,28 +621,29 @@ function Tcas3ScoreScatterPlot({
       <header>
         <div>
           <span>TCAS3 Score Analysis</span>
-          <h2>Scatter Plot คะแนนเฉลี่ยสอบ TCAS รอบ 3 แยกตามสาขาวิชา</h2>
+          <h2>คะแนนเฉลี่ย{groupLabel} TCAS รอบ 3 แยกตามสาขาวิชา</h2>
         </div>
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+          <div className="chart-control-group" aria-label="กลุ่มคะแนนเฉลี่ย">
+            {(["applicants", "confirmed"] as const).map(group => <button type="button" key={group}
+              className="chart-control-button" aria-pressed={scoreGroup === group}
+              onClick={() => { setScoreGroup(group); setHoveredPoint(null); }}>
+              {group === "applicants" ? "ผู้สมัครทั้งหมด" : "ผู้ยืนยันสิทธิ์"}
+            </button>)}
+          </div>
           <button
             type="button"
             onClick={selectAll}
-            style={{
-              padding: "5px 12px", borderRadius: "7px", border: "1.5px solid #c56100",
-              background: "#fff8f0", color: "#c56100", fontWeight: 800, fontSize: "var(--text-caption)",
-              cursor: "pointer", transition: "all 140ms ease",
-            }}
+            aria-pressed={uniqueMajors.length > 0 && selectedMajors.size === uniqueMajors.length}
+            className="chart-control-button"
           >
             เลือกทั้งหมด
           </button>
           <button
             type="button"
             onClick={clearAll}
-            style={{
-              padding: "5px 12px", borderRadius: "7px", border: "1.5px solid #ddd",
-              background: "#f5f5f5", color: "#888", fontWeight: 800, fontSize: "var(--text-caption)",
-              cursor: "pointer", transition: "all 140ms ease",
-            }}
+            aria-pressed={selectedMajors.size === 0}
+            className="chart-control-button"
           >
             ล้างทั้งหมด
           </button>
@@ -685,6 +703,7 @@ function Tcas3ScoreScatterPlot({
         })}
       </div>
 
+      {filteredRows.length === 0 && <p role="status">ไม่มีข้อมูลคะแนนของ{groupLabel}ในสาขาที่เลือก</p>}
       {/* Legend info bar */}
       <div
         style={{
@@ -699,7 +718,7 @@ function Tcas3ScoreScatterPlot({
           📊 Y-axis: คะแนนเฉลี่ย (Avg Score)
         </span>
         <span style={{ fontSize: "var(--text-caption)", fontWeight: 700, color: "#555" }}>
-          ⚪ ขนาดวงกลม: จำนวนผู้สมัคร
+          ⚪ จุด: คะแนนเฉลี่ยของ{groupLabel}
         </span>
         <span style={{ fontSize: "var(--text-caption)", fontWeight: 700, color: "#555" }}>
           🎨 สี: แยกตามสาขาวิชา
@@ -803,17 +822,19 @@ function Tcas3ScoreScatterPlot({
                     transition: "all 160ms ease",
                     filter: isHovered ? "drop-shadow(0 2px 10px rgba(0,0,0,0.3))" : "none",
                   }}
-                  onMouseEnter={() =>
+                  onMouseEnter={(event) => {
+                    const bounds = event.currentTarget.getBoundingClientRect();
                     setHoveredPoint({
-                      svgX: cx, svgY: cy,
+                      anchorX: bounds.left + bounds.width / 2,
+                      anchorTop: bounds.top, anchorBottom: bounds.bottom,
                       major: m.name, year: p.year,
                       avgScore: p.avgScore, applicants: p.applicants,
-                      confirmed: p.confirmed, rate: p.rate, color: m.color,
-                    })
-                  }
+                      color: m.color,
+                    });
+                  }}
                   onMouseLeave={() => setHoveredPoint(null)}
                 >
-                  <title>{`${m.name} (ปี ${p.year}) — คะแนนเฉลี่ย: ${p.avgScore.toFixed(2)}, สมัคร: ${formatNumber(p.applicants)}, ยืนยัน: ${formatNumber(p.confirmed)}`}</title>
+                  <title>{`${m.name} (ปี ${p.year}, TCAS3) — คะแนนเฉลี่ย${groupLabel}: ${p.avgScore.toFixed(3)}, ${groupLabel}: ${formatNumber(p.applicants)} คน`}</title>
                 </circle>
               );
             })
@@ -821,13 +842,22 @@ function Tcas3ScoreScatterPlot({
         </svg>
 
         {/* Floating Tooltip */}
-        {hoveredPoint && (
+        {hoveredPoint && createPortal(
           <div
+            role="tooltip"
+            ref={(node) => {
+              if (!node) return;
+              const box = node.getBoundingClientRect();
+              const left = Math.max(8, Math.min(hoveredPoint.anchorX - box.width / 2, window.innerWidth - box.width - 8));
+              const above = hoveredPoint.anchorTop - box.height - 12;
+              const top = Math.max(8, Math.min(above >= 8 ? above : hoveredPoint.anchorBottom + 12, window.innerHeight - box.height - 8));
+              node.style.left = `${left}px`;
+              node.style.top = `${top}px`;
+            }}
             style={{
-              position: "absolute",
-              top: `${(hoveredPoint.svgY / svgH) * 100}%`,
-              left: `${(hoveredPoint.svgX / svgW) * 100}%`,
-              transform: "translate(-50%, -130%)",
+              position: "fixed",
+              top: 8,
+              left: 8,
               background: "#111313",
               color: "#ffffff",
               padding: "10px 14px",
@@ -836,9 +866,12 @@ function Tcas3ScoreScatterPlot({
               fontWeight: 700,
               boxShadow: "0 6px 24px rgba(0,0,0,0.35)",
               pointerEvents: "none",
-              zIndex: 20,
-              whiteSpace: "nowrap",
-              minWidth: "210px",
+              zIndex: 1000,
+              whiteSpace: "normal",
+              overflowWrap: "anywhere",
+              width: "max-content",
+              maxWidth: "min(360px, calc(100vw - 16px))",
+              boxSizing: "border-box",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "6px" }}>
@@ -851,14 +884,11 @@ function Tcas3ScoreScatterPlot({
             <div style={{ display: "grid", gridTemplateColumns: "auto auto", gap: "4px 16px", fontSize: "var(--text-caption)" }}>
               <span style={{ color: "#bbb" }}>คะแนนเฉลี่ย</span>
               <span style={{ color: "#ffd54f", fontWeight: 900 }}>{hoveredPoint.avgScore.toFixed(3)}</span>
-              <span style={{ color: "#bbb" }}>ผู้สมัคร</span>
+              <span style={{ color: "#bbb" }}>{groupLabel}</span>
               <span style={{ color: "#81d4fa", fontWeight: 900 }}>{formatNumber(hoveredPoint.applicants)} คน</span>
-              <span style={{ color: "#bbb" }}>ยืนยันสิทธิ์</span>
-              <span style={{ color: "#a5d6a7", fontWeight: 900 }}>{formatNumber(hoveredPoint.confirmed)} คน</span>
-              <span style={{ color: "#bbb" }}>อัตราการยืนยัน</span>
-              <span style={{ color: "#f48fb1", fontWeight: 900 }}>{hoveredPoint.rate.toFixed(2)}%</span>
+
             </div>
-          </div>
+          </div>, document.body
         )}
       </div>
     </article>
@@ -1184,7 +1214,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
 
           <Tcas3ScoreScatterPlot
             availableYears={availableYears}
-            majorRows={majorRows}
+            scoreRows={snapshot.tcas3Scores}
           />
         </section>
       </section>

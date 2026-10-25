@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { confirmationRate, confirmationRateLabel } from "../data/confirmation-rate";
 import type { RoundRow } from "../data/dashboard-types";
 
 const metrics = [
@@ -27,7 +28,7 @@ export function RoundComparisonChart({ rounds, years }: { rounds: RoundRow[]; ye
       <div><span>Round YoY Comparison</span><h2>ภาพรวมผู้สมัคร ผู้มีสิทธิ์ และยืนยันสิทธิ์แต่ละรอบทุกปี</h2></div>
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
         <Link href="/rounds" className="link-button" style={{ margin: 0, textDecoration: "none" }}>ดูรายละเอียดเจาะลึก →</Link>
-        {[false, true].map((mode) => <button key={String(mode)} type="button" aria-pressed={percent === mode} onClick={() => setPercent(mode)} style={{ padding: "7px 12px", border: "1px solid #ded5c8", borderRadius: 8, background: percent === mode ? "#fff0dd" : "white", cursor: "pointer" }}>{mode ? "เปอร์เซ็นต์ (%)" : "จำนวนคน"}</button>)}
+        {[false, true].map((mode) => <button key={String(mode)} type="button" aria-pressed={percent === mode} onClick={() => setPercent(mode)} className="chart-control-button">{mode ? "เปอร์เซ็นต์ (%)" : "จำนวนคน"}</button>)}
       </div>
     </header>
     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 12px", margin: "18px 0 16px", padding: "14px 18px", background: "#faf7f2", borderRadius: 12, border: "1px solid #eae2d6" }}>
@@ -61,7 +62,8 @@ export function RoundComparisonChart({ rounds, years }: { rounds: RoundRow[]; ye
                 {metrics.map((metric) => {
                   const top = height(metric.key);
                   const dimmed = emphasized !== null;
-                  return <rect key={metric.key} x={x - 42} y={450 - top} width="84" height={Math.max(0, top)} fill={dimmed ? "#e5ded3" : metric.color} stroke="#fdfbf8" strokeWidth="0.6" role="img" focusable="false" aria-label={`${code} ปี ${year} ${metric.label} ${number(valueOf(row, metric.key))} คน`} onMouseEnter={() => { setHovered(metric.key); }} onFocus={() => setHovered(metric.key)} onBlur={() => setHovered(null)} style={{ cursor: "default", outline: "none", transition: "fill 180ms ease" }}><title>{`${metric.label}: ${number(valueOf(row, metric.key))} คน`}</title></rect>;
+                  const tooltip = `${metric.label}: ${number(valueOf(row, metric.key))} คน${metric.key === "confirmed" ? ` (${confirmationRateLabel(confirmationRate(row.confirmed, row.eligible))} ต่อผู้มีสิทธิ์)` : ""}`;
+                  return <rect key={metric.key} x={x - 42} y={450 - top} width="84" height={Math.max(0, top)} fill={dimmed ? "#e5ded3" : metric.color} stroke="#fdfbf8" strokeWidth="0.6" role="img" focusable="false" aria-label={`${code} ปี ${year} ${tooltip}`} onMouseEnter={() => { setHovered(metric.key); }} onFocus={() => setHovered(metric.key)} onBlur={() => setHovered(null)} style={{ cursor: "default", outline: "none", transition: "fill 180ms ease" }}><title>{tooltip}</title></rect>;
                 })}
                 {emphasized && <rect x={x - 42} y={450 - height(emphasized)} width="84" height={height(emphasized)} fill={metrics.find((metric) => metric.key === emphasized)?.color} pointerEvents="none" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.12))" }} />}
                 <text x={x} y={450 - height(emphasized ?? "applicants") - 10} textAnchor="middle" fontSize="var(--text-label)" fontWeight="700" fill="#302b26" pointerEvents="none">{display(row, emphasized ?? "applicants")}</text>

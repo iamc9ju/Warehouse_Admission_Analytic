@@ -249,3 +249,64 @@ test("rights outcomes retain overlapping people and keep distinct totals separat
   assert.doesNotThrow(()=>api.validateRightsCounts(three));
   assert.match(api.DEFINITIONS.rightsOutcomes,/ห้ามหักออก/);
 });
+
+
+test("Gemini uses the documented default for missing or blank model and honors explicit models", async () => {
+  const originalFetch=globalThis.fetch;
+  const originalModel=process.env.GEMINI_MODEL;
+  const originalKey=process.env.GEMINI_API_KEY;
+  process.env.GEMINI_API_KEY="test-only-never-real";
+  let called=0;
+  try {
+    for (const configured of [undefined,"","   ","custom-gemini-model"]) {
+      if(configured===undefined)delete process.env.GEMINI_MODEL;
+      else process.env.GEMINI_MODEL=configured;
+      const expected=configured?.trim() || "gemini-3.1-flash-lite";
+      globalThis.fetch=async(url)=>{
+        called++;
+        assert.ok(url.includes(`/models/${expected}:generateContent`));
+        return Response.json({candidates:[{finishReason:"STOP",content:{parts:[{text:JSON.stringify(content())}]}}]});
+      };
+      const report=await api.generateWithGemini(input);
+      assert.equal(report.model,expected);
+    }
+    assert.equal(called,4);
+    process.env.GEMINI_MODEL="invalid/model";
+    await assert.rejects(api.generateWithGemini(input),/GEMINI_MODEL ไม่ถูกต้อง/);
+    assert.equal(called,4,"invalid explicit model is rejected before contacting provider");
+  } finally {
+    globalThis.fetch=originalFetch;
+    if(originalModel===undefined)delete process.env.GEMINI_MODEL;else process.env.GEMINI_MODEL=originalModel;
+    if(originalKey===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=originalKey;
+  }
+});
+
+
+test("Gemini retries temporary 503 responses with a bounded attempt count", async () => {
+  const oldFetch=globalThis.fetch;
+  const oldKey=process.env.GEMINI_API_KEY;
+  const oldModel=process.env.GEMINI_MODEL;
+  process.env.GEMINI_API_KEY="test-only";process.env.GEMINI_MODEL="gemini-test";
+  let calls=0;
+  try {
+    globalThis.fetch=async()=>{
+      calls++;
+      if(calls<3)return Response.json({},{status:503});
+      return Response.json({candidates:[{finishReason:"STOP",content:{parts:[{text:JSON.stringify(content())}]}}]});
+    };
+    assert.equal((await api.generateWithGemini(input)).content.sections.length,7);
+    assert.equal(calls,3);
+    calls=0;
+    globalThis.fetch=async()=>{calls++;return Response.json({},{status:503});};
+    await assert.rejects(api.generateWithGemini(input),/503.*ลองใหม่แล้ว/);
+    assert.equal(calls,3);
+    calls=0;
+    globalThis.fetch=async()=>{calls++;return Response.json({},{status:403});};
+    await assert.rejects(api.generateWithGemini(input),/ปฏิเสธ/);
+    assert.equal(calls,1);
+  } finally {
+    globalThis.fetch=oldFetch;
+    if(oldKey===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=oldKey;
+    if(oldModel===undefined)delete process.env.GEMINI_MODEL;else process.env.GEMINI_MODEL=oldModel;
+  }
+});

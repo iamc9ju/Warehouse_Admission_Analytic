@@ -67,7 +67,14 @@ export type RoundStatusRow = {
   applicants: number;
 };
 
+export type Tcas3ScoreRow = {
+  majorKey: string; year: Year; code: string; name: string; type: string;
+  applicants: number; confirmed: number;
+  applicantAvgScore: number | null; confirmedAvgScore: number | null;
+};
+
 export type DashboardSnapshot = {
+  tcas3Scores: Tcas3ScoreRow[];
   majorRightsOutcomes: DashboardSnapshot["rightsOutcomes"];
   rightsOutcomes: { year: number; code: string; confirmed: number; resigned: number; unused: number; inactive: number; elsewhere: number; other: number; multiple: number; eligible: number }[];
   insightAllYears: { majors: MajorRow[]; rounds: RoundRow[] };

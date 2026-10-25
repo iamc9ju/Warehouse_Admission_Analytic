@@ -3576,7 +3576,8 @@ th {
   margin: 18px 7px 24px;
 }
 
-.question-tabs button {
+.question-tabs button,
+.chart-control-button {
   min-height: 38px;
   border: 1px solid #ddd6ce;
   border-radius: 999px;
@@ -3589,12 +3590,15 @@ th {
 }
 
 .question-tabs button:hover,
-.question-tabs button:focus-visible {
+.question-tabs button:focus-visible,
+.chart-control-button:hover,
+.chart-control-button:focus-visible {
   border-color: #ca6800;
   outline: none;
 }
 
-.question-tabs button.active {
+.question-tabs button.active,
+.chart-control-button[aria-pressed="true"] {
   border-color: #c76600;
   background: linear-gradient(180deg, #d77509, #c75e00);
   box-shadow: 0 4px 10px rgba(190, 85, 0, 0.16);
@@ -4413,4 +4417,16 @@ svg text {
   .applicant-donut-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+
+.chart-control-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+}
+.chart-control-button:focus-visible {
+  outline: 2px solid #ca6800;
+  outline-offset: 3px;
 }

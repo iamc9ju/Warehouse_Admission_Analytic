@@ -3,7 +3,7 @@ import type { DashboardSnapshot } from "./dashboard-types";
 // Only these fields are queried and sent to each page.
 export const pageDataFields = {
   overview: ["years", "rounds", "majorRows", "statuses", "majorRightsOutcomes", "rightsOutcomes"],
-  dashboard: ["years", "rounds", "majorRows", "roundStatuses", "allYearPeople", "rightsOutcomes", "majorRightsOutcomes"],
+  dashboard: ["tcas3Scores", "years", "rounds", "majorRows", "roundStatuses", "allYearPeople", "rightsOutcomes", "majorRightsOutcomes"],
   insights: ["insightAllYears", "years", "rounds", "majorRows", "businessQuestions", "decisionInsights"],
   majors: ["years", "majorRows", "majorStatuses"],
   rounds: ["years", "rounds", "roundStatuses"],

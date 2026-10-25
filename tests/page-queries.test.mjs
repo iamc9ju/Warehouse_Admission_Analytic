@@ -45,7 +45,8 @@ function fakeClient({ fail, empty } = {}) {
   return {
     calls,
     async query(sql, values = []) {
-      const kind = sql.includes("insights-annual-distinct-people") ? "insightAllYears"
+      const kind = sql.includes("tcas3-person-score-averages") ? "tcas3Scores"
+        : sql.includes("insights-annual-distinct-people") ? "insightAllYears"
         : sql.includes("major-rights-outcomes") ? "majorRightsOutcomes"
         : sql.includes("rights-outcomes-distinct-people") ? "rightsOutcomes"
         : sql.includes("decision-insights-from-marts") ? "decisionInsights"
@@ -66,6 +67,7 @@ function fakeClient({ fail, empty } = {}) {
       const rows = {
         majorRightsOutcomes: () => filteredYears.map(row => ({ academic_year: row.year, tcas_round_code: "3", eligible: row.eligible, confirmed: row.confirmed, resigned: row.resigned, unused: 0, inactive: 0, elsewhere: row.eligible - row.confirmed - row.resigned, other: 0, multiple: 0 })),
         rightsOutcomes: () => filteredYears.map(row => ({ academic_year: row.year, tcas_round_code: "TCAS1", eligible: row.eligible, confirmed: row.confirmed, resigned: row.resigned, unused: 0, inactive: 0, elsewhere: row.eligible - row.confirmed - row.resigned, other: 0, multiple: 0 })),
+        tcas3Scores: () => filteredYears.map(row => ({ academic_year: row.year, major_key: "3", major_code: "CE", major_name: "Civil", program_type: "Regular", applicants: 100, confirmed: 20, applicant_avg_score: 50, confirmed_avg_score: 60 })),
         insightAllYears: () => [
           { grain: "major", entity_key: "3", code: "CE", name: "Civil", program_type: "Regular", academic_year: 2569, applicants: 8000, confirmed: 1200, eligible: 1800, choices: 13000, avg_score: 70, files: 16 },
           { grain: "round", entity_key: "TCAS1", code: "TCAS1", name: "Portfolio", program_type: "", academic_year: 2569, applicants: 7000, confirmed: 1000, eligible: 1500, choices: 9000, avg_score: 70, files: 10 },
@@ -95,7 +97,7 @@ test("each page queries only live Neon dependencies", async (t) => {
   const dataModule = await loadModule();
   const expected = {
     overview: ["availableYears", "years", "rounds", "majorRows", "statuses", "majorRightsOutcomes", "rightsOutcomes"],
-    dashboard: ["availableYears", "years", "rounds", "majorRows", "roundStatuses", "allYearPeople", "rightsOutcomes", "majorRightsOutcomes"],
+    dashboard: ["tcas3Scores", "availableYears", "years", "rounds", "majorRows", "roundStatuses", "allYearPeople", "rightsOutcomes", "majorRightsOutcomes"],
     insights: ["insightAllYears", "availableYears", "years", "rounds", "majorRows", "decisionInsights"],
     majors: ["availableYears", "years", "majorRows", "majorStatuses"],
     rounds: ["availableYears", "years", "rounds", "roundStatuses"],
@@ -155,6 +157,19 @@ test("each page queries only live Neon dependencies", async (t) => {
     assert.match(query.sql, /then row\(y\.academic_year, f\.student_key\) end/);
     assert.doesNotMatch(query.sql, /group by[^;]*academic_year/i);
     await assert.rejects(dataModule.queryPageSnapshot(fakeClient({ fail: "insightAllYears" }), "insights"), /Unavailable/);
+  });
+
+  await t.test("score groups use TCAS3 data with separate applicant and confirmed averages", async () => {
+    const client = fakeClient();
+    const {snapshot} = await dataModule.queryPageSnapshot(client, "dashboard");
+    assert.equal(snapshot.tcas3Scores[0].applicantAvgScore,50);
+    assert.equal(snapshot.tcas3Scores[0].confirmedAvgScore,60);
+    assert.equal(snapshot.tcas3Scores[0].applicants,100);
+    assert.equal(snapshot.tcas3Scores[0].confirmed,20);
+    const query=client.calls.find(call=>call.kind === "tcas3Scores");
+    assert.match(query.sql,/where r\.tcas_round_code = 'TCAS3'/);
+    assert.match(query.sql,/avg\(f\.score\) filter\(where s\.tcas_status = 'ยืนยันสิทธิ์'\)/);
+    assert.match(query.sql,/group by[^;]*f\.student_key/);
   });
 
   await t.test("query failures and empty required results reject instead of falling back", async () => {

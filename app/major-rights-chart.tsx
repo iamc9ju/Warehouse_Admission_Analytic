@@ -27,7 +27,7 @@ export function MajorRightsChart({ rows, majors, year }: {
   const visible = segments.filter(s => data.some(d => (d.row?.[s.key] ?? 0) > 0));
   return <article ref={chartRef} className="panel" style={{ gridColumn: "1 / -1" }}>
     <div className="panel-title"><h2>ผลการใช้สิทธิ์ของผู้มีสิทธิ์ รายสาขา ปี {year}</h2>
-      <div>{[false, true].map(mode => <button type="button" key={String(mode)} aria-pressed={percent === mode} onClick={() => setPercent(mode)} style={{ padding: "8px 12px", background: percent === mode ? "#fff0dd" : "white", border: "1px solid #ded5c8", borderRadius: 6, cursor: "pointer" }}>{mode ? "เปอร์เซ็นต์ (%)" : "ผลรวมตามสถานะ"}</button>)}</div>
+      <div className="chart-control-group">{[false, true].map(mode => <button type="button" key={String(mode)} aria-pressed={percent === mode} onClick={() => setPercent(mode)} className="chart-control-button">{mode ? "เปอร์เซ็นต์ (%)" : "ผลรวมตามสถานะ"}</button>)}</div>
     </div>
     <p style={{ color: "#74695d", fontSize: "var(--text-caption)" }}>ผลรวมผู้มีสิทธิ์แยกตามสถานะ (นับซ้ำข้ามสถานะ) คนเดียวอาจอยู่หลายสี เปอร์เซ็นต์คิดจากผลรวมสถานะ ไม่ใช่อัตรายืนยันต่อผู้มีสิทธิ์</p>
     <div style={{ display: "flex", flexWrap: "wrap", gap: 16, margin: "20px 0" }}>{visible.map(s => <span key={s.key} tabIndex={0} onMouseEnter={() => setHovered(s.key)} onMouseLeave={() => setHovered(null)} onFocus={() => setHovered(s.key)} onBlur={() => setHovered(null)} style={{ opacity: hovered && hovered !== s.key ? 0.4 : 1, transition: "opacity 150ms" }}><i style={{ display: "inline-block", width: 12, height: 12, background: s.color, marginRight: 6 }} />{s.label}</span>)}</div>
