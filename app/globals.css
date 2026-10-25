@@ -2369,10 +2369,28 @@ th {
   stroke: #c3483e;
 }
 
+.kpi-sparkline-plot {
+  position: relative;
+  height: 70px;
+}
+
+.kpi-sparkline-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 3px solid #328044;
+  border-radius: 50%;
+  background: #fff;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.kpi-sparkline-dot.down { border-color: #c3483e; }
+
 .kpi-trend-years {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  position: relative;
+  min-height: 42px;
   margin-top: -8px;
   color: #8a847e;
   font-size: var(--text-caption);
@@ -2380,12 +2398,12 @@ th {
 }
 
 .kpi-trend-years span {
+  position: absolute;
   display: grid;
   gap: 1px;
-}
-
-.kpi-trend-years span:last-child {
-  text-align: right;
+  text-align: center;
+  transform: translateX(-50%);
+  white-space: nowrap;
 }
 
 .kpi-trend-years strong {

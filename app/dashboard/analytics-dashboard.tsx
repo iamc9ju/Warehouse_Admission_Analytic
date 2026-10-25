@@ -1124,25 +1124,22 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
                   <strong>{kpi.format(totalValue)}</strong>
                 </div>
                 <div className="kpi-sparkline-wrap">
-                  <svg className="kpi-sparkline" viewBox="0 0 220 70" role="img" aria-label={`แนวโน้ม${kpi.label}ตั้งแต่ปี ${firstYear} ถึง ${lastYear}`}>
-                    <line className="kpi-sparkline-baseline" x1="12" y1="55" x2="208" y2="55" />
+                  <div className="kpi-sparkline-plot">
+                  <svg className="kpi-sparkline" viewBox="0 0 220 70" preserveAspectRatio="none" role="img" aria-label={`แนวโน้ม${kpi.label}ตั้งแต่ปี ${firstYear} ถึง ${lastYear}`}>
+                    <line vectorEffect="non-scaling-stroke" className="kpi-sparkline-baseline" x1="12" y1="55" x2="208" y2="55" />
                     <polyline
                       className={`kpi-sparkline-line ${directionClass}`}
+                      vectorEffect="non-scaling-stroke"
                       points={trendPoints.map((point) => `${point.x},${point.y}`).join(" ")}
                     />
-                    {trendPoints.map((point) => (
-                      <circle
-                        className={`kpi-sparkline-point ${directionClass}`}
-                        cx={point.x}
-                        cy={point.y}
-                        key={point.year}
-                        r="4"
-                      />
-                    ))}
                   </svg>
+                  {trendPoints.map(point => <i key={point.year} aria-hidden="true"
+                    className={`kpi-sparkline-dot ${directionClass}`}
+                    style={{ left: `${point.x / 220 * 100}%`, top: point.y }} />)}
+                  </div>
                   <div className="kpi-trend-years" aria-hidden="true">
                     {sortedOverviews.map((overview, index) => (
-                      <span key={overview.year} style={{ textAlign: index === 0 ? "left" : index === sortedOverviews.length - 1 ? "right" : "center" }}>
+                      <span key={overview.year} style={{ left: `${trendPoints[index].x / 220 * 100}%` }}>
                         {overview.year}<strong>{kpi.format(values[index] ?? 0)}</strong>
                       </span>
                     ))}
