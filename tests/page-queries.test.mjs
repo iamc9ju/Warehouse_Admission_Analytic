@@ -27,11 +27,11 @@ async function loadModule() {
     plugins: [{
       name: "mock-pg",
       setup(plugin) {
-        plugin.onResolve({ filter: /^pg$/ }, () => ({ path: "pg", namespace: "test" }));
+        plugin.onResolve({ filter: /^@neondatabase\/serverless$/ }, () => ({ path: "pg", namespace: "test" }));
         plugin.onLoad({ filter: /.*/, namespace: "test" }, () => ({ contents: `
-          export class Pool {
-            constructor() { globalThis[Symbol.for('admissions.page-query-tests')].connections++; }
-            query(sql, values) { return globalThis[Symbol.for('admissions.page-query-tests')].client.query(sql, values); }
+          export function neon() {
+            globalThis[Symbol.for('admissions.page-query-tests')].connections++;
+            return { query(sql, values) { return globalThis[Symbol.for('admissions.page-query-tests')].client.query(sql, values); } };
           }
         ` }));
       },
@@ -45,7 +45,8 @@ function fakeClient({ fail, empty } = {}) {
   return {
     calls,
     async query(sql, values = []) {
-      const kind = sql.includes("major-rights-outcomes") ? "majorRightsOutcomes"
+      const kind = sql.includes("insights-annual-distinct-people") ? "insightAllYears"
+        : sql.includes("major-rights-outcomes") ? "majorRightsOutcomes"
         : sql.includes("rights-outcomes-distinct-people") ? "rightsOutcomes"
         : sql.includes("decision-insights-from-marts") ? "decisionInsights"
         : sql.includes("all-year-distinct-people") ? "allYearPeople"
@@ -65,6 +66,10 @@ function fakeClient({ fail, empty } = {}) {
       const rows = {
         majorRightsOutcomes: () => filteredYears.map(row => ({ academic_year: row.year, tcas_round_code: "3", eligible: row.eligible, confirmed: row.confirmed, resigned: row.resigned, unused: 0, inactive: 0, elsewhere: row.eligible - row.confirmed - row.resigned, other: 0, multiple: 0 })),
         rightsOutcomes: () => filteredYears.map(row => ({ academic_year: row.year, tcas_round_code: "TCAS1", eligible: row.eligible, confirmed: row.confirmed, resigned: row.resigned, unused: 0, inactive: 0, elsewhere: row.eligible - row.confirmed - row.resigned, other: 0, multiple: 0 })),
+        insightAllYears: () => [
+          { grain: "major", entity_key: "3", code: "CE", name: "Civil", program_type: "Regular", academic_year: 2569, applicants: 8000, confirmed: 1200, eligible: 1800, choices: 13000, avg_score: 70, files: 16 },
+          { grain: "round", entity_key: "TCAS1", code: "TCAS1", name: "Portfolio", program_type: "", academic_year: 2569, applicants: 7000, confirmed: 1000, eligible: 1500, choices: 9000, avg_score: 70, files: 10 },
+        ],
         allYearPeople: () => [{ applicants: 9000, confirmed: 1400, resigned: 60 }],
         availableYears: () => [...fixtureYears].reverse().map((row) => ({ academic_year: row.year })),
         years: () => filteredYears.map((row) => ({ academic_year: row.year, application_choices: row.choices, unique_applicants: row.applicants, confirmed_applicants: row.confirmed, resigned_applicants: row.resigned, eligible_applicants: row.eligible, confirmed_rate: row.rate, source_files: row.sourceFiles, avg_score: row.avgScore })),
@@ -89,9 +94,9 @@ function fakeClient({ fail, empty } = {}) {
 test("each page queries only live Neon dependencies", async (t) => {
   const dataModule = await loadModule();
   const expected = {
-    overview: ["availableYears", "years", "rounds", "majorRows", "statuses"],
+    overview: ["availableYears", "years", "rounds", "majorRows", "statuses", "majorRightsOutcomes", "rightsOutcomes"],
     dashboard: ["availableYears", "years", "rounds", "majorRows", "roundStatuses", "allYearPeople", "rightsOutcomes", "majorRightsOutcomes"],
-    insights: ["availableYears", "years", "rounds", "majorRows", "decisionInsights"],
+    insights: ["insightAllYears", "availableYears", "years", "rounds", "majorRows", "decisionInsights"],
     majors: ["availableYears", "years", "majorRows", "majorStatuses"],
     rounds: ["availableYears", "years", "rounds", "roundStatuses"],
   };
@@ -136,6 +141,20 @@ test("each page queries only live Neon dependencies", async (t) => {
     assert.equal((query.sql.match(/count\(distinct f.student_key\)/g) ?? []).length, 3);
     assert.doesNotMatch(query.sql, /group by/i);
     await assert.rejects(dataModule.queryPageSnapshot(fakeClient({ fail: "allYearPeople" }), "dashboard"), /Unavailable/);
+  });
+
+  await t.test("Insights counts distinct year-person pairs for annual-sum totals", async () => {
+    const client = fakeClient();
+    const { snapshot } = await dataModule.queryPageSnapshot(client, "insights");
+    assert.equal(snapshot.insightAllYears.majors[0].applicants, 8000);
+    assert.equal(snapshot.insightAllYears.rounds[0].applicants, 7000);
+    assert.equal(snapshot.insightAllYears.majors[0].rate, 1200 / 1800 * 100);
+    const query = client.calls.find(call => call.kind === "insightAllYears");
+    assert.deepEqual(query.values, []);
+    assert.match(query.sql, /count\(distinct \(y\.academic_year, f\.student_key\)\)/);
+    assert.match(query.sql, /then row\(y\.academic_year, f\.student_key\) end/);
+    assert.doesNotMatch(query.sql, /group by[^;]*academic_year/i);
+    await assert.rejects(dataModule.queryPageSnapshot(fakeClient({ fail: "insightAllYears" }), "insights"), /Unavailable/);
   });
 
   await t.test("query failures and empty required results reject instead of falling back", async () => {

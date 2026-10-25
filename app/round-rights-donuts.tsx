@@ -8,10 +8,10 @@ export function RoundRightsDonuts({ rows, rounds, year }: {
 }) {
   return <section style={{ gridColumn: "1 / -1", minWidth: 0 }}>
     <h2>ผลการใช้สิทธิ์ของผู้มีสิทธิ์ แยกรอบ TCAS ปี {year}</h2>
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(340px, 1fr))", gap: 16, marginTop: 20, overflowX: "auto", paddingBottom: 12 }}>
+    <div className="round-rights-donut-grid">
       {rounds.filter(round => round.year === year).map(round => {
         const row = rows.find(item => item.year === year && item.code === round.code);
-        return <DonutChartCard key={`${year}-${round.code}`} title={`${round.code} · ${round.name}`}
+        return <DonutChartCard legendPosition="right" key={`${year}-${round.code}`} title={`${round.code} · ${round.name}`}
           subtitle={row ? `ผู้มีสิทธิ์เฉพาะสถานะที่แสดง ${(row.eligible - row.multiple).toLocaleString("en-US")} คน` : "ไม่มีข้อมูลผลการใช้สิทธิ์"}
           kicker={`ปีการศึกษา ${year}`} centerLabel="ผู้มีสิทธิ์" centerSubtext="คน"
           slices={segments.map(segment => ({ label: segment.label, value: row?.[segment.key] ?? 0, color: segment.color }))} />;

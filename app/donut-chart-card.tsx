@@ -80,6 +80,8 @@ export function DonutChartCard({
   kicker = "ALL-YEAR BREAKDOWN",
   centerLabel = "ผู้สมัครรวมทุกปี",
   centerSubtext = "100% (รวมทุกปี)",
+  legendPosition,
+  unit = "คน",
 }: {
   title: string;
   subtitle: string;
@@ -87,6 +89,8 @@ export function DonutChartCard({
   kicker?: string;
   centerLabel?: ReactNode;
   centerSubtext?: string;
+  legendPosition?: "right";
+  unit?: string;
 }) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const total = useMemo(() => slices.reduce((sum, s) => sum + s.value, 0), [slices]);
@@ -113,7 +117,7 @@ export function DonutChartCard({
   const activeSlice = hoveredIndex !== null ? chartData[hoveredIndex] : null;
 
   return (
-    <article className="analytics-card" style={{ flex: 1, minWidth: "340px", display: "flex", flexDirection: "column" }}>
+    <article className={`analytics-card${legendPosition === "right" ? " donut-legend-right" : ""}`} style={{ flex: 1, minWidth: legendPosition === "right" ? 0 : "340px", display: "flex", flexDirection: "column" }}>
       <header style={{ marginBottom: "14px" }}>
         <div>
           <span>{kicker}</span>
@@ -122,8 +126,8 @@ export function DonutChartCard({
         </div>
       </header>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", alignItems: "center", justifyContent: "center", marginTop: "10px", flex: 1 }}>
-        <div style={{ position: "relative", width: "210px", height: "210px", flexShrink: 0 }}>
+      <div className="donut-card-body" style={{ display: "flex", flexWrap: "wrap", gap: "20px", alignItems: "center", justifyContent: "center", marginTop: "10px", flex: 1 }}>
+        <div className="donut-card-chart" style={{ position: "relative", width: "210px", height: "210px", flexShrink: 0 }}>
           <svg viewBox="0 0 220 220" style={{ width: "100%", height: "100%", transform: "rotate(-90deg)" }}>
             {chartData.map((d) => {
               const isHovered = hoveredIndex === d.idx;
@@ -146,7 +150,7 @@ export function DonutChartCard({
                   onMouseEnter={() => setHoveredIndex(d.idx)}
                   onMouseLeave={() => setHoveredIndex(null)}
                 >
-                  <title>{`${d.label}: ${formatNumber(d.value)} คน (${d.sharePct.toFixed(2)}%)`}</title>
+                  <title>{`${d.label}: ${formatNumber(d.value)} ${unit} (${d.sharePct.toFixed(2)}%)`}</title>
                 </path>
               );
             })}
@@ -188,7 +192,7 @@ export function DonutChartCard({
           </div>
         </div>
 
-        <div style={{ flex: 1, minWidth: "180px", display: "flex", flexDirection: "column", gap: "6px", maxHeight: "230px", overflowY: "auto", paddingRight: "4px" }}>
+        <div className="donut-card-legend" style={{ flex: 1, minWidth: "180px", display: "flex", flexDirection: "column", gap: "6px", maxHeight: "230px", overflowY: "auto", paddingRight: "4px" }}>
           {chartData.map((d) => {
             const isHovered = hoveredIndex === d.idx;
             return (

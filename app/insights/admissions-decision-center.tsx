@@ -81,7 +81,7 @@ function EligibilityComparison({ eligibleCount, confirmedCount }: { eligibleCoun
 }
 
 export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"insights"> }) {
-  const { businessQuestions, decisionInsights, majorRows, rounds, years } = snapshot;
+  const { businessQuestions, decisionInsights, majorRows, rounds, years, insightAllYears } = snapshot;
   const latestYear = Math.max(...years.map((year) => year.year));
   const latestYearOverview = years.find((year) => year.year === latestYear);
   const [period, setPeriod] = useState<"all" | "latest">("latest");
@@ -90,9 +90,9 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
     : `ปี ${latestYear}`;
   const activeBusinessQuestions = businessQuestions.filter(question =>
     period === "latest" || rateQuestionIds.has(question.id));
-  const periodMajors = useMemo(() => groupInsightRows(majorRows, period, latestYear), [majorRows, period, latestYear]);
-  const periodRounds = useMemo(() => groupInsightRows(rounds, period, latestYear)
-    .sort((a, b) => b.confirmed - a.confirmed || a.code.localeCompare(b.code)), [rounds, period, latestYear]);
+  const periodMajors = useMemo(() => groupInsightRows(majorRows, period, latestYear, insightAllYears.majors), [majorRows, period, latestYear, insightAllYears.majors]);
+  const periodRounds = useMemo(() => groupInsightRows(rounds, period, latestYear, insightAllYears.rounds)
+    .sort((a, b) => b.confirmed - a.confirmed || a.code.localeCompare(b.code)), [rounds, period, latestYear, insightAllYears.rounds]);
   const [selectedQuestionId, setSelectedQuestionId] = useState("BQ-001");
   const [activeCategory, setActiveCategory] = useState("ทั้งหมด");
   const [query, setQuery] = useState("");
@@ -288,7 +288,7 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
           </button>
         ))}
       </div>
-      <p>{periodLabel}{period === "all" ? " · รวมยอดรายปี ผู้ที่ปรากฏหลายปีจะนับในแต่ละปี" : " · คำถามเพิ่มขึ้น/ลดลงเทียบกับปีก่อนหน้า"}</p>
+      <p>{periodLabel}{period === "all" ? " · รวมยอดคนไม่ซ้ำรายปี แยกตามสาขาหรือรอบ คนเดิมต่างปีนับในแต่ละปี" : " · คำถามเพิ่มขึ้น/ลดลงเทียบกับปีก่อนหน้า"}</p>
       <div className="decision-toolbar">
         <label className="decision-search">
           <MagnifyingGlassIcon aria-hidden="true" />

@@ -4,7 +4,7 @@ import { pageDataFields, type DashboardPage, type LoadedPageSnapshot } from "./p
 import { getAllYearPeople, getAvailableYears, getYearOverview, getYearStatuses } from "./repositories/overview-repository";
 import { getRoundOverview, getRoundStatuses, getRightsOutcomes } from "./repositories/rounds-repository";
 import { getMajorConversion, getMajorStatuses } from "./repositories/majors-repository";
-import { getBusinessQuestions, getDecisionInsights } from "./repositories/insights-repository";
+import { getAllYearInsights, getBusinessQuestions, getDecisionInsights } from "./repositories/insights-repository";
 
 function selectOverviewYear(availableYears: number[], requestedYear?: number) {
   const latestYear = availableYears[0];
@@ -20,6 +20,7 @@ export async function queryPageSnapshot(
 ): Promise<LoadedPageSnapshot> {
   const loadPageEntries = async (year?: number): Promise<[string, unknown][]> => {
     const queries: Partial<{ [K in keyof DashboardSnapshot]: () => Promise<DashboardSnapshot[K]> }> = {
+      insightAllYears: () => getAllYearInsights(client),
       allYearPeople: () => getAllYearPeople(client),
       rightsOutcomes: () => getRightsOutcomes(client),
       majorRightsOutcomes: () => getRightsOutcomes(client, "major"),

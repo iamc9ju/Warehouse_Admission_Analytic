@@ -96,6 +96,20 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
       }));
   }, [majorRows, selectedYear]);
 
+  const roundApplicantSlices = useMemo(() => rounds
+    .filter(row => row.year === selectedYear)
+    .sort((a, b) => a.code.localeCompare(b.code))
+    .map(row => ({ label: `${row.code} — ${row.name}`, value: row.applicants,
+      color: tcasColors[row.code] ?? "#666666" })), [rounds, selectedYear]);
+
+  const majorApplicantSlices = useMemo(() => majorRows
+    .filter(row => row.year === selectedYear)
+    .sort((a, b) => b.applicants - a.applicants)
+    .map(row => ({
+      label: row.type && !row.name.includes(row.type) ? `${row.name} (${row.type})` : row.name,
+      value: row.applicants, color: getMajorColor(row.name, row.type),
+    })), [majorRows, selectedYear]);
+
   const filteredMajors = useMemo(() => {
     const normalizedQuery = majorQuery.trim().toLowerCase();
     return majorRows
@@ -174,6 +188,30 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
                 centerLabel={`รายการสมัครปี ${selectedYear}`}
                 centerSubtext={`100% (ปี ${selectedYear})`}
               />
+            </section>
+
+            <section className="applicant-donut-grid" style={{ gridColumn: "1 / -1" }} aria-label={`ผู้สมัครไม่ซ้ำแยกรอบและสาขาปี ${selectedYear}`}>
+              <DonutChartCard
+                legendPosition="right"
+                title={`สัดส่วนผู้สมัครไม่ซ้ำ ปี ${selectedYear} (แยกรอบ TCAS)`}
+                subtitle={`นับคนไม่ซ้ำภายในแต่ละรอบ เฉพาะปีการศึกษา ${selectedYear}`}
+                slices={roundApplicantSlices}
+                kicker={`YEAR ${selectedYear} BREAKDOWN`}
+                centerLabel={<>ผลรวมรายรอบ<br/>ปี {selectedYear}</>}
+                centerSubtext="100% ของผลรวมรายรอบ"
+              />
+              <DonutChartCard
+                legendPosition="right"
+                title={`สัดส่วนผู้สมัครไม่ซ้ำ ปี ${selectedYear} (แยกสาขา)`}
+                subtitle={`นับคนไม่ซ้ำภายในแต่ละสาขา รวมทุกรอบ เฉพาะปีการศึกษา ${selectedYear}`}
+                slices={majorApplicantSlices}
+                kicker={`YEAR ${selectedYear} BREAKDOWN`}
+                centerLabel={<>ผลรวมรายสาขา<br/>ปี {selectedYear}</>}
+                centerSubtext="100% ของผลรวมรายสาขา"
+              />
+              <p style={{ gridColumn: "1 / -1", margin: 0, color: "#74695d", fontSize: "var(--text-caption)" }}>
+                เฉพาะปี {selectedYear} คนเดียวสมัครหลายรอบหรือหลายสาขาจะนับในแต่ละกลุ่ม ยอดกลางวงเป็นผลรวมรายกลุ่ม ไม่ใช่จำนวนคนไม่ซ้ำทั้งปี
+              </p>
             </section>
 
             <article className="panel" style={{gridColumn:"1 / -1"}}>

@@ -1,6 +1,6 @@
 import type { QueryClient } from "../db/neon-client";
 import type { DashboardSnapshot } from "../dashboard-types";
-import { numberValue, requiredRows } from "./query-helpers";
+import { eligibleStudentCount, numberValue, requiredRows } from "./query-helpers";
 
 type Question = DashboardSnapshot["businessQuestions"][number];
 type Insight = DashboardSnapshot["decisionInsights"][number];
@@ -138,4 +138,49 @@ export async function getDecisionInsights(client: QueryClient): Promise<Dashboar
     union all select 'BQ-009', to_jsonb(x) from lowest_demand x
   `);
   return rows.map(insightFromRow).sort((a, b) => a.priority - b.priority || a.id.localeCompare(b.id));
+}
+
+
+export async function getAllYearInsights(client: QueryClient): Promise<DashboardSnapshot["insightAllYears"]> {
+  // Count each person once per academic year within each major/round.
+  // Distinct (year, student) pairs equal the sum of annual distinct counts.
+  const rows = await requiredRows(client, `
+    /* insights-annual-distinct-people */
+    select g.grain, g.entity_key, g.code, g.name, g.program_type,
+      max(y.academic_year) as academic_year,
+      count(distinct (y.academic_year, f.student_key)) as applicants,
+      count(distinct (y.academic_year, f.student_key)) filter(where s.tcas_status = 'ยืนยันสิทธิ์') as confirmed,
+      ${eligibleStudentCount.replace("then f.student_key end", "then row(y.academic_year, f.student_key) end")} as eligible,
+      count(*) as choices, coalesce(avg(f.score), 0) as avg_score,
+      count(distinct f.source_file) as files
+    from admissions_dw.fact_admission f
+    join admissions_dw.dim_year y using(year_key)
+    join admissions_dw.dim_major m using(major_key)
+    join admissions_dw.dim_tcas_round r using(round_key)
+    join admissions_dw.dim_tcas_status s using(status_key)
+    cross join lateral (values
+      ('major', m.major_key::text, m.major_id::text, m.major_name, m.major_type),
+      ('round', r.tcas_round_code, r.tcas_round_code, r.tcas_round_name, '')
+    ) g(grain, entity_key, code, name, program_type)
+    group by g.grain, g.entity_key, g.code, g.name, g.program_type
+    order by g.grain, g.entity_key
+  `);
+  const result: DashboardSnapshot["insightAllYears"] = { majors: [], rounds: [] };
+  for (const row of rows) {
+    const eligible = numberValue(row.eligible, "eligible");
+    const confirmed = numberValue(row.confirmed, "confirmed");
+    const common = {
+      year: numberValue(row.academic_year, "academic_year"),
+      code: String(row.code), name: String(row.name),
+      applicants: numberValue(row.applicants, "applicants"), confirmed, eligible,
+      choices: numberValue(row.choices, "choices"),
+      rate: eligible > 0 ? confirmed / eligible * 100 : 0,
+    };
+    if (row.grain === "major") result.majors.push({ ...common,
+      majorKey: String(row.entity_key), type: String(row.program_type),
+      avgScore: numberValue(row.avg_score, "avg_score"),
+    });
+    else result.rounds.push({ ...common, files: numberValue(row.files, "files") });
+  }
+  return result;
 }

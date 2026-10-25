@@ -963,6 +963,33 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
       }));
   }, [majorRows]);
 
+  // Sum the same annual distinct-person values shown in the charts below.
+  // A person returning in another year counts once in each year's total.
+  const roundApplicantSlices = useMemo(() => {
+    const groups = new Map<string, { name: string; applicants: number }>();
+    for (const row of rounds) {
+      const group = groups.get(row.code) ?? { name: row.name, applicants: 0 };
+      group.applicants += row.applicants;
+      groups.set(row.code, group);
+    }
+    return [...groups].sort(([a], [b]) => a.localeCompare(b)).map(([code, group]) => ({
+      label: `${code} — ${group.name}`, value: group.applicants, color: tcasColors[code] ?? "#666666",
+    }));
+  }, [rounds]);
+
+  const majorApplicantSlices = useMemo(() => {
+    const groups = new Map<string, { name: string; type: string; applicants: number }>();
+    for (const row of majorRows) {
+      const group = groups.get(row.majorKey) ?? { name: row.name, type: row.type, applicants: 0 };
+      group.applicants += row.applicants;
+      groups.set(row.majorKey, group);
+    }
+    return [...groups.values()].sort((a, b) => b.applicants - a.applicants).map(group => ({
+      label: group.type && !group.name.includes(group.type) ? `${group.name} (${group.type})` : group.name,
+      value: group.applicants, color: getMajorColor(group.name, group.type),
+    }));
+  }, [majorRows]);
+
   const selectedOverview = sortedOverviews.find((overview) => overview.year === analysisYear) ?? sortedOverviews[sortedOverviews.length - 1];
   const radarMetrics: RadarMetric[] = selectedOverview ? [
     {
@@ -1041,9 +1068,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
             const values = sortedOverviews.map((overview) => overview[kpi.key as keyof typeof overview] as number);
             const firstValue = values[0] ?? 0;
             const latestValue = values[values.length - 1] ?? 0;
-            const totalValue = kpi.key === "choices"
-              ? values.reduce((sum, val) => sum + val, 0)
-              : snapshot.allYearPeople[kpi.key];
+            const totalValue = values.reduce((sum, val) => sum + val, 0);
             const percentChange = firstValue === 0 ? 0 : (delta / firstValue) * 100;
             const minimum = Math.min(...values);
             const maximum = Math.max(...values);
@@ -1065,7 +1090,7 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
                   </b>
                 </header>
                 <div className="kpi-latest-value">
-                  <span>ทั้งหมด</span>
+                  <span>{kpi.key === "choices" ? "ทั้งหมด" : "รวมยอดไม่ซ้ำรายปี"}</span>
                   <strong>{kpi.format(totalValue)}</strong>
                 </div>
                 <div className="kpi-sparkline-wrap">
@@ -1112,15 +1137,39 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
           }}
         >
           <DonutChartCard
+            unit="รายการ"
             title="สัดส่วนรายการสมัครรวมทุกปี (TCAS 4 รอบ)"
             subtitle="รวมจำนวนตัวเลือกสมัครทุกปีการศึกษา แยกตามรอบ TCAS 1 - 4"
             slices={tcasRoundSlices}
             centerLabel={<>รายการสมัคร<br/>รวมทุกปี</>}          />
           <DonutChartCard
+            unit="รายการ"
             title="สัดส่วนรายการสมัครรวมทุกปี (ทุกสาขาวิชา)"
             subtitle="รวมจำนวนตัวเลือกสมัครทุกปีการศึกษา แยกตามสาขาวิชา"
             slices={majorSlices}
             centerLabel={<>รายการสมัคร<br/>รวมทุกปี</>}          />
+        </section>
+
+        <section className="applicant-donut-grid" aria-label="สัดส่วนผู้สมัครไม่ซ้ำรายปี รวมทุกปี">
+          <DonutChartCard
+            legendPosition="right"
+            title="สัดส่วนผู้สมัครไม่ซ้ำรายปี รวมทุกปี (แยกรอบ TCAS)"
+            subtitle="รวมยอดคนไม่ซ้ำในแต่ละปีและรอบ ตรงกับกราฟรายรอบด้านล่าง"
+            slices={roundApplicantSlices}
+            centerLabel={<>ผลรวมผู้สมัคร<br/>รายรอบทุกปี</>}
+            centerSubtext="100% ของผลรวมรายรอบ"
+          />
+          <DonutChartCard
+            legendPosition="right"
+            title="สัดส่วนผู้สมัครไม่ซ้ำรายปี รวมทุกปี (แยกสาขา)"
+            subtitle="รวมยอดคนไม่ซ้ำในแต่ละปีและสาขา ตรงกับกราฟรายสาขาด้านล่าง"
+            slices={majorApplicantSlices}
+            centerLabel={<>ผลรวมผู้สมัคร<br/>รายสาขาทุกปี</>}
+            centerSubtext="100% ของผลรวมรายสาขา"
+          />
+          <p style={{ gridColumn: "1 / -1", margin: 0, color: "#74695d", fontSize: "var(--text-caption)" }}>
+            คนเดิมสมัครต่างปีจะนับในแต่ละปี และสมัครหลายรอบหรือหลายสาขาจะนับในแต่ละกลุ่ม เปอร์เซ็นต์คิดจากผลรวมของกลุ่มในวงนั้น ยอดกลางวงจึงไม่ใช่จำนวนคนไม่ซ้ำข้ามทุกปี
+          </p>
         </section>
 
         <section className={`analytics-chart-grid ${hasManyYears ? "many-years" : ""}`} data-year-count={availableYears.length}>
