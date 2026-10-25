@@ -12,7 +12,7 @@ const date = (s: string) => new Date(s).toLocaleString("th-TH", { timeZone: "Asi
 
 function FactTable({ facts }: { facts: Fact[] }) {
   return <div className={styles.tableWrap}><table className={styles.table}>
-    <caption>คนไม่ซ้ำต่อสถานะตาม Dashboard คนเดียวอาจมีหลายสถานะ ห้ามบวกทุกสถานะเป็นยอดรวม · — หมายถึงรายงานเก่ายังไม่มีข้อมูล</caption>
+    {/*<caption>คนไม่ซ้ำต่อสถานะตาม Dashboard คนเดียวอาจมีหลายสถานะ ห้ามบวกทุกสถานะเป็นยอดรวม · — หมายถึงรายงานเก่ายังไม่มีข้อมูล</caption>*/}
     <thead><tr><th>ปี / กลุ่ม</th><th>ผู้สมัคร</th><th>ผู้มีสิทธิ์</th><th>ยืนยันสิทธิ์</th>{STATUS_COLUMNS.map(([key,label]) => <th key={key}>{label}</th>)}<th>อัตรายืนยัน / ผู้มีสิทธิ์</th></tr></thead>
     <tbody>{facts.map(f => {const counts = statusMetrics(f); return <tr key={f.id}><th scope="row">{f.year} · {f.name}{f.grain === "major" ? ` (${f.programType})` : ""}</th><td>{number(f.applicants)}</td><td>{number(f.eligible)}</td><td>{number(f.confirmed)}</td>{STATUS_COLUMNS.map(([key]) => <td key={key}>{counts[key] === undefined ? "—" : number(counts[key])}</td>)}<td>{f.eligibleRate === null ? "ไม่มีฐานคำนวณ" : `${number(f.eligibleRate)}%`}</td></tr>;})}</tbody>
   </table></div>;
@@ -24,7 +24,7 @@ function StatusTables({ facts }: { facts: Fact[] }) {
   return <>
     <h3>สถานะผู้สมัครตามวิธีนับเดียวกับ Dashboard</h3>
     <FactTable facts={rows} />
-    <details className={styles.evidence}><summary>ดูทุกสถานะจริงและจำนวนตัวเลือกสมัคร</summary><div className={styles.tableWrap}><table className={styles.table}><caption>คนไม่ซ้ำต่อสถานะ สถานะอาจซ้อนกันได้ สัดส่วนใช้ผู้สมัครของกลุ่มเป็นตัวหาร ห้ามบวกจำนวนคนทุกสถานะเป็นยอดรวม</caption><thead><tr><th>ปี / กลุ่ม</th><th>สถานะ</th><th>คน</th><th>ตัวเลือกสมัคร</th><th>ต่อผู้สมัคร</th></tr></thead><tbody>{rows.flatMap(f => f.statuses!.map(s => <tr key={`${f.id}:${s.label}`}><th scope="row">{f.year} · {f.name}{f.grain === "major" ? ` (${f.programType})` : ""}</th><td>{s.label}</td><td>{number(s.applicants)}</td><td>{number(s.choices)}</td><td>{f.applicants ? `${number(s.applicants * 100 / f.applicants)}%` : "ไม่มีฐานคำนวณ"}</td></tr>))}</tbody></table></div></details>
+    <details className={styles.evidence}><summary>ดูรายละเอียดสถานะและจำนวนตัวเลือกสมัคร</summary><div className={styles.tableWrap}><table className={styles.table}><caption>คนไม่ซ้ำต่อสถานะ สถานะอาจซ้อนกันได้ สัดส่วนใช้ผู้สมัครของกลุ่มเป็นตัวหาร ห้ามบวกจำนวนคนทุกสถานะเป็นยอดรวม</caption><thead><tr><th>ปี / กลุ่ม</th><th>สถานะ</th><th>คน</th><th>ตัวเลือกสมัคร</th><th>ต่อผู้สมัคร</th></tr></thead><tbody>{rows.flatMap(f => f.statuses!.filter(s => !["ผ่านการคัดเลือก", "ผ่านการคัดเลือกแต่ไม่นำมาประมวลผลรอบที่ 2"].includes(s.label)).map(s => <tr key={`${f.id}:${s.label}`}><th scope="row">{f.year} · {f.name}{f.grain === "major" ? ` (${f.programType})` : ""}</th><td>{s.label}</td><td>{number(s.applicants)}</td><td>{number(s.choices)}</td><td>{f.applicants ? `${number(s.applicants * 100 / f.applicants)}%` : "ไม่มีฐานคำนวณ"}</td></tr>))}</tbody></table></div></details>
   </>;
 }
 
@@ -121,7 +121,7 @@ export function AnalysisView() {
   return <main className="app-frame">
     <SidebarNavigation activeHref="/ai-analysis" />
     <section className="workspace" data-page="AI Analysis"><div className="page-transition">
-      <section className="hero-panel"><div><p className="eyebrow">Admissions intelligence · Gemini</p><h1>AI Analysis</h1><p>สรุปสถานการณ์รับสมัคร พร้อมหลักฐานและแนวทางดำเนินการเบื้องต้น</p></div></section>
+      <section className="hero-panel"><div><p className="eyebrow">Admissions intelligence </p><h1>AI Analysis</h1><p>สรุปสถานการณ์รับสมัคร พร้อมหลักฐานและแนวทางดำเนินการเบื้องต้น</p></div></section>
       <section className={`panel ${styles.toolbar}`} aria-label="ขอบเขตบทวิเคราะห์">
         <div className={styles.filters}>
           <label>ตั้งแต่ปี<select aria-label="ปีเริ่มต้น" value={scope?.startYear ?? ""} disabled={!state || busy || reading} onChange={e => changeScope({ startYear: Number(e.target.value), endYear: Math.max(Number(e.target.value), scope!.endYear) })}>{!state && <option value="">กำลังอ่านข้อมูล</option>}{state?.availableYears.map(y => <option key={y}>{y}</option>)}</select></label>
@@ -131,15 +131,15 @@ export function AnalysisView() {
       </section>
       <div aria-live="polite">
         {error && <div className={styles.error} role="alert">{error}<button type="button" onClick={() => void load(scope)}>ลองอ่านข้อมูลอีกครั้ง</button></div>}
-        {state && !state.configured && <p className={styles.banner}>ยังไม่ได้ตั้งค่า Gemini ฝั่งเซิร์ฟเวอร์ อ่านรายงานเดิมได้ แต่ยังสร้างใหม่ไม่ได้</p>}
-        {busy && <p className={styles.banner} role="status">กำลังให้ Gemini สร้างรายงาน คุณเปลี่ยนหน้าแล้วกลับมาอ่านได้ ระบบจะบันทึกเมื่อสร้างสำเร็จ รายงานเดิมยังอยู่</p>}
+        {state && !state.configured && <p className={styles.banner}>ยังไม่ได้ตั้งค่า ฝั่งเซิร์ฟเวอร์ อ่านรายงานเดิมได้ แต่ยังสร้างใหม่ไม่ได้</p>}
+        {busy && <p className={styles.banner} role="status">กำลัง สร้างรายงาน คุณเปลี่ยนหน้าแล้วกลับมาอ่านได้ ระบบจะบันทึกเมื่อสร้างสำเร็จ รายงานเดิมยังอยู่</p>}
         {stale && <p className={styles.banner}>รายงานนี้ใช้ข้อมูลหรือรูปแบบเดิม กดสร้างบทวิเคราะห์ใหม่เพื่อใช้อัตรายืนยันต่อผู้มีสิทธิ์และสรุปแยกครบตามช่วงปีที่เลือก</p>}
         {reading && <p className={styles.hint} role="status">กำลังอ่านรายงานที่บันทึกไว้…</p>}
       </div>
       {state && !wrongScope && <>
-        <div className={styles.meta}><span>ข้อมูลในคลังโหลดล่าสุด {date(state.currentDataLoadedAt)}</span><span>สร้างใหม่เมื่อกดปุ่มเท่านั้น · ส่งเฉพาะข้อมูลสรุปให้ Gemini</span></div>
+        <div className={styles.meta}><span>ข้อมูลในคลังโหลดล่าสุด {date(state.currentDataLoadedAt)}</span><span>สร้างใหม่เมื่อกดปุ่มเท่านั้น </span></div>
         {report ? <>
-          <section className={styles.reportHeader}><div><p className="eyebrow">Saved analysis</p><h2>สถานการณ์รับสมัคร ปี {report.input.scope.startYear}{report.input.scope.endYear !== report.input.scope.startYear ? `–${report.input.scope.endYear}` : ""}</h2><p className={styles.hint}>สร้าง {date(report.createdAt)} · {report.model} · {report.input.baselineYear ? `ฉบับเก่า: มีข้อมูลนอกช่วงปี ${report.input.baselineYear}` : "ใช้เฉพาะช่วงปีที่เลือก"}</p></div>
+          <section className={styles.reportHeader}>
           <label className={styles.history}>ฉบับที่บันทึกไว้<select aria-label="เลือกฉบับรายงาน" value={report.id} disabled={reading || busy} onChange={e => void load(scope, e.target.value)}>{state.history.map((h,i) => <option key={h.id} value={h.id}>{date(h.createdAt)}{i === 0 ? " · ล่าสุด" : ""}</option>)}{!state.history.some(h => h.id === report.id) && <option value={report.id}>{date(report.createdAt)}</option>}</select></label></section>
           <section className={`panel ${styles.reference}`}><h2>ตัวเลขหลักของช่วงปีที่วิเคราะห์</h2><FactTable facts={report.input.facts.filter(f => f.grain === "year" && f.year >= report.input.scope.startYear)} /></section>
           <div className={styles.reportGrid}><nav className={`panel ${styles.contents}`} aria-label="หัวข้อรายงาน"><p className="eyebrow">ในรายงานฉบับนี้</p>{visibleSections.map((s,i) => <a key={s.title} href={`#analysis-section-${i}`}>{i+1}. {s.title}</a>)}</nav>

@@ -83,9 +83,9 @@ export function MajorsView({ snapshot }: { snapshot: PageData<"majors"> }) {
         <div className="page-transition" key="Majors">
           <section id="overview" className="hero-panel">
             <div>
-              <p className="eyebrow">Major Ranking</p>
-              <h1>Major Demand and Conversion</h1>
-              <p>ดู demand, confirmed applicants, conversion rate และ year-over-year movement ของแต่ละสาขา</p>
+              <p className="eyebrow">ENGINEERING ADMISSIONS · MAJOR ANALYSIS</p>
+              <h1>วิเคราะห์การรับสมัครรายสาขา</h1>
+              <p>เปรียบเทียบจำนวนผู้สมัคร การยืนยันสิทธิ์ และแนวโน้มรายปีของแต่ละสาขา เพื่อประกอบการวางแผนรับนักศึกษา</p>
             </div>
           </section>
 

@@ -99,7 +99,7 @@ export function validateContent(value: unknown, input: ReportInput): ReportConte
 export async function generateWithGemini(input: ReportInput) {
   const key = process.env.GEMINI_API_KEY?.trim();
   if (!key) throw new AnalysisError("ยังไม่ได้ตั้งค่า GEMINI_API_KEY ฝั่งเซิร์ฟเวอร์", 503);
-  const model = process.env.GEMINI_MODEL?.trim() || "gemini-3.1-flash-lite";
+  const model = process.env.GEMINI_MODEL?.trim() || "";
   if (!/^[a-zA-Z0-9._-]+$/.test(model)) throw new AnalysisError("GEMINI_MODEL ไม่ถูกต้อง", 503);
   const years = input.facts.filter(f => f.grain === "year").map(f => f.year).sort((a,b) => a-b);
   const coveragePlan = SECTION_TITLES.map((title,index) => ({title,

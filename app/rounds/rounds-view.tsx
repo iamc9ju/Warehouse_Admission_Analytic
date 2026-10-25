@@ -62,9 +62,9 @@ export function RoundsView({ snapshot }: { snapshot: PageData<"rounds"> }) {
         <div className="page-transition" key="Rounds">
           <section id="overview" className="hero-panel">
             <div>
-              <p className="eyebrow">Round Performance</p>
-              <h1>TCAS Round Analytics</h1>
-              <p>แยกข้อมูลรายรอบ TCAS1 Portfolio, TCAS2 Quota, TCAS3 Admission และ TCAS4 Direct Admission</p>
+              <p className="eyebrow">ENGINEERING ADMISSIONS · ROUND ANALYSIS</p>
+              <h1>วิเคราะห์การรับสมัครรายรอบ TCAS</h1>
+              <p>เปรียบเทียบผู้สมัคร ผลการคัดเลือก และการยืนยันสิทธิ์ในแต่ละรอบ TCAS เพื่อประเมินผลการรับสมัคร</p>
             </div>
           </section>
 

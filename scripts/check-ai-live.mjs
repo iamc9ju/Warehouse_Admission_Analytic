@@ -52,7 +52,7 @@ if(id){
   const second=await call(`/api/ai-analysis?startYear=${initial.scope.startYear}&endYear=${initial.scope.endYear}`);
   const persisted=await second.json();assert.equal(persisted.report.id,id);
   const originalFetch=globalThis.fetch;
-  globalThis.fetch=(url,...args)=>{if(String(url).includes("generativelanguage.googleapis.com"))throw Error("Read unexpectedly called Gemini");return originalFetch(url,...args);};
+  globalThis.fetch=(url,...args)=>{if(String(url).includes("generativelanguage.googleapis.com"))throw Error("Read unexpectedly called ");return originalFetch(url,...args);};
   try{const readAgain=await call(`/api/ai-analysis?startYear=${initial.scope.startYear}&endYear=${initial.scope.endYear}&reportId=${id}`);assert.equal((await readAgain.json()).report.id,id);}finally{globalThis.fetch=originalFetch;}
   console.log(JSON.stringify({phase:"persisted",id,readWithoutGemini:true}));
 }

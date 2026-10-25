@@ -44,7 +44,7 @@ export function MajorRightsChart({ rows, majors, year }: {
       </div><small>{row ? `ผู้มีสิทธิ์ ${row.eligible.toLocaleString()} คน` : "ไม่มีข้อมูล"}</small></div>
     </div>)}
     {tooltip && createPortal(<div role="tooltip" style={{ position: "fixed", left: tooltip.x, top: tooltip.y, transform: "translateY(-100%)", width: 300, maxWidth: "calc(100vw - 16px)", boxSizing: "border-box", overflowWrap: "anywhere", whiteSpace: "normal", padding: "10px 14px", background: "#202938", color: "white", borderRadius: 8, boxShadow: "0 4px 16px #0003", zIndex: 1000, pointerEvents: "none", fontSize: 14 }}>{tooltip.label}</div>, document.body)}
-    <p>นับคนไม่ซ้ำภายในปีและสาขา รวมทุกรอบ · ชี้แต่ละส่วนเพื่อดูจำนวนและเปอร์เซ็นต์ · สีในแท่งแสดงสถานะ ส่วนสีชื่อแสดงสาขาวิชา</p>
-    <small>ยอดรวมและเปอร์เซ็นต์คิดเฉพาะสถานะที่แสดง</small>
+    {/*<p>นับคนไม่ซ้ำภายในปีและสาขา รวมทุกรอบ · ชี้แต่ละส่วนเพื่อดูจำนวนและเปอร์เซ็นต์ · สีในแท่งแสดงสถานะ ส่วนสีชื่อแสดงสาขาวิชา</p>
+    <small>ยอดรวมและเปอร์เซ็นต์คิดเฉพาะสถานะที่แสดง</small>*/}
   </article>;
 }

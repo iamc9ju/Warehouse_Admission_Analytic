@@ -264,11 +264,12 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
     <main className="app-frame decision-app-frame">
       <SidebarNavigation activeHref="/insights" />
 
-      <section className="decision-center-shell">
-      <div className="decision-center-header">
+      <section className="workspace decision-center-shell">
+      <div className="hero-panel">
         <div>
-          <h1>Admissions Decision Center</h1>
-          <p>เลือกคำถาม เห็นคำตอบ ตัดสินใจได้ทันที</p>
+          <p className="eyebrow">ENGINEERING ADMISSIONS · DECISION INSIGHTS</p>
+          <h1>ข้อมูลเชิงลึกเพื่อวางแผนการรับสมัคร</h1>
+          <p>วิเคราะห์คำถามสำคัญด้านการรับสมัคร พร้อมข้อมูลประกอบและข้อเสนอแนะเพื่อสนับสนุนการตัดสินใจ</p>
         </div>
       </div>
 
@@ -298,10 +299,6 @@ export function AdmissionsDecisionCenter({ snapshot }: { snapshot: PageData<"ins
             placeholder="ค้นหาคำถาม สาขา หรือประเด็นที่ต้องการวิเคราะห์..."
           />
         </label>
-        <div className="decision-updated">
-          <ClockIcon aria-hidden="true" />
-          <span>อัปเดตล่าสุด วันนี้ 08:30</span>
-        </div>
       </div>
 
       <section className="decision-workspace" aria-label="ศูนย์ตอบคำถามการรับสมัคร">

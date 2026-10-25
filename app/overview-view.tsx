@@ -118,9 +118,9 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
         <div className="page-transition" key="Overview">
           <section id="overview" className="hero-panel">
             <div>
-              <p className="eyebrow">Engineering Admissions Analytics</p>
-              <h1>TCAS Admissions Data Warehouse</h1>
-              <p>ดูภาพรวมข้อมูลรับสมัครคณะวิศวกรรมศาสตร์ กำแพงแสน: TCAS รอบ 1-4 ปี {Math.min(...snapshot.availableYears)}–{Math.max(...snapshot.availableYears)} โดย trace กลับไปยัง single fact และ governed lineage ได้</p>
+              <p className="eyebrow">ENGINEERING ADMISSIONS · ANNUAL SUMMARY</p>
+              <h1>ภาพรวมการรับสมัคร ปีการศึกษา {selectedYear}</h1>
+              <p>สรุปผู้สมัคร ผลการคัดเลือก และการยืนยันสิทธิ์ TCAS รอบ 1–4 ของปีที่เลือก</p>
             </div>
             <div className="hero-controls">
               <label className="year-select">
@@ -184,11 +184,12 @@ export function OverviewView({ snapshot }: { snapshot: OverviewPageData }) {
                 {[{label:"ผู้สมัคร",value:r.applicants,points:"5,5 295,5 248,105 52,105"},{label:"ผู้มีสิทธิ์",value:r.eligible,points:"54,110 246,110 199,210 101,210"},{label:"ยืนยันสิทธิ์",value:r.confirmed,points:"103,215 197,215 150,325"}].map((v,i)=><g key={v.label}><polygon points={v.points} fill={tcasColors[r.code]} opacity={1-i*.12}/><text x="150" y={40+i*104} textAnchor="middle" fill="white" fontSize="16">{v.label}</text><text x="150" y={68+i*104} textAnchor="middle" fill="white" fontSize="20" fontWeight="bold">{v.value === undefined ? '—' : formatNumber(v.value)}</text></g>)}
                 </svg><p>อัตรายืนยันจากผู้มีสิทธิ์: {r.eligible ? `${(r.confirmed/r.eligible*100).toFixed(1)}%` : '—'}</p>
               </section>)}
-              </div><small>รูปกรวยแสดงลำดับขั้น พื้นที่ไม่ได้แทนสัดส่วนจำนวนคน</small>
+              </div>
+              {/*<small>รูปกรวยแสดงลำดับขั้น พื้นที่ไม่ได้แทนสัดส่วนจำนวนคน</small>*/}
             </article>
             <RoundRightsDonuts rows={snapshot.rightsOutcomes} rounds={visibleRounds} year={selectedYear} />
             <article className="panel" style={{gridColumn:"1 / -1"}}><h2>สถิติรายสาขา ปี {selectedYear}</h2>
-              <input aria-label="ค้นหาสาขา" placeholder="ค้นหาสาขา" value={majorQuery} onChange={e=>setMajorQuery(e.target.value)}/>
+              {/*<input aria-label="ค้นหาสาขา" placeholder="ค้นหาสาขา" value={majorQuery} onChange={e=>setMajorQuery(e.target.value)}/>*/}
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:24}}>{filteredMajors.map(m=><section key={m.majorKey} style={{padding:16,borderLeft:`4px solid ${getMajorColor(m.name, m.type)}`}}><h3 style={{color:getMajorColor(m.name, m.type)}}>{m.name}</h3>{[{label:"ผู้สมัคร",value:m.applicants},{label:"ผู้มีสิทธิ์",value:m.eligible},{label:"ยืนยันสิทธิ์",value:m.confirmed}].map(v=><div key={v.label} style={{marginTop:12}}><div style={{display:"flex",justifyContent:"space-between"}}><span>{v.label}</span><strong>{v.value === undefined ? '—' : formatNumber(v.value)}</strong></div><div style={{background:"#eee",height:12,marginTop:6}}><div style={{background:getMajorColor(m.name, m.type),height:"100%",width:`${(v.value ?? 0)/maxApplicants*100}%`}}/></div></div>)}</section>)}</div><small>ใช้มาตราส่วนจำนวนคนเดียวกันทุกสาขา</small>
             </article>
             <MajorRightsChart key={selectedYear} rows={snapshot.majorRightsOutcomes} majors={majorRows} year={selectedYear} />

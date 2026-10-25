@@ -1015,12 +1015,12 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
     <main className="app-frame analytics-app-frame">
       <SidebarNavigation activeHref="/dashboard" />
 
-      <section className="analytics-workspace">
-        <header className="analytics-header">
+      <section className="workspace analytics-workspace">
+        <header className="hero-panel">
           <div>
-            <p>Visual Analytics · All-year comparison</p>
-            <h1>Admissions Analytics Dashboard</h1>
-            <span>เปรียบเทียบทุกปีที่มีในคลังข้อมูลพร้อมกัน โดยไม่ต้องเลือกปีทีละปี</span>
+            <p className="eyebrow">ENGINEERING ADMISSIONS · YEAR COMPARISON</p>
+            <h1>เปรียบเทียบการรับสมัคร ปีการศึกษา {firstYear}–{lastYear}</h1>
+            <p>เปรียบเทียบผู้สมัคร ผลการคัดเลือก และการยืนยันสิทธิ์ระหว่างปี เพื่อดูแนวโน้มและความเปลี่ยนแปลง</p>
           </div>
           <div className="analytics-year-summary" aria-label="ช่วงปีที่นำมาเปรียบเทียบ">
             <span>เปรียบเทียบทั้งหมด</span>
@@ -1029,11 +1029,11 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
           </div>
         </header>
 
-        <div className="dashboard-purpose-note">
+        {/*<div className="dashboard-purpose-note">
           <PresentationChartLineIcon aria-hidden="true" />
-          <p><strong>Dashboard</strong> แสดงทุกปีเทียบกันในกราฟเดียว ส่วน <Link href="/">Overview</Link> ใช้ดูรายละเอียดเฉพาะปีที่เลือก</p>
+          <p><strong>เปรียบเทียบรายปี</strong> แสดงทุกปีเทียบกันในกราฟเดียว ส่วน <Link href="/">แดชบอร์ดรายปี</Link> ใช้ดูรายละเอียดเฉพาะปีที่เลือก</p>
           <span className="analytics-health pass">ข้อมูลพร้อมใช้งาน</span>
-        </div>
+        </div>*/}
 
         <section className={`analytics-kpis comparison-kpis ${hasManyYears ? "many-years" : ""}`} aria-label="ตัวชี้วัดเปรียบเทียบทุกปี">
           {comparisonKpis.map((kpi) => {
@@ -1115,14 +1115,12 @@ export function AdmissionsAnalyticsDashboard({ snapshot }: { snapshot: PageData<
             title="สัดส่วนรายการสมัครรวมทุกปี (TCAS 4 รอบ)"
             subtitle="รวมจำนวนตัวเลือกสมัครทุกปีการศึกษา แยกตามรอบ TCAS 1 - 4"
             slices={tcasRoundSlices}
-            centerLabel="รายการสมัครรวมทุกปี"
-          />
+            centerLabel={<>รายการสมัคร<br/>รวมทุกปี</>}          />
           <DonutChartCard
             title="สัดส่วนรายการสมัครรวมทุกปี (ทุกสาขาวิชา)"
             subtitle="รวมจำนวนตัวเลือกสมัครทุกปีการศึกษา แยกตามสาขาวิชา"
             slices={majorSlices}
-            centerLabel="รายการสมัครรวมทุกปี"
-          />
+            centerLabel={<>รายการสมัคร<br/>รวมทุกปี</>}          />
         </section>
 
         <section className={`analytics-chart-grid ${hasManyYears ? "many-years" : ""}`} data-year-count={availableYears.length}>

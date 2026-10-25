@@ -13,8 +13,8 @@ import {
 } from "@heroicons/react/24/outline";
 
 const navigationLinks = [
-  { href: "/", label: "Overview", icon: HomeIcon },
-  { href: "/dashboard", label: "Dashboard", icon: PresentationChartLineIcon },
+  { href: "/", label: "Annual Dashboard", icon: HomeIcon },
+  { href: "/dashboard", label: "Year Comparison", icon: PresentationChartLineIcon },
   { href: "/insights", label: "Insights", icon: LightBulbIcon },
   { href: "/ai-analysis", label: "AI Analysis", icon: SparklesIcon },
   { href: "/rounds", label: "Rounds", icon: CheckCircleIcon },
@@ -42,7 +42,7 @@ export function SidebarNavigation({ activeHref }: { activeHref: string }) {
     <aside className="sidebar" aria-label="Dashboard sidebar" aria-busy={Boolean(navigationPendingHref)}>
       <Link className="brand" href="/" onClick={(event) => navigate(event, "/")}>
         <span className="brand-mark" aria-hidden="true" />
-        <span><strong>TCAS DW</strong><small>Engineering Admissions</small></span>
+        <span><strong>Ku Kps Eng<br/>Admission Insights</strong></span>
       </Link>
 
       <nav className="side-nav" aria-label="Section navigation">

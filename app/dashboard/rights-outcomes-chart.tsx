@@ -30,7 +30,7 @@ export function RightsOutcomesChart({ rows: sourceRows, rounds, years, majorName
         {[false, true].map(mode => <button key={String(mode)} type="button" aria-pressed={percent === mode} onClick={() => setPercent(mode)} style={{ padding: "7px 12px", border: "1px solid #ded5c8", borderRadius: 8, background: percent === mode ? "#fff0dd" : "white", cursor: "pointer" }}>{mode ? "เปอร์เซ็นต์ (%)" : "จำนวนคน"}</button>)}
       </div>
     </header>
-    {majorName ? <><p style={{ color: getMajorColor(majorName), fontWeight: 750, fontSize: "var(--text-label)" }}>{majorName}</p><p style={{ color: "#74695d", fontSize: "var(--text-caption)" }}>ชี้เพื่อดูชั่วคราว หรือคลิกชื่อสาขาด้านบนเพื่อเลือกค้างไว้ · ความยาวแท่งรวมเท่ากับผู้มีสิทธิ์ของสาขาในปีนั้น รวมทุกรอบ</p></> : <p style={{ color: "#74695d", fontSize: "var(--text-caption)" }}>ขยายยอดผู้มีสิทธิ์จากกราฟด้านบน: แต่ละสีเป็นส่วนประกอบที่บวกกันได้เท่ากับผู้มีสิทธิ์ ความยาวรวมของแท่งคือยอดผู้มีสิทธิ์ในปีและรอบนั้น</p>}
+    {majorName ? <>{/*<p style={{ color: getMajorColor(majorName), fontWeight: 750, fontSize: "var(--text-label)" }}>{majorName}</p><p style={{ color: "#74695d", fontSize: "var(--text-caption)" }}>ชี้เพื่อดูชั่วคราว หรือคลิกชื่อสาขาด้านบนเพื่อเลือกค้างไว้ · ความยาวแท่งรวมเท่ากับผู้มีสิทธิ์ของสาขาในปีนั้น รวมทุกรอบ</p>*/}</> : <p style={{ color: "#74695d", fontSize: "var(--text-caption)" }}>ขยายยอดผู้มีสิทธิ์จากกราฟด้านบน: แต่ละสีเป็นส่วนประกอบที่บวกกันได้เท่ากับผู้มีสิทธิ์ ความยาวรวมของแท่งคือยอดผู้มีสิทธิ์ในปีและรอบนั้น</p>}
     <div style={{ display: "flex", flexWrap: "wrap", gap: "10px 18px", margin: "18px 0", padding: 14, background: "#faf7f2", borderRadius: 12 }}>
       {visible.map(segment => <span key={segment.key} tabIndex={0} onMouseEnter={() => setHovered(segment.key)} onMouseLeave={() => setHovered(null)} onFocus={() => setHovered(segment.key)} onBlur={() => setHovered(null)} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: "var(--text-label)", opacity: hovered && hovered !== segment.key ? 0.4 : 1 }}><i style={{ width: 12, height: 12, borderRadius: 3, background: segment.color }} />{segment.label}</span>)}
     </div>
@@ -74,7 +74,7 @@ export function RightsOutcomesChart({ rows: sourceRows, rounds, years, majorName
         </div>;
       })}
     </div>
-    <p style={{ color: "#74695d", fontSize: "var(--text-caption)", marginTop: 16 }}>นับคนไม่ซ้ำภายใน{majorName ? "ปีและสาขา รวมทุกรอบ" : "ปีและรอบ"} · ยอดรวมและเปอร์เซ็นต์คิดเฉพาะสถานะที่แสดง · สละสิทธิ์รวมสละสิทธิ์ในรอบ 2 · สถานะอื่นรวมเฉพาะสถานะผ่านการคัดเลือกที่ซ่อนไว้ · ชี้แต่ละส่วนเพื่อดูจำนวนและเปอร์เซ็นต์</p>
+    {/*<p style={{ color: "#74695d", fontSize: "var(--text-caption)", marginTop: 16 }}>นับคนไม่ซ้ำภายใน{majorName ? "ปีและสาขา รวมทุกรอบ" : "ปีและรอบ"} · ยอดรวมและเปอร์เซ็นต์คิดเฉพาะสถานะที่แสดง · สละสิทธิ์รวมสละสิทธิ์ในรอบ 2 · สถานะอื่นรวมเฉพาะสถานะผ่านการคัดเลือกที่ซ่อนไว้ · ชี้แต่ละส่วนเพื่อดูจำนวนและเปอร์เซ็นต์</p>*/}
 
   </article>;
 }

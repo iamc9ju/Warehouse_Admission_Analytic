@@ -1,5 +1,7 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { useMemo, useState } from "react";
 
 function formatNumber(value: number) {
@@ -83,7 +85,7 @@ export function DonutChartCard({
   subtitle: string;
   slices: PieSlice[];
   kicker?: string;
-  centerLabel?: string;
+  centerLabel?: ReactNode;
   centerSubtext?: string;
 }) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -163,10 +165,18 @@ export function DonutChartCard({
               justifyContent: "center",
               pointerEvents: "none",
               textAlign: "center",
-              padding: "10px",
+              padding: "0 55px",
             }}
           >
-            <small style={{ fontSize: "var(--text-caption)", fontWeight: 700, color: "#777", textTransform: "uppercase" }}>
+            <small style={{
+              fontSize: "11px",
+              fontWeight: 700,
+              color: "#777",
+              textTransform: "uppercase",
+              wordBreak: "break-word",
+              lineHeight: 1.2,
+              display: "block",
+            }}>
               {activeSlice ? activeSlice.label.split(" — ")[0] : centerLabel}
             </small>
             <strong style={{ fontSize: "var(--text-subheading)", fontWeight: 900, color: "#111", margin: "2px 0" }}>

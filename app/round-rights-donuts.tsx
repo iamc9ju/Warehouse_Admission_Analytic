@@ -17,6 +17,6 @@ export function RoundRightsDonuts({ rows, rounds, year }: {
           slices={segments.map(segment => ({ label: segment.label, value: row?.[segment.key] ?? 0, color: segment.color }))} />;
       })}
     </div>
-    <p>นับคนไม่ซ้ำภายในปีและรอบ · ยอดรวมและเปอร์เซ็นต์คิดเฉพาะสถานะที่แสดง · ชี้ส่วนสีเพื่อดูจำนวนและเปอร์เซ็นต์</p>
+    {/*<p>นับคนไม่ซ้ำภายในปีและรอบ · ยอดรวมและเปอร์เซ็นต์คิดเฉพาะสถานะที่แสดง · ชี้ส่วนสีเพื่อดูจำนวนและเปอร์เซ็นต์</p>*/}
   </section>;
 }
