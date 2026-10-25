@@ -1,4 +1,5 @@
 import vinext from "vinext";
+import { cloudflare } from "@cloudflare/vite-plugin";
 import { defineConfig } from "vite";
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
@@ -11,5 +12,10 @@ export default defineConfig({
   ssr: {
     external: ["pg"],
   },
-  plugins: [vinext()],
+  plugins: [
+    vinext(),
+    cloudflare({
+      viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
+    }),
+  ],
 });
