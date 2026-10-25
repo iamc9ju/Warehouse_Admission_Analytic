@@ -12,7 +12,10 @@ function scopeOf(start: unknown, end: unknown): Scope {
   return { startYear: start, endYear: end };
 }
 function failure(error: unknown) {
-  if (error instanceof AnalysisError) return NextResponse.json({ error: error.message }, { status: error.status, headers });
+  if (error instanceof AnalysisError || (error && typeof error === "object" && (error as any).name === "AnalysisError")) {
+    const err = error as AnalysisError;
+    return NextResponse.json({ error: err.message }, { status: err.status || 500, headers });
+  }
   // Avoid leaking connection strings, API keys, or database diagnostic details.
   return NextResponse.json({ error: "ไม่สามารถอ่านหรือบันทึกรายงานได้ กรุณาตรวจการเชื่อมต่อฐานข้อมูลและช่วงปีที่เลือก" }, { status: 503, headers });
 }
