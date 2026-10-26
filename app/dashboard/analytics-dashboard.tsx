@@ -723,6 +723,9 @@ function Tcas3ScoreScatterPlot({
         <span style={{ fontSize: "var(--text-caption)", fontWeight: 700, color: "#555" }}>
           🎨 สี: แยกตามสาขาวิชา
         </span>
+        <span style={{ fontSize: "var(--text-caption)", fontWeight: 700, color: "#555" }}>
+          เส้นประ: เชื่อมคะแนนเฉลี่ยแต่ละปีของสาขาเดียวกัน (เฉพาะปีที่มีข้อมูล)
+        </span>
         <span style={{ marginLeft: "auto", fontSize: "var(--text-caption)", fontWeight: 700, color: "#aaa" }}>
           {filteredRows.length} จุดข้อมูล · {selectedMajors.size} สาขา
         </span>
@@ -777,7 +780,7 @@ function Tcas3ScoreScatterPlot({
           </text>
 
           {/* Lines connecting each major's points across years */}
-          {/* {majorLineData.map((m) => {
+          {majorLineData.map((m) => {
             if (m.points.length < 2) return null;
             const pts = m.points.map((p) => `${getX(p.year)},${getY(p.avgScore)}`).join(" ");
             const isHoveredMajor = hoveredPoint?.major === m.name;
@@ -788,15 +791,15 @@ function Tcas3ScoreScatterPlot({
                 points={pts}
                 fill="none"
                 stroke={m.color}
-                strokeWidth={isHoveredMajor ? "2.5" : "1.5"}
+                strokeWidth={isHoveredMajor ? "3" : "2"}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeDasharray="5 3"
-                opacity={dimmed ? 0.12 : isHoveredMajor ? 1 : 0.45}
+                opacity={dimmed ? 0.12 : isHoveredMajor ? 1 : 0.65}
                 style={{ transition: "all 160ms ease", pointerEvents: "none" }}
               />
             );
-          })} */}
+          })}
 
           {/* Scatter bubbles */}
           {majorLineData.map((m) =>
