@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>คู่มือการติดตั้งและเปิดใช้งานระบบ TCAS Admissions Data Warehouse ด้วย Docker</title>
+<style>
+  @page {
+    size: A4;
+    margin: 14mm 16mm;
+    @bottom-right {
+      content: counter(page);
+    }
+  }
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Sarabun", "Prompt", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+    line-height: 1.55;
+    font-size: 13.5px;
+    margin: 0;
+    padding: 0;
+  }
+  .header {
+    border-bottom: 2px solid #0284c7;
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .header h1 {
+    font-size: 22px;
+    margin: 0 0 4px 0;
+    color: #0f172a;
+    font-weight: 700;
+  }
+  .header .subtitle {
+    font-size: 13px;
+    color: #475569;
+    font-weight: 500;
+  }
+  .header .badge {
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    border: 1px solid #bae6fd;
+    white-space: nowrap;
+  }
+  
+  /* URLs Highlight Card */
+  .url-card {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 1.5px solid #7dd3fc;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+  }
+  .url-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 14.5px;
+    color: #0369a1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .url-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 16px;
+  }
+  .url-item {
+    font-size: 12.5px;
+  }
+  .url-label {
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 2px;
+  }
+  .url-value {
+    font-family: "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    color: #0284c7;
+    word-break: break-all;
+    background: #ffffff;
+    padding: 3px 8px;
+    border-radius: 5px;
+    border: 1px solid #cbd5e1;
+    display: inline-block;
+  }
+
+  /* Section Styling */
+  h2 {
+    font-size: 15.5px;
+    color: #0f172a;
+    border-left: 4px solid #0284c7;
+    padding-left: 10px;
+    margin: 18px 0 10px 0;
+    font-weight: 700;
+  }
+  
+  /* Step Cards */
+  .step-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 11px 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .step-title {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: #0f172a;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-number {
+    background: #0284c7;
+    color: #ffffff;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  
+  /* Code blocks */
+  pre {
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 11.5px;
+    margin: 6px 0;
+    overflow-x: auto;
+    line-height: 1.45;
+  }
+  code {
+    font-family: "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    background: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  pre code {
+    background: transparent;
+    color: #38bdf8;
+    padding: 0;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 12px;
+  }
+  th, td {
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    text-align: left;
+  }
+  th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #334155;
+  }
+  tr:nth-child(even) td {
+    background: #fbfcfe;
+  }
+
+  /* Callout info */
+  .info-box {
+    background: #ecfdf5;
+    border-left: 4px solid #10b981;
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    font-size: 12px;
+    color: #065f46;
+    margin: 10px 0;
+  }
+
+  .footer-note {
+    margin-top: 18px;
+    padding-top: 8px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 10.5px;
+    color: #64748b;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>คู่มือการติดตั้งและเปิดใช้งานระบบด้วย Docker</h1>
+    <div class="subtitle">TCAS Admissions Data Warehouse & AI Analytics (Faculty of Engineering)</div>
+  </div>
+  <div class="badge">Production Ready</div>
+</div>
+
+<!-- Highlight URLs -->
+<div class="url-card">
+  <h3>🔗 ลิงก์และ URL สำคัญของระบบ</h3>
+  <div class="url-grid">
+    <div class="url-item">
+      <div class="url-label">📦 GitHub Repository:</div>
+      <div class="url-value">https://github.com/iamc9ju/Warehouse_Admission_Analytic</div>
+    </div>
+    <div class="url-item">
+      <div class="url-label">🌐 Web Dashboard (Docker Local):</div>
+      <div class="url-value">http://localhost:3000</div>
+    </div>
+    <div class="url-item">
+      <div class="url-label">🤖 AI Analysis Interface:</div>
+      <div class="url-value">http://localhost:3000/ai-analysis</div>
+    </div>
+    <div class="url-item">
+      <div class="url-label">☁️ Production Edge (Cloudflare):</div>
+      <div class="url-value">https://admission-eng.kukps.workers.dev</div>
+    </div>
+  </div>
+</div>
+
+<h2>📋 ความต้องการของระบบ (Prerequisites)</h2>
+<div style="font-size: 12.5px; margin-bottom: 10px;">
+  • ติดตั้งโปรแกรม <strong>Docker Desktop</strong> (Windows / macOS) หรือ <strong>Docker Engine & Compose v2</strong> (Linux)<br>
+  • พอร์ต <strong>3000</strong> (เว็บแอปพลิเคชัน) และ <strong>5432</strong> (ฐานข้อมูล PostgreSQL) ต้องไม่มีโปรแกรมอื่นใช้งานค้างอยู่
+</div>
+
+<h2>🚀 ขั้นตอนการติดตั้งและรันระบบ (Step-by-Step)</h2>
+
+<div class="step-card">
+  <div class="step-title">
+    <span class="step-number">1</span>
+    <span>Clone Repository และเปิดไดเรกทอรีโครงการ</span>
+  </div>
+  <div style="font-size: 12.5px;">เปิด Terminal หรือ Command Prompt แล้วรันคำสั่ง:</div>
+  <pre><code>git clone https://github.com/iamc9ju/Warehouse_Admission_Analytic.git
+cd Warehouse_Admission_Analytic
+git checkout main   # หรือ devdev2 (โค้ดตรงกัน 100%)</code></pre>
+</div>
+
+<div class="step-card">
+  <div class="step-title">
+    <span class="step-number">2</span>
+    <span>สั่งรัน Container ด้วย Docker Compose (คำสั่งเดียว)</span>
+  </div>
+  <div style="font-size: 12.5px;">ระบบจะทำการ Build เว็บแอป และสร้างฐานข้อมูลพร้อมนำเข้าข้อมูล TCAS Data Warehouse 13,799 แถวอัตโนมัติ:</div>
+  <pre><code>docker compose up --build -d</code></pre>
+  <div class="info-box">
+    💡 <strong>สะดวกยิ่งขึ้น:</strong> สามารถใช้คำสั่ง <code>npm run docker:up</code> แทนได้เช่นกัน
+  </div>
+</div>
+
+<div class="step-card">
+  <div class="step-title">
+    <span class="step-number">3</span>
+    <span>เปิดใช้งานผ่าน Web Browser</span>
+  </div>
+  <div style="font-size: 12.5px;">เมื่อ Container สตาร์ทเรียบร้อย สามารถเปิดเบราว์เซอร์ไปที่:</div>
+  <table>
+    <thead>
+      <tr>
+        <th>บริการ</th>
+        <th>URL / Connection</th>
+        <th>คำอธิบาย</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Web Dashboard</strong></td>
+        <td><code>http://localhost:3000</code></td>
+        <td>หน้าแดชบอร์ดสถิติผู้สมัคร, ยืนยันสิทธิ์, และแนวโน้ม TCAS</td>
+      </tr>
+      <tr>
+        <td><strong>AI Analysis</strong></td>
+        <td><code>http://localhost:3000/ai-analysis</code></td>
+        <td>ระบบวิเคราะห์ข้อมูลเชิงลึกด้วย AI (Google Gemini 3.1)</td>
+      </tr>
+      <tr>
+        <td><strong>PostgreSQL Database</strong></td>
+        <td><code>localhost:5432</code></td>
+        <td>Database: <code>admissions_dw</code> | User: <code>postgres</code> | Pass: <code>postgres</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="step-card">
+  <div class="step-title">
+    <span class="step-number">4</span>
+    <span>การตรวจสอบสถานะและดู Log การทำงาน</span>
+  </div>
+  <pre><code># ดู Log การทำงานแบบ Real-time
+docker compose logs -f
+
+# หรือพิมพ์ผ่าน npm:
+npm run docker:logs</code></pre>
+</div>
+
+<div class="step-card">
+  <div class="step-title">
+    <span class="step-number">5</span>
+    <span>การหยุดการทำงาน (Stop Containers)</span>
+  </div>
+  <pre><code># หยุดและปิด Container
+docker compose down
+
+# หรือหากต้องการล้างข้อมูลในฐานข้อมูลเพื่อเริ่มต้นใหม่ทั้งหมด:
+docker compose down -v</code></pre>
+</div>
+
+<h2>🏛️ โครงสร้างฐานข้อมูล Data Warehouse (Star Schema)</h2>
+<div style="font-size: 12px; color: #475569; margin-bottom: 6px;">
+  ฐานข้อมูลจะถูก Initialize อัตโนมัติจากไฟล์ <code>docker/init.sql</code> ประกอบด้วย:
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>ประเภทตาราง</th>
+      <th>ชื่อตาราง / วัตถุ</th>
+      <th>รายละเอียดข้อมูล</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Fact Table</strong></td>
+      <td><code>fact_admission</code></td>
+      <td>บันทึกข้อมูลธุรกรรมการสมัคร 13,799 รายการ (เชื่อมโยงคะแนนและผลการคัดเลือก)</td>
+    </tr>
+    <tr>
+      <td><strong>Dimension Tables</strong></td>
+      <td><code>dim_student</code>, <code>dim_major</code>, <code>dim_year</code>, <code>dim_faculty</code>, <code>dim_tcas_round</code>, <code>dim_tcas_status</code></td>
+      <td>มิติข้อมูลนักเรียน (10,158 คน), 10 สาขาวิชา, รอบ TCAS 1-4, ปีการศึกษา 2567-2569</td>
+    </tr>
+    <tr>
+      <td><strong>Analytical Marts</strong></td>
+      <td>16 Views (เช่น <code>mart_admissions_round_overview</code>)</td>
+      <td>คำนวณอัตรายืนยันสิทธิ์, ส่วนแบ่งสาขาวิชา, และสถิติสำหรับแดชบอร์ด</td>
+    </tr>
+    <tr>
+      <td><strong>AI Intelligence</strong></td>
+      <td><code>ai_analysis_reports</code>, <code>ai_analysis_jobs</code></td>
+      <td>ประวัติการสรุปและวิเคราะห์รายงานด้วย Google Gemini 3.1 Flash-Lite</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="footer-note">
+  <span>โครงการพัฒนาระบบคลังข้อมูลและการวิเคราะห์ TCAS — คณะวิศวกรรมศาสตร์ กำแพงแสน</span>
+  <span>เอกสารเผยแพร่: พฤศจิกายน 2569 • Repository: iamc9ju/Warehouse_Admission_Analytic</span>
+</div>
+
+</body>
+</html>
