@@ -42,10 +42,9 @@ ENV HOSTNAME=0.0.0.0
 # Copy standalone server, minimal runtime node_modules, dist/{client,server}, and public assets
 COPY --from=builder --chown=node:node /app/dist/standalone ./
 
-# Copy additive migration script & SQL schema for explicit migration execution
+# Copy additive migration script for explicit migration execution
 COPY --from=builder --chown=node:node /app/scripts/migrate-ai-reports.mjs ./scripts/migrate-ai-reports.mjs
 COPY --from=builder --chown=node:node /app/docs/sql/ai-analysis-reports.sql ./docs/sql/ai-analysis-reports.sql
-COPY --from=builder --chown=node:node /app/schema.sql ./schema.sql
 
 USER node
 

@@ -21,8 +21,10 @@ coverage
 *.log
 npm-debug.log*
 
-# Documentation & local artifacts not needed in runtime image
+# Documentation & local/database dump artifacts not needed in web runtime image
 *.pdf
 DOCKER_RUN_GUIDE.html
 docker-compose*.yml
 compose*.yaml
+schema.sql
+docker/*.sql
