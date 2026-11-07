@@ -1,9 +1,28 @@
+# Dependencies and build outputs
 node_modules
-.git
-.github
+dist
+.next
 .vinext
 .wrangler
-dist
-*.log
-.env.local
+coverage
+*.tsbuildinfo
+
+# Environment and secrets (never copy into image)
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# Version control and IDE/OS metadata
+.git
+.github
+.gitignore
 .DS_Store
+*.log
+npm-debug.log*
+
+# Documentation & local artifacts not needed in runtime image
+*.pdf
+DOCKER_RUN_GUIDE.html
+docker-compose*.yml
+compose*.yaml

@@ -16,9 +16,7 @@
     "build": "vinext build",
     "start": "vinext start",
     "deploy": "vinext deploy",
-    "docker:up": "docker compose up --build -d",
-    "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f",
+    "docker:build": "docker build -t admission-eng:prod .",
     "test": "npm run ai:test && npm run data:check-static && npm run build && node --env-file-if-exists=.env --test tests/page-queries.test.mjs tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "data:check-static": "node scripts/check-no-embedded-dashboard-data.mjs"

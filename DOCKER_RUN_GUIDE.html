@@ -53,6 +53,48 @@
     border: 1px solid #bae6fd;
     white-space: nowrap;
   }
+
+  /* Team Members Card */
+  .team-card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 14px;
+  }
+  .team-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    text-align: center;
+  }
+  .team-member {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .team-id {
+    font-family: "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0284c7;
+    margin-bottom: 2px;
+  }
+  .team-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0f172a;
+  }
   
   /* URLs Highlight Card */
   .url-card {
@@ -215,6 +257,25 @@
   <div class="badge">Production Ready</div>
 </div>
 
+<!-- Team Members -->
+<div class="team-card">
+  <div class="team-title">👥 คณะผู้จัดทำ (Team Members)</div>
+  <div class="team-grid">
+    <div class="team-member">
+      <div class="team-id">6620503411</div>
+      <div class="team-name">ธนวัฒน์ สมานรักษ์</div>
+    </div>
+    <div class="team-member">
+      <div class="team-id">6620503608</div>
+      <div class="team-name">อธิบดี พรมกุล</div>
+    </div>
+    <div class="team-member">
+      <div class="team-id">6620503659</div>
+      <div class="team-name">อิทธิพล บทมูล</div>
+    </div>
+  </div>
+</div>
+
 <!-- Highlight URLs -->
 <div class="url-card">
   <h3>🔗 ลิงก์และ URL สำคัญของระบบ</h3>
@@ -240,38 +301,60 @@
 
 <h2>📋 ความต้องการของระบบ (Prerequisites)</h2>
 <div style="font-size: 12.5px; margin-bottom: 10px;">
-  • ติดตั้งโปรแกรม <strong>Docker Desktop</strong> (Windows / macOS) หรือ <strong>Docker Engine & Compose v2</strong> (Linux)<br>
+  • ติดตั้งโปรแกรม <strong>Docker Desktop</strong> (Windows / macOS) หรือ <strong>Docker Engine</strong> (Linux)<br>
   • พอร์ต <strong>3000</strong> (เว็บแอปพลิเคชัน) และ <strong>5432</strong> (ฐานข้อมูล PostgreSQL) ต้องไม่มีโปรแกรมอื่นใช้งานค้างอยู่
 </div>
 
-<h2>🚀 ขั้นตอนการติดตั้งและรันระบบ (Step-by-Step)</h2>
+<h2>🚀 ขั้นตอนการติดตั้งและรันระบบแยกตาม Service (Production Docker)</h2>
 
 <div class="step-card">
   <div class="step-title">
     <span class="step-number">1</span>
-    <span>Clone Repository และเปิดไดเรกทอรีโครงการ</span>
+    <span>Clone Repository และตั้งค่าไฟล์ .env</span>
   </div>
-  <div style="font-size: 12.5px;">เปิด Terminal หรือ Command Prompt แล้วรันคำสั่ง:</div>
+  <div style="font-size: 12.5px;">เปิด Terminal แล้วรันคำสั่งเพื่อดึงโปรเจกต์และกำหนดค่า Runtime Environment Variables:</div>
   <pre><code>git clone https://github.com/iamc9ju/Warehouse_Admission_Analytic.git
 cd Warehouse_Admission_Analytic
-git checkout main   # หรือ devdev2 (โค้ดตรงกัน 100%)</code></pre>
+git checkout devdev2   # หรือ main (โค้ดตรงกัน 100%)
+cp .env.example .env   # กำหนดค่า DATABASE_URL และ GEMINI_API_KEY ในไฟล์ .env</code></pre>
 </div>
 
 <div class="step-card">
   <div class="step-title">
     <span class="step-number">2</span>
-    <span>สั่งรัน Container ด้วย Docker Compose (คำสั่งเดียว)</span>
+    <span>สร้าง Network, Volume และรันบริการฐานข้อมูล PostgreSQL + โหลดข้อมูล</span>
   </div>
-  <div style="font-size: 12.5px;">ระบบจะทำการ Build เว็บแอป และสร้างฐานข้อมูลพร้อมนำเข้าข้อมูล TCAS Data Warehouse 13,799 แถวอัตโนมัติ:</div>
-  <pre><code>docker compose up --build -d</code></pre>
-  <div class="info-box">
-    💡 <strong>สะดวกยิ่งขึ้น:</strong> สามารถใช้คำสั่ง <code>npm run docker:up</code> แทนได้เช่นกัน
-  </div>
+  <div style="font-size: 12.5px;">สร้าง Docker Network/Volume รัน PostgreSQL Container และนำเข้า Schema/ข้อมูล (หรือใช้ DATABASE_URL ของ Neon):</div>
+  <pre><code>docker network create admissions-net
+docker volume create admissions_pgdata
+
+docker run -d --name admissions-db --network admissions-net --restart unless-stopped \
+  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=admissions_dw \
+  -p 5432:5432 -v admissions_pgdata:/var/lib/postgresql/data postgres:16-alpine
+
+# โหลด Schema (หรือใช้ docker/init.sql หากต้องการโหลดข้อมูลตั้งต้น 13,799 แถว):
+docker exec -i admissions-db psql -U postgres -d admissions_dw &lt; docker/init.sql</code></pre>
 </div>
 
 <div class="step-card">
   <div class="step-title">
     <span class="step-number">3</span>
+    <span>Build Production Image (Multi-Stage) และรัน Web Application Service</span>
+  </div>
+  <div style="font-size: 12.5px;">สร้าง Image จาก <code>Dockerfile</code> (Standalone Output) รัน Migration และเริ่มการทำงานของ Web Container:</div>
+  <pre><code>docker build -t admission-eng:prod -f Dockerfile .
+
+# รัน Additive Migration สำหรับตาราง AI Analysis Reports:
+docker run --rm --network admissions-net --env-file .env admission-eng:prod node scripts/migrate-ai-reports.mjs
+
+# รัน Web Application Container:
+docker run -d --name admissions-web --network admissions-net --restart unless-stopped \
+  -p 3000:3000 --env-file .env admission-eng:prod</code></pre>
+</div>
+
+<div class="step-card">
+  <div class="step-title">
+    <span class="step-number">4</span>
     <span>เปิดใช้งานผ่าน Web Browser</span>
   </div>
   <div style="font-size: 12.5px;">เมื่อ Container สตาร์ทเรียบร้อย สามารถเปิดเบราว์เซอร์ไปที่:</div>
@@ -305,26 +388,15 @@ git checkout main   # หรือ devdev2 (โค้ดตรงกัน 100%)
 
 <div class="step-card">
   <div class="step-title">
-    <span class="step-number">4</span>
-    <span>การตรวจสอบสถานะและดู Log การทำงาน</span>
-  </div>
-  <pre><code># ดู Log การทำงานแบบ Real-time
-docker compose logs -f
-
-# หรือพิมพ์ผ่าน npm:
-npm run docker:logs</code></pre>
-</div>
-
-<div class="step-card">
-  <div class="step-title">
     <span class="step-number">5</span>
-    <span>การหยุดการทำงาน (Stop Containers)</span>
+    <span>การตรวจสอบ Log และการหยุด/ลบ Container</span>
   </div>
-  <pre><code># หยุดและปิด Container
-docker compose down
+  <pre><code># ดู Log การทำงานของ Web Service แบบ Real-time
+docker logs -f admissions-web
 
-# หรือหากต้องการล้างข้อมูลในฐานข้อมูลเพื่อเริ่มต้นใหม่ทั้งหมด:
-docker compose down -v</code></pre>
+# หยุดและลบ Container เมื่อเลิกใช้งาน
+docker stop admissions-web admissions-db
+docker rm admissions-web admissions-db</code></pre>
 </div>
 
 <h2>🏛️ โครงสร้างฐานข้อมูล Data Warehouse (Star Schema)</h2>
