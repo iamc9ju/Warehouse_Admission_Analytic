@@ -15,7 +15,11 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
+# Non-secret build-time route prefix (never pass secrets via ARG)
+ARG BASE_PATH=/admission-eng
 ENV NODE_ENV=production
+ENV BASE_PATH=${BASE_PATH}
+ENV NEXT_PUBLIC_BASE_PATH=${BASE_PATH}
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -34,10 +38,13 @@ FROM node:22-alpine AS runner
 
 WORKDIR /app
 
+ARG BASE_PATH=/admission-eng
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
 ENV HOSTNAME=0.0.0.0
+ENV BASE_PATH=${BASE_PATH}
+ENV NEXT_PUBLIC_BASE_PATH=${BASE_PATH}
 
 # Copy standalone server, minimal runtime node_modules, dist/{client,server}, and public assets
 COPY --from=builder --chown=node:node /app/dist/standalone ./

@@ -96,6 +96,7 @@ cp .env.example .env
 | `NODE_ENV` | Build & Runtime | ใช่ | กำหนดเป็น `production` |
 | `PORT` | Runtime | ใช่ | พอร์ตที่แอปพลิเคชันรับการเชื่อมต่อ (ค่าเริ่มต้น `3000`) |
 | `HOST` / `HOSTNAME` | Runtime | ใช่ | กำหนดเป็น `0.0.0.0` เพื่อให้รับการเชื่อมต่อจากภายนอก Container ได้ |
+| `BASE_PATH` / `NEXT_PUBLIC_BASE_PATH` | Build & Runtime | ใช่ | Base Path ของเว็บแอปพลิเคชัน เช่น `/admission-eng` (เข้าใช้งานที่ `http://localhost:{port}/{basepath}`) |
 | `DATABASE_URL` | Runtime Secret | **จำเป็น** | PostgreSQL Connection String เช่น `postgresql://postgres:password@admissions-db:5432/admissions_dw?sslmode=disable` หรือ Neon URL |
 | `GEMINI_API_KEY` | Runtime Secret | **จำเป็น** (สำหรับ AI) | API Key ของ Google Gemini สำหรับสร้างรายงานวิเคราะห์ในหน้า `/ai-analysis` |
 | `GEMINI_MODEL` | Runtime | ทางเลือก | ชื่อโมเดล Gemini (ค่าเริ่มต้น `gemini-3.1-flash-lite`) |
@@ -197,8 +198,8 @@ docker ps
 # ดู Log ของ Web Service
 docker logs -f admissions-web
 
-# ทดสอบเรียกหน้าเว็บ
-curl -I http://localhost:3000
+# ทดสอบเรียกหน้าเว็บผ่าน Base Path (http://localhost:{port}/{basepath})
+curl -I http://localhost:3000/admission-eng
 ```
 
 ---

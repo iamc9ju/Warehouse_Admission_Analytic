@@ -2,12 +2,33 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
+function normalizeBasePath(raw) {
+  const trimmed = raw?.trim() ?? "";
+  if (!trimmed || trimmed === "/") return "";
+  const withLeadingSlash = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return withLeadingSlash.replace(/\/+$/, "");
+}
+
+const basePath = normalizeBasePath(
+  process.env.BASE_PATH ??
+    process.env.NEXT_PUBLIC_BASE_PATH ??
+    process.env.BASEPATH ??
+    process.env.NEXT_PUBLIC_BASEPATH,
+);
+
+function withBasePath(pathname) {
+  if (!basePath) return pathname;
+  if (pathname === "/") return basePath;
+  if (pathname.startsWith("/?")) return `${basePath}${pathname.slice(1)}`;
+  return `${basePath}${pathname}`;
+}
+
 async function render() {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: handler } = await import(workerUrl.href);
 
-  return handler(new Request("http://localhost/", {
+  return handler(new Request(`http://localhost${withBasePath("/")}`, {
     headers: { accept: "text/html" },
   }));
 }
@@ -17,7 +38,7 @@ async function renderPath(pathname) {
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}-${pathname}`);
   const { default: handler } = await import(workerUrl.href);
 
-  return handler(new Request(`http://localhost${pathname}`, {
+  return handler(new Request(`http://localhost${withBasePath(pathname)}`, {
     headers: { accept: "text/html" },
   }));
 }
@@ -35,10 +56,10 @@ test("server-renders the admissions warehouse dashboard", async () => {
   assert.doesNotMatch(html, /Warehouse status|Last sync|2 นาทีที่แล้ว/);
   assert.match(html, /class="page-transition"/);
   assert.doesNotMatch(html, /Warehouse pipeline|active warehouse stage|role="dialog"|กลับสู่ dashboard/);
-  assert.match(html, /href="\/dashboard"/);
-  assert.match(html, /href="\/rounds"/);
-  assert.match(html, /href="\/majors"/);
-  assert.match(html, /href="\/insights"/);
+  assert.match(html, new RegExp(`href="${basePath}/dashboard"`));
+  assert.match(html, new RegExp(`href="${basePath}/rounds"`));
+  assert.match(html, new RegExp(`href="${basePath}/majors"`));
+  assert.match(html, new RegExp(`href="${basePath}/insights"`));
   assert.doesNotMatch(html, /href="\/(?:warehouse|technical|quality|marts|reports|data-catalog|settings)"/);
   assert.match(html, /TCAS รอบ 1-4/);
   assert.match(html, /2569/);

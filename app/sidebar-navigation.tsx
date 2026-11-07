@@ -32,7 +32,7 @@ export function SidebarNavigation({ activeHref }: { activeHref: string }) {
     }
 
     event.preventDefault();
-    if (window.location.pathname === href) return;
+    if (activeHref === href) return;
 
     setPendingHref(href);
     router.push(href);

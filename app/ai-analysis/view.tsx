@@ -9,6 +9,7 @@ import { STATUS_COLUMNS, statusMetrics } from "./status-metrics";
 
 const number = (n: number) => n.toLocaleString("th-TH", { maximumFractionDigits: 2 });
 const date = (s: string) => new Date(s).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "medium", timeStyle: "short" });
+const basePath = (process.env.__NEXT_ROUTER_BASEPATH ?? "").replace(/\/+$/, "");
 
 function FactTable({ facts }: { facts: Fact[] }) {
   return <div className={styles.tableWrap}><table className={styles.table}>
@@ -53,7 +54,7 @@ export function AnalysisView() {
       const query = new URLSearchParams();
       if (selected) { query.set("startYear", String(selected.startYear)); query.set("endYear", String(selected.endYear)); }
       if (reportId) query.set("reportId", reportId);
-      const response = await fetch(`/api/ai-analysis?${query}`, { cache: "no-store" });
+      const response = await fetch(`${basePath}/api/ai-analysis?${query}`, { cache: "no-store" });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error || "อ่านรายงานไม่สำเร็จ");
       if (mounted.current && request === requestCounter.current) {
@@ -100,7 +101,7 @@ export function AnalysisView() {
     if (!scope || reading || generating || state?.generating) return;
     setGenerating(true); setError("");
     try {
-      const response = await fetch("/api/ai-analysis", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(scope) });
+      const response = await fetch(`${basePath}/api/ai-analysis`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(scope) });
       const body = await response.json();
       if (!response.ok) {
         if (response.status === 409) await load(scope, undefined, true);
