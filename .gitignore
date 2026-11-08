@@ -47,3 +47,6 @@ next-env.d.ts
 !/outputs/sql/normalize_dashboard_people_metrics.sql
 !/outputs/sql/migrate_major_identity.sql
 /work/
+
+server_db
+Makefile*
